@@ -1,0 +1,12 @@
+output
+coverage
+reports
+dist
+module
+node_modules
+*.d.ts
+*.d.js
+*.js
+public
+*.config.js
+*.json

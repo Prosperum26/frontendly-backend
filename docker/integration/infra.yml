@@ -1,0 +1,7 @@
+services:
+  db:
+    # Should regularly update image to match what is used in production
+    image: mongodb/mongodb-community-server:8.0.4-ubi8
+    restart: always
+    ports:
+      - '27017:27017'
