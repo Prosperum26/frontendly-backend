@@ -28,6 +28,9 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'class-methods-use-this': 'off',
+    'prettier/prettier': [
+      'error', {endOfLine: 'auto'}
+    ],
     // https://github.com/typescript-eslint/typescript-eslint/issues/1277
     'consistent-return': 'off',
     'func-names': 'off',

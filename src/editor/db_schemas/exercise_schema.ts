@@ -4,7 +4,7 @@ import { HydratedDocument } from 'mongoose';
 export type ExerciseDocument = HydratedDocument<Exercise>;
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   id: string;
 
   @Prop({ required: true })
@@ -19,8 +19,8 @@ export class Exercise {
   @Prop({ required: true })
   target_design_url: string;
 
-  @Prop({ type: [{ id: Number, content: String }], default: [] })
-  requirements: { id: number; content: string }[];
+  @Prop({ type: [{ id: String, text: String, _id: false }], default: [] })
+  requirements: { id: string; text: string }[];
 
   created_at: Date;
   updated_at: Date;

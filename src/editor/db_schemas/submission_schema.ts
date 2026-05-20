@@ -1,25 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { Exercise } from './exercise_schema';
-import { User } from './userFake_schema';
-
 export type SubmissionDocument = HydratedDocument<Submission>;
 
 @Schema({ timestamps: { createdAt: 'saved_At' } })
 export class Submission {
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   id: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' }) // chiếu qua user => chỉ là userFake để chạy local
-  userId: User;
+  @Prop({ required: true, ref: 'User' }) // chiếu qua user => chỉ là userFake để chạy local
+  userId: string;
 
-  @Prop({
-    required: true,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Exercise',
-  }) // chiếu qua exercise
-  exerciseId: Exercise;
+  @Prop({ required: true, ref: 'Exercise' }) // chiếu qua exercise
+  exerciseId: string;
 
   @Prop({ required: true })
   isCompleted: boolean;
@@ -27,13 +20,13 @@ export class Submission {
   @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
   match_percentage: mongoose.Types.Decimal128;
 
-  @Prop({ required: true, trim: true, length: 100000 })
+  @Prop({ trim: true, length: 100000, default: '' })
   html_content: string;
 
-  @Prop({ required: true, trim: true, length: 100000 })
+  @Prop({ trim: true, length: 100000, default: '' })
   css_content: string;
 
-  @Prop({ required: true, trim: true, length: 100000 })
+  @Prop({ trim: true, length: 100000, default: '' })
   js_content: string;
 
   createdAt: Date;
