@@ -1,8 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OAuth2Client } from 'google-auth-library';
 
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { GoogleAuthController } from './controllers';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
@@ -18,10 +20,16 @@ import { UserModule } from '@/users/user.module';
       { name: Token.name, schema: TokenSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    JwtModule.registerAsync({
+      inject: [authConfigObj.KEY],
+      useFactory: (authConfig: AuthConfig) => ({
+        secret: authConfig.jwtSecret || 'FrontendlySecretKey123',
+        signOptions: { expiresIn: '1d' },
+      }),
+    }),
   ],
-  controllers: [GoogleAuthController],
+  controllers: [GoogleAuthController, AuthController],
   providers: [
-    JwtService,
     TokenService,
     GoogleAuthService,
     {
@@ -34,7 +42,8 @@ import { UserModule } from '@/users/user.module';
         }),
     },
     WsAuthMiddleware,
+    AuthService,
   ],
-  exports: [TokenService, WsAuthMiddleware],
+  exports: [TokenService, WsAuthMiddleware, JwtModule],
 })
 export class AuthModule {}

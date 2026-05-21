@@ -4,21 +4,27 @@ import { Types } from 'mongoose';
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, unique: true })
-  email: string;
+  email!: string;
 
   @Prop()
-  googleId: string;
+  googleId!: string;
 
   @Prop()
-  firstName: string;
+  firstName!: string;
 
   @Prop()
-  lastName: string;
+  lastName!: string;
 
   @Prop()
-  avatarUrl: string;
+  avatarUrl!: string;
 
-  _id: Types.ObjectId;
+  @Prop()
+  name!: string;
+
+  @Prop()
+  password?: string;
+
+  _id!: Types.ObjectId;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

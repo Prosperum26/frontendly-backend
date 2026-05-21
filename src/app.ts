@@ -1,6 +1,6 @@
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as compression from 'compression';
+import compression from 'compression';
 import helmet from 'helmet';
 
 export function configApp(app: INestApplication): INestApplication {

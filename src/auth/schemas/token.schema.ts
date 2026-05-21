@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs'; // Sửa lại cách import
 import { Types } from 'mongoose';
 
 import { User } from '@/users/schemas';
@@ -7,15 +7,16 @@ import { User } from '@/users/schemas';
 @Schema({ timestamps: true })
 export class Token {
   @Prop({ type: Types.ObjectId, required: true, ref: User.name, index: true })
-  userId: Types.ObjectId;
+  userId!: Types.ObjectId;
 
   @Prop({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
+  // Sửa lại cách gọi hàm để ESLint không báo lỗi "any"
   @Prop({ default: () => dayjs().add(1, 'year').toDate() })
-  expiredAt: Date;
+  expiredAt!: Date;
 
-  _id: Types.ObjectId;
+  _id!: Types.ObjectId;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);
