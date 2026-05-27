@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, UpdateQuery } from 'mongoose';

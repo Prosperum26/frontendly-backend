@@ -9,7 +9,6 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
       "@test-helpers/*": ["./test/test-helpers/*"]
@@ -30,6 +29,10 @@
     "newLine": "lf",
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src", "test"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*", 
+    "test/**/*", 
+    "**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }
