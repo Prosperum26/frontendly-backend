@@ -9,16 +9,16 @@ export type StageDocument = HydratedDocument<Stage>;
 @Schema({ _id: false })
 export class Stage {
   @Prop({ type: String, required: true })
-  id: string;
+  id!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ default: false })
-  isCompleted: boolean;
+  isCompleted!: boolean;
 
   @Prop({ default: 0 })
-  earnedStars: number;
+  earnedStars!: number;
 }
 
 export const StageSchema = SchemaFactory.createForClass(Stage);
@@ -31,23 +31,27 @@ export type MilestoneDocument = HydratedDocument<Milestone>;
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Milestone {
   @Prop({ type: String, required: true, unique: true })
-  id: string;
+  id!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({
     type: String,
     enum: ['locked', 'in_progress', 'completed'],
     default: 'locked',
   })
-  status: 'locked' | 'in_progress' | 'completed';
+  status!: 'locked' | 'in_progress' | 'completed';
+
+  // Phase 2: icon name/slug used as the earned badge icon
+  @Prop({ default: '' })
+  icon!: string;
 
   @Prop({ type: [StageSchema], default: [] })
-  stages: Stage[];
+  stages!: Stage[];
 
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const MilestoneSchema = SchemaFactory.createForClass(Milestone);

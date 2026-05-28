@@ -7,112 +7,140 @@ import { HydratedDocument } from 'mongoose';
 @Schema({ _id: false })
 export class BoilerplateCode {
   @Prop({ default: '' })
-  html: string;
+  html!: string;
 
   @Prop({ default: '' })
-  js: string;
+  js!: string;
 }
 
 export const BoilerplateCodeSchema =
   SchemaFactory.createForClass(BoilerplateCode);
 
 // ============================================================
-// LpExercise Schema — bài tập practice của 1 Stage
-// (Dùng tên LpExercise để tránh conflict với Exercise có sẵn)
+// LpExercise Schema
 // ============================================================
 export type LpExerciseDocument = HydratedDocument<LpExercise>;
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class LpExercise {
   @Prop({ type: String, required: true, unique: true })
-  id: string;
+  id!: string;
 
   @Prop({ type: String, required: true })
-  stageId: string;
+  stageId!: string;
 
-  @Prop({
-    type: String,
-    enum: ['easy', 'medium', 'hard'],
-    required: true,
-  })
-  level: 'easy' | 'medium' | 'hard';
+  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], required: true })
+  level!: 'easy' | 'medium' | 'hard';
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  instruction: string;
+  instruction!: string;
 
   @Prop({ type: BoilerplateCodeSchema, default: {} })
-  boilerplateCode: BoilerplateCode;
+  boilerplateCode!: BoilerplateCode;
 
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const LpExerciseSchema = SchemaFactory.createForClass(LpExercise);
 
 // ============================================================
-// Roadmap Schema — lộ trình học tập của 1 skill
+// Roadmap Schema
 // ============================================================
 export type RoadmapDocument = HydratedDocument<Roadmap>;
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Roadmap {
   @Prop({ type: String, required: true, unique: true })
-  skillId: string;
+  skillId!: string;
 
   @Prop({ required: true })
-  skillTitle: string;
+  skillTitle!: string;
 
   @Prop({ type: [String], default: [] })
-  milestoneIds: string[];
+  milestoneIds!: string[];
 
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const RoadmapSchema = SchemaFactory.createForClass(Roadmap);
 
 // ============================================================
-// UserLearningProgress Schema — tiến độ học của 1 user
+// UnlockedStage — tiến độ của user tại 1 stage
 // ============================================================
-export type UserLearningProgressDocument =
-  HydratedDocument<UserLearningProgress>;
-
 @Schema({ _id: false })
 export class UnlockedStage {
   @Prop({ required: true })
-  stageId: string;
+  stageId!: string;
 
   @Prop({ default: false })
-  isPracticeUnlocked: boolean;
+  isPracticeUnlocked!: boolean;
 
   @Prop({ default: 0 })
-  earnedStars: number;
+  earnedStars!: number;
+
+  // Phase 2: video intro tracking (0–100)
+  @Prop({ default: 0, min: 0, max: 100 })
+  videoWatchPercentage!: number;
+
+  // Phase 2: badge earned when stage fully completed (earnedStars >= 3)
+  @Prop({ default: false })
+  badgeEarned!: boolean;
 }
 
 const UnlockedStageSchema = SchemaFactory.createForClass(UnlockedStage);
 
+// ============================================================
+// UserLearningProgress Schema
+// ============================================================
+export type UserLearningProgressDocument =
+  HydratedDocument<UserLearningProgress>;
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class UserLearningProgress {
   @Prop({ type: String, required: true })
-  userId: string;
+  userId!: string;
 
   @Prop({ type: String, required: true })
-  skillId: string;
+  skillId!: string;
 
   @Prop({ default: 0 })
-  currentXp: number;
+  currentXp!: number;
 
   @Prop({ default: 0 })
-  streakDays: number;
+  streakDays!: number;
+
+  // Phase 2: date of last streak increment ('YYYY-MM-DD') — prevents double-counting per day
+  @Prop({ type: String, default: null })
+  lastStreakDate!: string | null;
+
+  // Phase 2: stageIds where badge has been earned
+  @Prop({ type: [String], default: [] })
+  badges!: string[];
+
+  // Phase 2: resume state — last stage/milestone the user was on
+  @Prop({ type: String, default: null })
+  lastActiveStageId!: string | null;
+
+  @Prop({ type: String, default: null })
+  lastActiveMilestoneId!: string | null;
+
+  // Phase 2: placement test onboarding
+  @Prop({ default: false })
+  placementTestCompleted!: boolean;
+
+  @Prop({ type: String, default: null })
+  skipToMilestoneId!: string | null;
 
   @Prop({ type: [UnlockedStageSchema], default: [] })
-  unlockedStages: UnlockedStage[];
+  unlockedStages!: UnlockedStage[];
 
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const UserLearningProgressSchema =

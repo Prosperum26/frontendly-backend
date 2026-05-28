@@ -7,13 +7,13 @@ import { HydratedDocument } from 'mongoose';
 @Schema({ _id: false })
 export class ReferenceLink {
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  url: string;
+  url!: string;
 
   @Prop({ type: String, enum: ['doc', 'video'], default: 'doc' })
-  type: 'doc' | 'video';
+  type!: 'doc' | 'video';
 }
 
 export const ReferenceLinkSchema = SchemaFactory.createForClass(ReferenceLink);
@@ -26,22 +26,26 @@ export type TheoryDocument = HydratedDocument<Theory>;
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Theory {
   @Prop({ type: String, required: true, unique: true })
-  stageId: string;
+  stageId!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  contentHtml: string;
+  contentHtml!: string;
 
   @Prop({ default: '' })
-  proTips: string;
+  proTips!: string;
+
+  // Phase 2: optional intro video URL; 80% watch threshold awards XP
+  @Prop({ default: '' })
+  videoUrl!: string;
 
   @Prop({ type: [ReferenceLinkSchema], default: [] })
-  referenceLinks: ReferenceLink[];
+  referenceLinks!: ReferenceLink[];
 
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const TheorySchema = SchemaFactory.createForClass(Theory);
