@@ -18,8 +18,8 @@ import {
 import { MetricsInterceptor } from './common/observability/interceptors';
 import { ObservabilityModule } from './common/observability/observability.module';
 import { EditorModule } from './editor/editor_module/editor.module';
-import { UserModule } from './users/user.module';
 import { LearningPathModule } from './learning-path/learning_path_module/learning_path.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [

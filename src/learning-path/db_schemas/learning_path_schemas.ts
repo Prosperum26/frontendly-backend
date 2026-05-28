@@ -115,6 +115,5 @@ export class UserLearningProgress {
   updated_at: Date;
 }
 
-export const UserLearningProgressSchema = SchemaFactory.createForClass(
-  UserLearningProgress,
-);
+export const UserLearningProgressSchema =
+  SchemaFactory.createForClass(UserLearningProgress);
