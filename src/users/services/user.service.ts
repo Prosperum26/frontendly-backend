@@ -1,8 +1,12 @@
 /* eslint-disable new-cap */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import * as bcrypt from 'bcrypt';
 import { Model, UpdateQuery } from 'mongoose';
 
+import { ChangePasswordDto } from '../dtos/change-password.dto';
+import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User } from '../schemas';
 import {
   CreateOrUpdateUserResult,
@@ -16,16 +20,11 @@ export class UserService {
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  /**
-   * Create a new user. If that user already exists, update the existing user
-   * (uniqueness is determined by email).
-   */
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
     await createUserSchema.parseAsync(options);
     const { email, googleId, firstName, lastName, picture } = options;
-    // Update user information in case it doesn't already exist
     const update: UpdateQuery<User> = {
       googleId,
       firstName,
@@ -43,5 +42,56 @@ export class UserService {
       alreadyExists: res.lastErrorObject?.updatedExisting || false,
       user: res.value!,
     };
+  }
+
+  public async updateProfile(
+    userId: string,
+    body: UpdateProfileDto,
+  ): Promise<{ message: string; user: User }> {
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new BadRequestException('Không tìm thấy người dùng');
+    }
+
+    return {
+      message: 'Cập nhật thông tin thành công',
+      user: <User>(<unknown>updatedUser),
+    };
+  }
+
+  public async changePassword(
+    userId: string,
+    body: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userModel
+      .findById(userId)
+      .select('+password')
+      .lean();
+
+    if (!user) {
+      throw new BadRequestException('Không tìm thấy người dùng');
+    }
+
+    const userDoc = <Record<string, string>>(<unknown>user);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const isMatch = await bcrypt.compare(
+      <string>body.oldPassword,
+      <string>userDoc.password,
+    );
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu cũ không chính xác');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+    const hashedNewPassword = await bcrypt.hash(<string>body.newPassword, 10);
+    await this.userModel.findByIdAndUpdate(userId, {
+      password: hashedNewPassword,
+    });
+
+    return { message: 'Đổi mật khẩu thành công' };
   }
 }
