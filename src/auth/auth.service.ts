@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 
 import { LoginDto } from './dtos/login.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { TokenService } from './services/token.service';
 import { User } from '@/users/schemas';
@@ -63,5 +64,33 @@ export class AuthService {
     const token = await this.tokenService.signAccessToken(tokenDoc);
 
     return { message: 'Đăng nhập thành công', token };
+  }
+
+  async refreshToken(
+    body: RefreshTokenDto,
+  ): Promise<{ message: string; token: string }> {
+    try {
+      const { tokenId } = await this.tokenService.decodeAccessToken(
+        body.refreshToken,
+      );
+
+      const oldToken = await this.tokenService.findAndValidateToken(
+        new Types.ObjectId(tokenId),
+      );
+      if (!oldToken) {
+        throw new UnauthorizedException('Token đã hết hạn hoặc bị vô hiệu hóa');
+      }
+
+      const newTokenDoc = await this.tokenService.create(
+        new Types.ObjectId(oldToken.userId),
+      );
+      const newToken = await this.tokenService.signAccessToken(newTokenDoc);
+
+      return { message: 'Refresh token thành công', token: newToken };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      throw new UnauthorizedException('Refresh token không hợp lệ');
+    }
   }
 }

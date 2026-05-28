@@ -1,4 +1,3 @@
-// 1. THÊM SetMetadata vào danh sách import của @nestjs/common
 import {
   Controller,
   Post,
@@ -9,10 +8,9 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 
-// 2. THÊM dòng import này để lấy cấu hình của dự án
-
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { AuthGuard } from './guards/auth.guard';
 import { CustomDecoratorKey } from '@/common/constants';
@@ -21,14 +19,12 @@ import { CustomDecoratorKey } from '@/common/constants';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // 3. THÊM cờ bỏ qua Guard ngay trên API register
   @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
   @Post('register')
   async register(@Body() body: RegisterDto): Promise<{ message: string }> {
     return this.authService.register(body);
   }
 
-  // 4. THÊM cờ bỏ qua Guard ngay trên API login
   @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
   @Post('login')
   async login(
@@ -37,7 +33,14 @@ export class AuthController {
     return this.authService.login(body);
   }
 
-  // API getProfile bên dưới GIỮ NGUYÊN
+  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @Post('refresh')
+  async refresh(
+    @Body() body: RefreshTokenDto,
+  ): Promise<{ message: string; token: string }> {
+    return this.authService.refreshToken(body);
+  }
+
   @UseGuards(AuthGuard)
   @Get('me')
   getProfile(
