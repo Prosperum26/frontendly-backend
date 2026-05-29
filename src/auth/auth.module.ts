@@ -6,9 +6,11 @@ import { OAuth2Client } from 'google-auth-library';
 import { GoogleAuthController } from './controllers';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
+import { Session, SessionSchema } from './schemas/session.schema';
 import { GoogleAuthService, TokenService } from './services';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { User, UserSchema } from '@/users/schemas';
+import { StageProgress, StageProgressSchema } from '@/users/schemas/stage-progress.schema';
 import { UserModule } from '@/users/user.module';
 
 @Module({
@@ -16,7 +18,9 @@ import { UserModule } from '@/users/user.module';
     forwardRef(() => UserModule),
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
+      { name: Session.name, schema: SessionSchema },
       { name: User.name, schema: UserSchema },
+      { name: StageProgress.name, schema: StageProgressSchema },
     ]),
   ],
   controllers: [GoogleAuthController],
@@ -37,4 +41,4 @@ import { UserModule } from '@/users/user.module';
   ],
   exports: [TokenService, WsAuthMiddleware],
 })
-export class AuthModule {}
+export class AuthModule { }

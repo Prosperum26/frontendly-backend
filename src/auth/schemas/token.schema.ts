@@ -12,7 +12,7 @@ export class Token {
   @Prop({ default: true })
   isActive: boolean;
 
-  @Prop({ default: () => dayjs().add(1, 'year').toDate() })
+  @Prop({ default: () => dayjs().add(30, 'minute').toDate() })
   expiredAt: Date;
 
   _id: Types.ObjectId;

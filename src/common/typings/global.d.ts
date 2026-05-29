@@ -23,10 +23,13 @@ declare global {
     }
 
     interface AuthenticatedHttpUser {
+      userId: string;
+      username: string;
+      role: string;
       token: Token;
       profile: User;
     }
   }
 }
 
-export {};
+export { };

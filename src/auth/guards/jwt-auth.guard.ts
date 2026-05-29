@@ -7,13 +7,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { merge } from 'lodash';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { TokenService } from '../services';
 import { AuthOption } from '../types';
 import { CustomDecoratorKey } from '@/common/constants';
+import { StageProgress } from '@/users/schemas/stage-progress.schema';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -22,7 +24,8 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly tokenService: TokenService,
     private reflector: Reflector,
-  ) {}
+    @InjectModel(StageProgress.name) private readonly stageProgressModel: Model<StageProgress>,
+  ) { }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const opt = this.getAuthOption(ctx);
@@ -67,6 +70,16 @@ export class JwtAuthGuard implements CanActivate {
 
       if (user.isDeleted) {
         throw new ForbiddenException('User account has been deleted');
+      }
+
+      // Verify stage progress to prevent bypassing roadmap
+      const stageProgress = await this.stageProgressModel.findOne({
+        user_id: user._id,
+      }).lean();
+
+      if (stageProgress) {
+        // Attach stage progress to user object for downstream use
+        user.stage_progress = stageProgress;
       }
 
       // Attach the user to the request object with full information

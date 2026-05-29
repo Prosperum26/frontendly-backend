@@ -7,8 +7,12 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import * as crypto from 'crypto';
+import { Response } from 'express';
+import * as dayjs from 'dayjs';
 
 import { Token } from '../schemas';
+import { Session } from '../schemas/session.schema';
 import { DecodedJwt } from '../types';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { User } from '@/users/schemas';
@@ -19,8 +23,9 @@ export class TokenService {
     private readonly jwtService: JwtService,
     @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) {}
+  ) { }
 
   public async signAccessToken(token: Token): Promise<string> {
     const jwt: DecodedJwt = {
@@ -73,5 +78,104 @@ export class TokenService {
     if (!token) return null;
     if (!token.isActive || now >= token.expiredAt) return null;
     return token;
+  }
+
+  /**
+   * Hash a refresh token using SHA-256 for secure storage
+   */
+  private hashRefreshToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  /**
+   * Generate a secure random refresh token
+   */
+  private generateRefreshToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  /**
+   * Create a new session with refresh token
+   */
+  public async createSession(
+    userId: Types.ObjectId,
+    deviceInfo: string,
+  ): Promise<{ refreshToken: string; expiresAt: Date }> {
+    const refreshToken = this.generateRefreshToken();
+    const refreshTokenHash = this.hashRefreshToken(refreshToken);
+    const expiresAt = dayjs().add(7, 'day').toDate();
+
+    await this.sessionModel.create({
+      user_id: userId,
+      refresh_token_hash: refreshTokenHash,
+      device_info: deviceInfo,
+      expires_at: expiresAt,
+    });
+
+    return { refreshToken, expiresAt };
+  }
+
+  /**
+   * Refresh access token with token rotation
+   * Invalidates old refresh token and issues new pair
+   */
+  public async refreshAccessToken(
+    oldRefreshToken: string,
+    res: Response,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const refreshTokenHash = this.hashRefreshToken(oldRefreshToken);
+    const session = await this.sessionModel.findOne({
+      refresh_token_hash: refreshTokenHash,
+    });
+
+    if (!session) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    if (new Date() >= session.expires_at) {
+      await this.sessionModel.deleteOne({ _id: session._id });
+      throw new UnauthorizedException('Refresh token has expired');
+    }
+
+    // Delete old session (token rotation)
+    await this.sessionModel.deleteOne({ _id: session._id });
+
+    // Create new access token
+    const token = await this.create(session.user_id);
+    const accessToken = await this.signAccessToken(token);
+
+    // Create new session with new refresh token
+    const { refreshToken, expiresAt } = await this.createSession(
+      session.user_id,
+      session.device_info,
+    );
+
+    // Set new refresh token in HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: expiresAt,
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * Revoke session (logout)
+   */
+  public async revokeSession(refreshToken: string, res: Response): Promise<void> {
+    const refreshTokenHash = this.hashRefreshToken(refreshToken);
+    await this.sessionModel.deleteOne({ refresh_token_hash: refreshTokenHash });
+
+    // Clear refresh token cookie
+    res.clearCookie('refreshToken');
+  }
+
+  /**
+   * Revoke all sessions for a user (e.g., password change)
+   */
+  public async revokeAllUserSessions(userId: Types.ObjectId): Promise<void> {
+    await this.sessionModel.deleteMany({ user_id: userId });
   }
 }
