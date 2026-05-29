@@ -1,6 +1,6 @@
 import { IsArray, IsOptional } from 'class-validator';
 
-export class LintEvaluation {
+export class LintEvaluation {  // trả result checkLint
   @IsArray()
   @IsOptional()
   html_err?: { line: number; message: string }[];

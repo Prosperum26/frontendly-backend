@@ -5,7 +5,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-export class EditorContentDto {
+export class EditorContentDto {  // lấy code của user từ API
   @IsString()
   @IsNotEmpty({ message: 'Invalid HTML' })
   html!: string;

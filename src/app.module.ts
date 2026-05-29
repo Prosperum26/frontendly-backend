@@ -19,6 +19,7 @@ import {
 import { MetricsInterceptor } from './common/observability/interceptors';
 import { ObservabilityModule } from './common/observability/observability.module';
 import { UserModule } from './users/user.module';
+import { EditorModule } from './editor/editor_module/editor.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserModule } from './users/user.module';
     ObservabilityModule,
     AuthModule,
     UserModule,
+    EditorModule,
   ],
   providers: [
     {
@@ -40,8 +42,8 @@ import { UserModule } from './users/user.module';
       provide: APP_PIPE,
       useValue: new ValidationPipe({ transform: true, whitelist: true }),
     },
-    { provide: APP_GUARD, useClass: ApiEnvGuard },
-    { provide: APP_GUARD, useClass: AuthGuard },
+    // { provide: APP_GUARD, useClass: ApiEnvGuard },
+    // { provide: APP_GUARD, useClass: AuthGuard },
     {
       // Enable global response serialization
       provide: APP_INTERCEPTOR,

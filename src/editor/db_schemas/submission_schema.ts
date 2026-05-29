@@ -4,6 +4,29 @@ import mongoose, { HydratedDocument } from 'mongoose';
 export type SubmissionDocument = HydratedDocument<Submission>;
 
 @Schema({ _id: false })
+export class LintErrorDetail {
+  @Prop({ required: true })
+  line!: number;
+
+  @Prop({ required: true })
+  message!: string;
+}
+const LintErrorDetailSchema = SchemaFactory.createForClass(LintErrorDetail);
+
+@Schema({ _id: false })
+export class LintErrorGroup {
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  html_err!: LintErrorDetail[];
+
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  css_err!: LintErrorDetail[];
+
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  js_err!: LintErrorDetail[];
+}
+const LintErrorGroupSchema = SchemaFactory.createForClass(LintErrorGroup);
+
+@Schema({ _id: false })
 export class EvaluationResult {
   @Prop({ required: true })
   requirementId!: string;
@@ -11,16 +34,19 @@ export class EvaluationResult {
   @Prop({ required: true })
   passed!: boolean;
 }
+const EvaluationResultSchema = SchemaFactory.createForClass(EvaluationResult);
 
-@Schema({ timestamps: { createdAt: 'saved_At' } })
+
+// 🟢 4. Schema Chính
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Submission {
   @Prop({ type: String, required: true, unique: true })
   id!: string;
 
-  @Prop({ required: true, ref: 'User' }) // chiếu qua user => chỉ là userFake để chạy local
+  @Prop({ required: true, ref: 'User' })
   userId!: string;
 
-  @Prop({ required: true, ref: 'Exercise' }) // chiếu qua exercise
+  @Prop({ required: true, ref: 'Exercise' })
   exerciseId!: string;
 
   @Prop({ required: true })
@@ -29,19 +55,27 @@ export class Submission {
   @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
   match_percentage!: mongoose.Types.Decimal128;
 
-  @Prop({ type: [SchemaFactory.createForClass(EvaluationResult)], default: [] })
+  @Prop({ type: [EvaluationResultSchema], default: [] })
   evaluationResults!: EvaluationResult[];
 
-  @Prop({ trim: true, length: 100000, default: '' })
+  // 👉 THAY ĐỔI Ở ĐÂY: Lưu nguyên 1 object chứa 3 mảng lỗi
+  @Prop({
+    type: LintErrorGroupSchema,
+    default: { html_err: [], css_err: [], js_err: [] }
+  })
+  lint_errors!: LintErrorGroup;
+
+  @Prop({ trim: true, maxlength: 100000, default: '' })
   html_content!: string;
 
-  @Prop({ trim: true, length: 100000, default: '' })
+  @Prop({ trim: true, maxlength: 100000, default: '' })
   css_content!: string;
 
-  @Prop({ trim: true, length: 100000, default: '' })
+  @Prop({ trim: true, maxlength: 100000, default: '' })
   js_content!: string;
 
-  createdAt!: Date;
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const SubmissionSchema = SchemaFactory.createForClass(Submission);

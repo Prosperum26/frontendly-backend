@@ -11,10 +11,10 @@ import {
 import { Exercise } from '../db_schemas/exercise_schema';
 
 import { EditorService } from '../editor_service/editor.service';
-import { SandBox } from '../runners/sandbox.runner';
 import { SubmitCodeDto } from '../dtos/submit_code.dto';
-import { LintEvaluation } from '../dtos/lint_evaluators.dto';
-import { CheckLint } from '../editor_service/editor.service';
+import { CheckLint } from '../editor_service/checkLint.service';
+
+import { SubmitResponse } from '../dtos/submitCodeResponse';
 @Controller({
   path: 'exercises',
   version: '1',
@@ -22,16 +22,15 @@ import { CheckLint } from '../editor_service/editor.service';
 export class EditorController {
   constructor(
     private readonly editorService: EditorService,
-    private readonly sandBox: SandBox,
-    private readonly codeLint: CheckLint,
   ) {}
 
-  @Get(':exerciseId')
+  @Get(':exerciseId/:userId')
   async getExercise(
     @Param('exerciseId') exerciseId: string,
+    @Param('userId') userId: string
   ): Promise<Exercise> {
     try {
-      const exercise = await this.editorService.getExerciseById(exerciseId);
+      const exercise = await this.editorService.getExercise(exerciseId, userId);
       return exercise;
     } catch (error) {
       console.log('Error:', error);
@@ -39,42 +38,24 @@ export class EditorController {
     }
   }
 
-  // Chỉ để test xem đã tạo sandBox được chưa?
-  @Post(':exerciseId')
-  async sandBoxRunner(
+  @Post(':exerciseId/:userId/submit')
+  async SubmitCode(
     @Param('exerciseId') exerciseId: string,
+    @Param('userId') userId:string,
     @Body() submitCode: SubmitCodeDto,
-  ): Promise<string> {
+  ): Promise<SubmitResponse> {
     try {
-      const { html, css, javascript } = submitCode.editorContent;
-      const renderCode = await this.sandBox.createSandBox(
-        html,
-        css,
-        javascript,
-      );
-      if (!renderCode) throw new Error('No code in SandBox');
-      return renderCode;
-    } catch (error) {
-      throw new Error('Error in create SandBox');
+      return await this.editorService.submitExerciseEasyOrMed(userId, exerciseId, submitCode.editorContent);
+      // if (exerciseId.endsWith('1') || exerciseId.endsWith('2')) {
+      //   return await this.editorService.submitExerciseEasyOrMed(userId, exerciseId, submitCode.editorContent);
+      // }
+      // else if (exerciseId.endsWith('3')) {
+        
+      // }
     }
-  }
-
-  @Post(':excerciseId/submit')
-  async checkLintCode(
-    @Param('exerciseId') exerciseId: string,
-    @Body() submitCode: SubmitCodeDto,
-  ): Promise<LintEvaluation> {
-    try {
-      const { html, css, javascript } = submitCode.editorContent;
-      const evaluationResult = await this.codeLint.checkLintUserCode(
-        html,
-        css,
-        javascript,
-      );
-      return evaluationResult;
-    } catch (error: any) {
+    catch (error:any) {
       throw new InternalServerErrorException(
-        error.message || 'Lỗi hệ thống khi chấm code!',
+        error.message || 'Error in evaluating code!',
       );
     }
   }

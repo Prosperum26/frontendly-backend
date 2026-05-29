@@ -5,11 +5,13 @@ import { Server } from 'net';
 import { configApp } from './app';
 import { AppModule } from './app.module';
 import { CommonConfig, commonConfigObj } from './common/config';
+import { databaseConnect, databaseDisconnect } from './editor/db_schemas/connectDatabase';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
   configApp(app);
   const { port } = <CommonConfig>app.get(commonConfigObj.KEY);
+  await databaseConnect();
   await app.listen(port, () => {
     console.info(`listening on port ${port}`);
   });
