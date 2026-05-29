@@ -63,13 +63,12 @@ export class TokenService {
       );
     }
     return token.userId;
-  }
-
-  /**
+  } /**
    * Returns the token document if it exists and is valid. Otherwise, returns
    * `null`. Validity is defined as having `isActive` set to `true`, and current
    * date is less than `expiredAt`.
    */
+
   public async findAndValidateToken(
     tokenId: Types.ObjectId,
   ): Promise<Token | null> {
