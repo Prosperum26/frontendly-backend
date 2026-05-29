@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { JSDOM } from 'jsdom';
 import { ESLint } from 'eslint';
+import { JSDOM } from 'jsdom';
 
 @Injectable()
 export class CheckLintInternalJs {

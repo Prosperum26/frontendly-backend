@@ -1,5 +1,6 @@
-const stylelint = require('stylelint');
 import { Injectable } from '@nestjs/common';
+
+const stylelint = require('stylelint');
 
 @Injectable()
 export class CheckLintExternalCss {

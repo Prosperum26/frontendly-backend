@@ -1,6 +1,7 @@
-const stylelint = require('stylelint');
-import { JSDOM } from 'jsdom';
 import { Injectable } from '@nestjs/common';
+import { JSDOM } from 'jsdom';
+
+const stylelint = require('stylelint');
 
 @Injectable()
 export class CheckLintInternalCss {

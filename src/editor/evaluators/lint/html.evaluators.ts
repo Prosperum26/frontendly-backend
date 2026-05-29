@@ -1,5 +1,6 @@
-const { HTMLHint } = require('htmlhint');
 import { Injectable } from '@nestjs/common';
+
+const { HTMLHint } = require('htmlhint');
 
 @Injectable()
 export class CheckLintHtml {

@@ -36,7 +36,6 @@ export class EvaluationResult {
 }
 const EvaluationResultSchema = SchemaFactory.createForClass(EvaluationResult);
 
-
 // 🟢 4. Schema Chính
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Submission {
@@ -61,7 +60,7 @@ export class Submission {
   // 👉 THAY ĐỔI Ở ĐÂY: Lưu nguyên 1 object chứa 3 mảng lỗi
   @Prop({
     type: LintErrorGroupSchema,
-    default: { html_err: [], css_err: [], js_err: [] }
+    default: { html_err: [], css_err: [], js_err: [] },
   })
   lint_errors!: LintErrorGroup;
 

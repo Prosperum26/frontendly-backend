@@ -4,12 +4,10 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from './auth/guards';
-import { ApiEnvGuard } from './common/api-env/guards';
 import {
   authConfigObj,
   CommonConfig,
@@ -18,8 +16,8 @@ import {
 } from './common/config';
 import { MetricsInterceptor } from './common/observability/interceptors';
 import { ObservabilityModule } from './common/observability/observability.module';
-import { UserModule } from './users/user.module';
 import { EditorModule } from './editor/editor_module/editor.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [

@@ -8,19 +8,20 @@ export class ExerciseRequirement {
   id!: string;
 
   @Prop({ required: true })
-  text!: string; 
+  text!: string;
 
   @Prop({ required: true })
-  selector!: string; 
+  selector!: string;
 
   @Prop({ required: true, enum: ['exist', 'count', 'content', 'attribute'] })
   type!: string;
 
   @Prop({ required: false })
-  expectedValue?: string; 
+  expectedValue?: string;
 }
 
-const ExerciseRequirementSchema = SchemaFactory.createForClass(ExerciseRequirement);
+const ExerciseRequirementSchema =
+  SchemaFactory.createForClass(ExerciseRequirement);
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {

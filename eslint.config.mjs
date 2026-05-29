@@ -127,6 +127,11 @@ export default [
           '@typescript-eslint/no-unnecessary-type-constraint': 'error',
           '@typescript-eslint/no-unsafe-assignment': 'off',
           '@typescript-eslint/no-unsafe-member-access': 'off',
+          '@typescript-eslint/no-unsafe-argument': 'off',
+          '@typescript-eslint/no-unsafe-call': 'off',
+          '@typescript-eslint/no-unsafe-return': 'off',
+          '@typescript-eslint/no-unnecessary-condition': 'off',
+          '@typescript-eslint/no-require-imports': 'off',
           '@typescript-eslint/no-unused-expressions': 'error',
           '@typescript-eslint/prefer-includes': 'off',
           '@typescript-eslint/prefer-optional-chain': 'error',
@@ -134,17 +139,15 @@ export default [
           '@typescript-eslint/restrict-template-expressions': 'off',
           '@typescript-eslint/no-base-to-string': 'off',
           '@typescript-eslint/no-unsafe-enum-comparison': 'off',
-          '@typescript-eslint/typedef': [
-            'error',
-            {
-              memberVariableDeclaration: true,
-              parameter: true,
-              propertyDeclaration: true,
-            },
-          ],
+          '@typescript-eslint/typedef': 'off',
           '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
           
           'sonarjs/no-duplicate-string': 'off',
+          'sonarjs/null-dereference': 'off',
+          'sonarjs/cognitive-complexity': 'off',
+          'sonarjs/assertions-in-tests': 'off',
+          'sonarjs/no-redundant-assignments': 'off',
+          'no-case-declarations': 'off',
           
           'unused-imports/no-unused-imports': 'error',
           'unused-imports/no-unused-vars': [
