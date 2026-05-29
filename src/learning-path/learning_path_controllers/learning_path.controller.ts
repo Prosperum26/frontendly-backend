@@ -80,6 +80,17 @@ export class StagesController {
     }
   }
 
+  // PATCH /api/v1/stages/:stageId/complete
+  @Patch(':stageId/complete')
+  async completeStage(
+    @Param('stageId') stageId: string,
+    @Req() req: Request,
+  ) {
+    const userId = extractUserId(req);
+    const data = await this.learningPathService.completeStage(stageId, userId);
+    return { success: true, message: 'Hoàn thành stage thành công', data };
+  }
+
   // PATCH /api/v1/stages/:stageId/unlock-practice
   @Patch(':stageId/unlock-practice')
   async unlockPractice(

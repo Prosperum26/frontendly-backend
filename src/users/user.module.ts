@@ -6,10 +6,18 @@ import { UserGateway } from './gateways';
 import { User, UserSchema } from './schemas';
 import { UserService } from './services';
 import { AuthModule } from '@/auth/auth.module';
+import {
+  UserLearningProgressSchema,
+} from '@/learning-path/db_schemas/learning_path_schemas';
+import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: 'UserLearningProgress', schema: UserLearningProgressSchema },
+      { name: 'Milestone', schema: MilestoneSchema },
+    ]),
     forwardRef(() => AuthModule),
   ],
   controllers: [UserController],

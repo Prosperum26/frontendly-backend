@@ -242,10 +242,7 @@ export class LearningPathService {
         ]),
       );
 
-      const { courseProgressPercentage, milestoneProgress } =
-        this.computeProgress(dbMilestones, unlockedMap);
-
-      const milestonesWithProgress = dbMilestones.map(milestone => {
+      const milestonesWithProgress = dbMilestones.map((milestone, index) => {
         const stagesWithProgress = milestone.stages.map(stage => {
           const prog = unlockedMap.get(stage.id);
           const earnedStars = prog?.earnedStars ?? stage.earnedStars;
@@ -254,27 +251,24 @@ export class LearningPathService {
             title: stage.title,
             isCompleted: earnedStars >= 3,
             earnedStars,
-            isPracticeUnlocked: prog?.isPracticeUnlocked ?? false,
-            videoWatchPercentage: prog?.videoWatchPercentage ?? 0,
             stageProgressPercentage: Math.round((earnedStars / 3) * 100),
           };
         });
 
         const allCompleted = stagesWithProgress.every(s => s.isCompleted);
         const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
+        // First milestone is always at least in_progress for new users with no history
         const computedStatus: 'locked' | 'in_progress' | 'completed' = allCompleted
           ? 'completed'
-          : anyProgress
+          : anyProgress || index === 0
           ? 'in_progress'
           : 'locked';
 
         return {
           id: milestone.id,
           title: milestone.title,
-          icon: (milestone as { icon?: string }).icon ?? '',
           status: computedStatus,
           stages: stagesWithProgress,
-          progressPercentage: milestoneProgress[milestone.id as string] ?? 0,
         };
       });
 
@@ -283,13 +277,9 @@ export class LearningPathService {
       return {
         skillId: dbRoadmap.skillId,
         skillTitle: dbRoadmap.skillTitle,
-        courseProgressPercentage,
         userProgress: {
           currentXp: dbProgress?.currentXp ?? 0,
           streakDays: dbProgress?.streakDays ?? 0,
-          badges: dbProgress?.badges ?? [],
-          lastActiveStageId: dbProgress?.lastActiveStageId ?? null,
-          lastActiveMilestoneId: dbProgress?.lastActiveMilestoneId ?? null,
         },
         milestones: milestonesWithProgress.slice(startIndex, startIndex + limit),
         pagination: {
@@ -318,10 +308,7 @@ export class LearningPathService {
       ]),
     );
 
-    const { courseProgressPercentage, milestoneProgress } =
-      this.computeProgress(DUMMY_ROADMAP.milestones, unlockedMap);
-
-    const milestonesWithProgress = DUMMY_ROADMAP.milestones.map(milestone => {
+    const milestonesWithProgress = DUMMY_ROADMAP.milestones.map((milestone, index) => {
       const stagesWithProgress = milestone.stages.map(stage => {
         const prog = unlockedMap.get(stage.id);
         const earnedStars = prog?.earnedStars ?? stage.earnedStars;
@@ -330,22 +317,20 @@ export class LearningPathService {
           title: stage.title,
           isCompleted: earnedStars >= 3,
           earnedStars,
-          isPracticeUnlocked: prog?.isPracticeUnlocked ?? false,
-          videoWatchPercentage: prog?.videoWatchPercentage ?? 0,
           stageProgressPercentage: Math.round((earnedStars / 3) * 100),
         };
       });
 
       const allCompleted = stagesWithProgress.every(s => s.isCompleted);
       const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
+      const computedStatus = (allCompleted ? 'completed' : anyProgress || index === 0 ? 'in_progress' : 'locked') as
+        'locked' | 'in_progress' | 'completed';
+
       return {
         id: milestone.id,
         title: milestone.title,
-        icon: milestone.icon,
-        status: (allCompleted ? 'completed' : anyProgress ? 'in_progress' : 'locked') as
-          'locked' | 'in_progress' | 'completed',
+        status: computedStatus,
         stages: stagesWithProgress,
-        progressPercentage: milestoneProgress[milestone.id] ?? 0,
       };
     });
 
@@ -354,13 +339,9 @@ export class LearningPathService {
     return {
       skillId: DUMMY_ROADMAP.skillId,
       skillTitle: DUMMY_ROADMAP.skillTitle,
-      courseProgressPercentage,
       userProgress: {
         currentXp: progress.currentXp,
         streakDays: progress.streakDays,
-        badges: progress.badges,
-        lastActiveStageId: progress.lastActiveStageId,
-        lastActiveMilestoneId: progress.lastActiveMilestoneId,
       },
       milestones: milestonesWithProgress.slice(startIndex, startIndex + limit),
       pagination: {
@@ -874,6 +855,122 @@ export class LearningPathService {
       placementTestCompleted: true,
       skipToMilestoneId,
       unlockedStagesCount: completedStageIds.length,
+    };
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // PATCH /api/v1/stages/:stageId/complete
+  // Explicit "commit complete" action. Awards streak for today (once per day)
+  // and a badge (with icon) when the stage reaches earnedStars >= 3.
+  // Progress is NOT modified here — exercises already handle that.
+  // ──────────────────────────────────────────────────────────
+  async completeStage(stageId: string, userId: string = 'dummy-user-001') {
+    const { milestoneId } = await this.findStageContext(stageId);
+
+    // Resolve badge icon: prefer stage icon, fall back to parent milestone icon
+    let badgeIcon = '';
+    if (milestoneId) {
+      const parentMilestone = await this.milestoneModel
+        .findOne({ id: milestoneId })
+        .lean();
+      if (parentMilestone) {
+        const stageDoc = parentMilestone.stages.find(s => s.id === stageId);
+        badgeIcon =
+          (stageDoc as { icon?: string })?.icon ||
+          (parentMilestone as { icon?: string }).icon ||
+          '';
+      }
+    }
+
+    // ── DB path ─────────────────────────────────────────────
+    try {
+      const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+      if (dbProgress) {
+        const stageEntry = dbProgress.unlockedStages.find(s => s.stageId === stageId);
+        const isStageComplete = (stageEntry?.earnedStars ?? 0) >= 3;
+        const alreadyBadged = !!stageEntry?.badgeEarned;
+
+        const streakIncremented = this.shouldIncrementStreak(dbProgress.lastStreakDate);
+        const newStreakDays = streakIncremented
+          ? dbProgress.streakDays + 1
+          : dbProgress.streakDays;
+
+        const awardBadge = isStageComplete && !alreadyBadged;
+
+        const topLevelSet: Record<string, unknown> = {
+          lastActiveStageId: stageId,
+          ...(milestoneId && { lastActiveMilestoneId: milestoneId }),
+          ...(streakIncremented && {
+            streakDays: newStreakDays,
+            lastStreakDate: this.getTodayString(),
+          }),
+        };
+
+        if (stageEntry) {
+          await this.userProgressModel.updateOne(
+            { userId, 'unlockedStages.stageId': stageId },
+            {
+              $set: {
+                ...topLevelSet,
+                ...(awardBadge && { 'unlockedStages.$.badgeEarned': true }),
+              },
+              ...(awardBadge && { $push: { badges: stageId } }),
+            },
+          );
+        } else {
+          await this.userProgressModel.updateOne(
+            { userId },
+            {
+              $set: topLevelSet,
+              $push: {
+                unlockedStages: {
+                  stageId,
+                  isPracticeUnlocked: false,
+                  earnedStars: 0,
+                  videoWatchPercentage: 0,
+                  badgeEarned: false,
+                },
+              },
+            },
+          );
+        }
+
+        return {
+          stageId,
+          streakIncremented,
+          newStreakDays,
+          badgeEarned: awardBadge ? { stageId, icon: badgeIcon } : null,
+          isStageComplete,
+        };
+      }
+    } catch {
+      // fall through to dummy
+    }
+
+    // ── Dummy fallback ───────────────────────────────────────
+    const progress = getUserProgress(userId);
+    const sp = progress.stages[stageId];
+    const isStageComplete = (sp?.earnedStars ?? 0) >= 3;
+    const alreadyBadged = progress.badges.includes(stageId);
+
+    const streakIncremented = this.shouldIncrementStreak(progress.lastStreakDate);
+    if (streakIncremented) {
+      progress.streakDays += 1;
+      progress.lastStreakDate = this.getTodayString();
+    }
+
+    const awardBadge = isStageComplete && !alreadyBadged;
+    if (awardBadge) progress.badges.push(stageId);
+
+    progress.lastActiveStageId = stageId;
+    if (milestoneId) progress.lastActiveMilestoneId = milestoneId;
+
+    return {
+      stageId,
+      streakIncremented,
+      newStreakDays: progress.streakDays,
+      badgeEarned: awardBadge ? { stageId, icon: badgeIcon } : null,
+      isStageComplete,
     };
   }
 

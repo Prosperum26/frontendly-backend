@@ -14,6 +14,9 @@ export class Stage {
   @Prop({ required: true })
   title!: string;
 
+  @Prop({ default: '' })
+  icon!: string;
+
   @Prop({ default: false })
   isCompleted!: boolean;
 
