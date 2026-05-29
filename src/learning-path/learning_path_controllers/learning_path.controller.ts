@@ -193,9 +193,11 @@ export class LearningContentController {
     @Req() req: Request,
   ) {
     const userId = extractUserId(req);
+    // FIX Bug 4: pass skillId from body so multi-skill placements work correctly
     const data = await this.learningPathService.syncPlacementTest(
       body.skipToMilestoneId,
       userId,
+      body.skillId ?? 'frontend',
     );
     return {
       success: true,

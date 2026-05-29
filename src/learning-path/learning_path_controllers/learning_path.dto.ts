@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsObject, IsString, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class SubmitCodeDto {
   @IsObject()
@@ -27,4 +27,9 @@ export class PlacementTestDto {
   @IsString()
   @IsNotEmpty()
   skipToMilestoneId!: string;
+
+  // Optional: which skill the placement test belongs to. Defaults to 'frontend'.
+  @IsOptional()
+  @IsString()
+  skillId?: string;
 }
