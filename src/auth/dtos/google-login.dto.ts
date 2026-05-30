@@ -10,7 +10,11 @@ export class GoogleLoginResponseDto {
   @Expose()
   accessToken: string;
 
-  constructor(accessToken: string) {
+  @Expose()
+  refreshToken?: string;
+
+  constructor(accessToken: string, refreshToken?: string) {
     this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
   }
 }

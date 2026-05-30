@@ -1,14 +1,18 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OAuth2Client } from 'google-auth-library';
 
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { GoogleAuthController } from './controllers';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
+import { Session, SessionSchema } from './schemas/session.schema';
 import { GoogleAuthService, TokenService } from './services';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { User, UserSchema } from '@/users/schemas';
+import { StageProgress, StageProgressSchema } from '@/users/schemas/stage-progress.schema';
 import { UserModule } from '@/users/user.module';
 
 @Module({
@@ -16,12 +20,20 @@ import { UserModule } from '@/users/user.module';
     forwardRef(() => UserModule),
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
+      { name: Session.name, schema: SessionSchema },
       { name: User.name, schema: UserSchema },
+      { name: StageProgress.name, schema: StageProgressSchema },
     ]),
+    JwtModule.registerAsync({
+      inject: [authConfigObj.KEY],
+      useFactory: (authConfig: AuthConfig) => ({
+        secret: authConfig.jwtSecret || 'FrontendlySecretKey123',
+        signOptions: { expiresIn: '1d' },
+      }),
+    }),
   ],
-  controllers: [GoogleAuthController],
+  controllers: [GoogleAuthController, AuthController],
   providers: [
-    JwtService,
     TokenService,
     GoogleAuthService,
     {
@@ -34,7 +46,8 @@ import { UserModule } from '@/users/user.module';
         }),
     },
     WsAuthMiddleware,
+    AuthService,
   ],
-  exports: [TokenService, WsAuthMiddleware],
+  exports: [TokenService, WsAuthMiddleware, JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }
