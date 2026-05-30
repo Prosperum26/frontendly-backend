@@ -48,7 +48,7 @@ export class AuthController {
     @Req() req: any,
   ): { message: string; user: Record<string, unknown> | undefined } {
     return {
-      message: 'Lấy thông tin cá nhân thành công',
+      message: 'Profile retrieved successfully',
       user: req.user?.profile,
     };
   }

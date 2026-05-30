@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Server } from 'net';
 
@@ -6,12 +6,14 @@ import { configApp } from './app';
 import { AppModule } from './app.module';
 import { CommonConfig, commonConfigObj } from './common/config';
 
+const logger = new Logger('Bootstrap');
+
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
   configApp(app);
   const { port } = <CommonConfig>app.get(commonConfigObj.KEY);
   await app.listen(port, () => {
-    console.info(`listening on port ${port}`);
+    logger.log(`listening on port ${port}`);
   });
 }
 
@@ -22,6 +24,6 @@ bootstrap()
     if (process.send) process.send('ready');
   })
   .catch((err: unknown) => {
-    console.error(err, 'Server startup failed');
+    logger.error(err, 'Server startup failed');
     process.exit(1);
   });

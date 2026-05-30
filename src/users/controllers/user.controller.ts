@@ -1,22 +1,22 @@
 import { Controller, Get, Body, Patch } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { ApiOperation } from '@nestjs/swagger';
+import { Model } from 'mongoose';
 
 import { MyProfileResponse } from '../dtos';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User } from '../schemas';
+import { Badge } from '../schemas/badge.schema';
 import { UserService } from '../services';
 import { ReqUser } from '@/auth/decorators';
-import { Badge } from '../schemas/badge.schema';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) { }
+  ) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
@@ -36,7 +36,8 @@ export class UserController {
       throw new Error('User not found');
     }
 
-    return new MyProfileResponse(user as any);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return new MyProfileResponse(user);
   }
 
   @Patch('me')

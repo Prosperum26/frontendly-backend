@@ -69,7 +69,7 @@ export class MyProfileResponse {
     this.stats = user.stats;
     this.social_accounts = user.social_accounts;
     this.skills = user.skills;
-    this.badges = user.badges as any;
+    this.badges = <any>user.badges;
     this.stage_progress = user.stage_progress;
   }
 }

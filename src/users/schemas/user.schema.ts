@@ -39,7 +39,7 @@ export class User {
   @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: Object, default: () => ({}) })
   stats: {
     totalLearningTime?: number;
     coursesCompleted?: number;
@@ -47,33 +47,42 @@ export class User {
     lastActiveAt?: Date;
   };
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: Object, default: () => ({}) })
   credentials: {
     passwordHash?: string;
     lastPasswordChange?: Date;
   };
 
-  @Prop({ default: () => [] })
+  @Prop({
+    type: [{ provider: String, providerId: String, linkedAt: Date }],
+    default: () => [],
+  })
   social_accounts: Array<{
     provider: string;
     providerId: string;
     linkedAt: Date;
   }>;
 
-  @Prop({ default: () => [] })
+  @Prop({
+    type: [{ name: String, level: Number, earnedAt: Date }],
+    default: () => [],
+  })
   skills: Array<{
     name: string;
     level: number;
     earnedAt: Date;
   }>;
 
-  @Prop({ default: () => [] })
+  @Prop({
+    type: [{ badgeId: Types.ObjectId, earnedAt: Date }],
+    default: () => [],
+  })
   badges: Array<{
     badgeId: Types.ObjectId;
     earnedAt: Date;
   }>;
 
-  @Prop({ default: () => ({}) })
+  @Prop({ type: Object, default: () => ({}) })
   stage_progress: {
     currentStage?: number;
     maxUnlockedStage?: number;

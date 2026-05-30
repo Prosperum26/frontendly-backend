@@ -26,7 +26,7 @@ export class AuthService {
   async register(body: RegisterDto): Promise<{ message: string }> {
     const { email, password, name } = body;
     const exist = await this.userModel.findOne({ email });
-    if (exist) throw new BadRequestException('Email đã tồn tại');
+    if (exist) throw new BadRequestException('Email already exists');
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
     const hashedPassword = await bcrypt.hash(<string>password, 10);
@@ -37,7 +37,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return { message: 'Đăng ký thành công' };
+    return { message: 'Registration successful' };
   }
 
   async login(body: LoginDto): Promise<{ message: string; token: string }> {
@@ -55,7 +55,7 @@ export class AuthService {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       !(await bcrypt.compare(<string>password, <string>userDoc.password))
     ) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const tokenDoc = await this.tokenService.create(
@@ -63,7 +63,7 @@ export class AuthService {
     );
     const token = await this.tokenService.signAccessToken(tokenDoc);
 
-    return { message: 'Đăng nhập thành công', token };
+    return { message: 'Login successful', token };
   }
 
   async refreshToken(
@@ -78,7 +78,7 @@ export class AuthService {
         new Types.ObjectId(tokenId),
       );
       if (!oldToken) {
-        throw new UnauthorizedException('Token đã hết hạn hoặc bị vô hiệu hóa');
+        throw new UnauthorizedException('Token has expired or been revoked');
       }
 
       const newTokenDoc = await this.tokenService.create(
@@ -86,11 +86,11 @@ export class AuthService {
       );
       const newToken = await this.tokenService.signAccessToken(newTokenDoc);
 
-      return { message: 'Refresh token thành công', token: newToken };
+      return { message: 'Token refresh successful', token: newToken };
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
-      throw new UnauthorizedException('Refresh token không hợp lệ');
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 }

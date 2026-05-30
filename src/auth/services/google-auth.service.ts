@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { Response } from 'express';
 
 import { GoogleAuthResult } from '../types';
 import { TokenService } from './token.service';
@@ -16,7 +16,7 @@ export class GoogleAuthService {
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-  ) { }
+  ) {}
 
   public async authenticate(
     idToken: string,

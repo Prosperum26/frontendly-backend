@@ -12,7 +12,10 @@ import { Session, SessionSchema } from './schemas/session.schema';
 import { GoogleAuthService, TokenService } from './services';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { User, UserSchema } from '@/users/schemas';
-import { StageProgress, StageProgressSchema } from '@/users/schemas/stage-progress.schema';
+import {
+  StageProgress,
+  StageProgressSchema,
+} from '@/users/schemas/stage-progress.schema';
 import { UserModule } from '@/users/user.module';
 
 @Module({
@@ -50,4 +53,4 @@ import { UserModule } from '@/users/user.module';
   ],
   exports: [TokenService, WsAuthMiddleware, JwtModule],
 })
-export class AuthModule { }
+export class AuthModule {}
