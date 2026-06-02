@@ -1,11 +1,7 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 
-import {
-  DUMMY_ROADMAP,
-  DUMMY_THEORIES,
-  DUMMY_PRACTICES,
-} from '../learning_path_service/dummy-data';
+import { ROADMAPS, MILESTONES, THEORIES } from './learning-data';
 
 const StageSchema = new mongoose.Schema(
   {
@@ -63,38 +59,9 @@ const TheorySchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
 );
 
-const BoilerplateCodeSchema = new mongoose.Schema(
-  {
-    html: { type: String, default: '' },
-    js: { type: String, default: '' },
-  },
-  { _id: false },
-);
-
-const LpExerciseSchema = new mongoose.Schema(
-  {
-    id: { type: String, required: true, unique: true },
-    stageId: { type: String, required: true },
-    level: {
-      type: String,
-      enum: ['easy', 'medium', 'hard'],
-      required: true,
-    },
-    title: { type: String, required: true },
-    instruction: { type: String, required: true },
-    boilerplateCode: { type: BoilerplateCodeSchema, default: {} },
-  },
-  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
-);
-
 const Roadmap = mongoose.model('Roadmap', RoadmapSchema, 'roadmaps');
 const Milestone = mongoose.model('Milestone', MilestoneSchema, 'milestones');
 const Theory = mongoose.model('Theory', TheorySchema, 'theories');
-const LpExercise = mongoose.model(
-  'LpExercise',
-  LpExerciseSchema,
-  'lpexercises',
-);
 
 async function seed(): Promise<void> {
   const uri = process.env.DB_URI || 'mongodb://localhost:27017/frontendly';
@@ -105,31 +72,37 @@ async function seed(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log('Connected.\n');
 
-  const milestoneIds = DUMMY_ROADMAP.milestones.map(m => m.id);
-
-  await Roadmap.updateOne(
-    { skillId: 'frontend' },
-    {
-      $set: {
-        skillId: 'frontend',
-        skillTitle: 'Frontend Learning Path',
-        milestoneIds,
+  // Seed roadmaps
+  let roadmapCount = 0;
+  for (const roadmap of ROADMAPS as any) {
+    await Roadmap.updateOne(
+      { skillId: roadmap.skillId },
+      {
+        $set: {
+          skillId: roadmap.skillId,
+          skillTitle: roadmap.skillTitle,
+          milestoneIds: roadmap.milestoneIds,
+        },
       },
-    },
-    { upsert: true },
-  );
+      { upsert: true },
+    );
+    roadmapCount += 1;
+    // eslint-disable-next-line no-console
+    console.log(
+      `Roadmap "${roadmap.skillId}" — milestoneIds: ${roadmap.milestoneIds.join(', ')}`,
+    );
+  }
   // eslint-disable-next-line no-console
-  console.log(
-    `Roadmap  — upserted 1 document  (milestoneIds: ${milestoneIds.join(', ')})`,
-  );
+  console.log(`Roadmaps — upserted ${roadmapCount} documents\n`);
 
+  // Seed milestones
   let milestoneCount = 0;
-  for (const m of DUMMY_ROADMAP.milestones) {
-    const stages = m.stages.map(s => ({
+  for (const m of MILESTONES) {
+    const stages = m.stages.map((s: any) => ({
       id: s.id,
       title: s.title,
-      isCompleted: false,
-      earnedStars: 0,
+      isCompleted: s.isCompleted,
+      earnedStars: s.earnedStars,
     }));
 
     await Milestone.updateOne(
@@ -152,7 +125,7 @@ async function seed(): Promise<void> {
   console.log(`Milestones — upserted ${milestoneCount} documents\n`);
 
   // 3. Seed theories ────────────────────────────────────────────────────────
-  const theories = Object.values(DUMMY_THEORIES);
+  const theories = Object.values(THEORIES);
   let theoryCount = 0;
   for (const t of <any[]>theories) {
     await Theory.updateOne(
@@ -162,37 +135,10 @@ async function seed(): Promise<void> {
     );
     theoryCount += 1;
     // eslint-disable-next-line no-console
-    console.log(`  📖 Theory "${t.stageId}" — "${t.title}"`);
+    console.log(`Theory "${t.stageId}" — "${t.title}"`);
   }
   // eslint-disable-next-line no-console
-  console.log(`📌 Theories  — upserted ${theoryCount} documents\n`);
-
-  // 4. Seed exercises ───────────────────────────────────────────────────────
-  let exerciseCount = 0;
-  for (const [stageId, practice] of Object.entries(DUMMY_PRACTICES)) {
-    const exercises = (<any>practice).exercises ?? [];
-    for (const ex of exercises) {
-      await LpExercise.updateOne(
-        { id: ex.id },
-        {
-          $set: {
-            id: ex.id,
-            stageId,
-            level: ex.level,
-            title: ex.title,
-            instruction: ex.instruction,
-            boilerplateCode: ex.boilerplateCode ?? {},
-          },
-        },
-        { upsert: true },
-      );
-      exerciseCount += 1;
-      // eslint-disable-next-line no-console
-      console.log(`Exercise "${ex.id}" (${stageId} / ${ex.level})`);
-    }
-  }
-  // eslint-disable-next-line no-console
-  console.log(`Exercises — upserted ${exerciseCount} documents\n`);
+  console.log(`Theories  — upserted ${theoryCount} documents\n`);
 
   // eslint-disable-next-line no-console
   console.log('Seeding complete!');
