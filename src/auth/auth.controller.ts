@@ -4,15 +4,15 @@ import {
   Body,
   Get,
   Req,
-  UseGuards,
   SetMetadata,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
-import { AuthGuard } from './guards/auth.guard';
 import { CustomDecoratorKey } from '@/common/constants';
 
 @Controller('auth')
@@ -29,19 +29,20 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() body: LoginDto,
-  ): Promise<{ message: string; token: string }> {
-    return this.authService.login(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
+    return this.authService.login(body, res);
   }
 
   @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
   @Post('refresh')
   async refresh(
     @Body() body: RefreshTokenDto,
-  ): Promise<{ message: string; token: string }> {
-    return this.authService.refreshToken(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
+    return this.authService.refreshToken(body, res);
   }
 
-  @UseGuards(AuthGuard)
   @Get('me')
   getProfile(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

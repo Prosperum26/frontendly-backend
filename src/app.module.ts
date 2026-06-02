@@ -18,6 +18,7 @@ import {
 } from './common/config';
 import { MetricsInterceptor } from './common/observability/interceptors';
 import { ObservabilityModule } from './common/observability/observability.module';
+import { EditorModule } from './editor/editor_module/editor.module';
 import { UserModule } from './users/user.module';
 
 @Module({
@@ -33,12 +34,17 @@ import { UserModule } from './users/user.module';
     ObservabilityModule,
     AuthModule,
     UserModule,
+    EditorModule,
   ],
   providers: [
     {
       // Enable global validation of requests
       provide: APP_PIPE,
-      useValue: new ValidationPipe({ transform: true, whitelist: true }),
+      useValue: new ValidationPipe({
+        forbidNonWhitelisted: true,
+        transform: true,
+        whitelist: true,
+      }),
     },
     { provide: APP_GUARD, useClass: ApiEnvGuard },
     { provide: APP_GUARD, useClass: AuthGuard },

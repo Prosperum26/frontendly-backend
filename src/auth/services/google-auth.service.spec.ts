@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { Test } from '@nestjs/testing';
+import type { Response } from 'express';
 import { LoginTicket, OAuth2Client } from 'google-auth-library';
 
 import { GoogleAuthService } from './google-auth.service';
@@ -11,6 +12,11 @@ import { MockUserBuilder } from '@/users/mocks';
 import { UserService } from '@/users/services';
 
 const mockUser = new MockUserBuilder().build();
+const mockResponse = {
+  cookie: jest.fn(),
+  req: { headers: { 'user-agent': 'jest' } },
+};
+const response = <Response>(<unknown>mockResponse);
 
 describe('GoogleAuthService', () => {
   let userService: DeepMocked<UserService>;
@@ -55,8 +61,18 @@ describe('GoogleAuthService', () => {
         picture: mockUser.avatarUrl,
         sub: mockUser.googleId,
       });
+      userService.createOrUpdateUser.mockResolvedValueOnce({
+        alreadyExists: false,
+        user: mockUser,
+      });
+      tokenService.create.mockResolvedValueOnce(<never>{ _id: 'token-id' });
+      tokenService.signAccessToken.mockResolvedValueOnce('access-token');
+      tokenService.createSession.mockResolvedValueOnce({
+        refreshToken: 'refresh-token',
+        expiresAt: new Date(),
+      });
 
-      await googleAuthService.authenticate(idToken);
+      await googleAuthService.authenticate(idToken, response);
       expect(userService.createOrUpdateUser).toHaveBeenCalledTimes(1);
       expect(userService.createOrUpdateUser).toHaveBeenCalledWith({
         email: mockUser.email,
@@ -67,6 +83,7 @@ describe('GoogleAuthService', () => {
       });
       expect(tokenService.create).toHaveBeenCalledTimes(1);
       expect(tokenService.signAccessToken).toHaveBeenCalledTimes(1);
+      expect(tokenService.createSession).toHaveBeenCalledTimes(1);
     });
 
     it('Should throw an error if the token is invalid', async () => {
@@ -76,7 +93,7 @@ describe('GoogleAuthService', () => {
         <never>new Error('Invalid token'),
       );
       await expect(
-        googleAuthService.authenticate('invalid-id-token'),
+        googleAuthService.authenticate('invalid-id-token', response),
       ).rejects.toThrow();
     });
   });

@@ -32,6 +32,7 @@ export class TokenService {
       tokenId: token._id.toString(),
     };
     return this.jwtService.signAsync(jwt, {
+      expiresIn: '30m',
       secret: this.authConfig.jwtSecret,
     });
   }

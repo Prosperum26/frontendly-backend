@@ -3,10 +3,10 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
+import type { Response } from 'express';
 import { Model, Types } from 'mongoose';
 
 import { LoginDto } from './dtos/login.dto';
@@ -19,7 +19,6 @@ import { User } from '@/users/schemas';
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService,
     private tokenService: TokenService,
   ) {}
 
@@ -40,7 +39,10 @@ export class AuthService {
     return { message: 'Registration successful' };
   }
 
-  async login(body: LoginDto): Promise<{ message: string; token: string }> {
+  async login(
+    body: LoginDto,
+    res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
     const { email, password } = body;
 
     const user = await this.userModel
@@ -61,36 +63,42 @@ export class AuthService {
     const tokenDoc = await this.tokenService.create(
       new Types.ObjectId(userDoc._id),
     );
-    const token = await this.tokenService.signAccessToken(tokenDoc);
+    const accessToken = await this.tokenService.signAccessToken(tokenDoc);
+    const { refreshToken, expiresAt } = await this.tokenService.createSession(
+      new Types.ObjectId(userDoc._id),
+      this.getDeviceInfo(res),
+    );
 
-    return { message: 'Login successful', token };
+    this.setRefreshCookie(res, refreshToken, expiresAt);
+
+    return { message: 'Login successful', accessToken, refreshToken };
   }
 
   async refreshToken(
     body: RefreshTokenDto,
-  ): Promise<{ message: string; token: string }> {
-    try {
-      const { tokenId } = await this.tokenService.decodeAccessToken(
-        body.refreshToken,
-      );
+    res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
+    const { accessToken, refreshToken } =
+      await this.tokenService.refreshAccessToken(body.refreshToken, res);
+    return { message: 'Token refresh successful', accessToken, refreshToken };
+  }
 
-      const oldToken = await this.tokenService.findAndValidateToken(
-        new Types.ObjectId(tokenId),
-      );
-      if (!oldToken) {
-        throw new UnauthorizedException('Token has expired or been revoked');
-      }
+  private getDeviceInfo(res: Response): string {
+    const userAgent = res.req.headers['user-agent'];
+    if (Array.isArray(userAgent)) return userAgent.join(', ');
+    return userAgent || 'unknown';
+  }
 
-      const newTokenDoc = await this.tokenService.create(
-        new Types.ObjectId(oldToken.userId),
-      );
-      const newToken = await this.tokenService.signAccessToken(newTokenDoc);
-
-      return { message: 'Token refresh successful', token: newToken };
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+  private setRefreshCookie(
+    res: Response,
+    refreshToken: string,
+    expiresAt: Date,
+  ): void {
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: expiresAt,
+    });
   }
 }

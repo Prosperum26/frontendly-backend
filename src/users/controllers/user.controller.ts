@@ -1,4 +1,10 @@
-import { Controller, Get, Body, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiOperation } from '@nestjs/swagger';
 import { Model } from 'mongoose';
@@ -33,7 +39,7 @@ export class UserController {
       .lean();
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

@@ -5,7 +5,11 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleAuthController } from './controllers';
+import {
+  GoogleAuthController,
+  LogoutController,
+  RefreshTokenController,
+} from './controllers';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
 import { Session, SessionSchema } from './schemas/session.schema';
@@ -30,12 +34,17 @@ import { UserModule } from '@/users/user.module';
     JwtModule.registerAsync({
       inject: [authConfigObj.KEY],
       useFactory: (authConfig: AuthConfig) => ({
-        secret: authConfig.jwtSecret || 'FrontendlySecretKey123',
+        secret: authConfig.jwtSecret,
         signOptions: { expiresIn: '1d' },
       }),
     }),
   ],
-  controllers: [GoogleAuthController, AuthController],
+  controllers: [
+    GoogleAuthController,
+    LogoutController,
+    RefreshTokenController,
+    AuthController,
+  ],
   providers: [
     TokenService,
     GoogleAuthService,

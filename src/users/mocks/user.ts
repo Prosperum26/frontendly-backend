@@ -8,11 +8,23 @@ export class MockUserBuilder {
   constructor() {
     this.user = {
       _id: new Types.ObjectId(),
-      email: 'johndoe@gmail.com',
-      googleId: '1234567890',
-      firstName: 'John',
-      lastName: 'Doe',
       avatarUrl: 'https://www.example.com/avatar.jpg',
+      badges: [],
+      credentials: {},
+      email: 'johndoe@gmail.com',
+      firstName: 'John',
+      googleId: '1234567890',
+      isBanned: false,
+      isDeleted: false,
+      isSuspended: false,
+      lastName: 'Doe',
+      name: 'John Doe',
+      role: 'user',
+      skills: [],
+      social_accounts: [],
+      stage_progress: {},
+      stats: {},
+      username: 'johndoe',
     };
   }
 
