@@ -6,9 +6,7 @@ import { UserGateway } from './gateways';
 import { User, UserSchema } from './schemas';
 import { UserService } from './services';
 import { AuthModule } from '@/auth/auth.module';
-import {
-  UserLearningProgressSchema,
-} from '@/learning-path/db_schemas/learning_path_schemas';
+import { UserLearningProgressSchema } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
 
 @Module({

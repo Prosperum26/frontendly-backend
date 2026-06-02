@@ -13,25 +13,20 @@ import {
 import { Request } from 'express';
 
 import {
+  GetRoadmapQueryDto,
   PlacementTestDto,
   SubmitCodeDto,
   VideoProgressDto,
 } from './learning_path.dto';
 import { LearningPathService } from '../learning_path_service/learning_path.service';
 
-// ────────────────────────────────────────────────────────────
-// Helper: resolve userId from JWT (req.user) or fallback dummy
-// ────────────────────────────────────────────────────────────
 function extractUserId(req: Request): string {
-  const user = req.user as
-    | { profile?: { _id?: { toString(): string } } }
-    | undefined;
+  const user = <{ profile?: { _id?: { toString(): string } } } | undefined>(
+    req.user
+  );
   return user?.profile?._id?.toString() ?? 'dummy-user-001';
 }
 
-// ============================================================
-// ROADMAP CONTROLLER
-// ============================================================
 @Controller({ path: 'roadmaps', version: '1' })
 export class RoadmapController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -40,19 +35,22 @@ export class RoadmapController {
   @Get(':skillId')
   async getRoadmap(
     @Param('skillId') skillId: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 5,
+    @Query() query: GetRoadmapQueryDto,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     try {
       const userId = extractUserId(req);
       const data = await this.learningPathService.getRoadmap(
         skillId,
-        Number(page),
-        Number(limit),
+        query.page,
+        query.limit,
         userId,
       );
-      return { success: true, message: 'Lấy dữ liệu lộ trình thành công', data };
+      return {
+        success: true,
+        message: 'Lấy dữ liệu lộ trình thành công',
+        data,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new NotFoundException('Roadmap not found');
@@ -60,20 +58,28 @@ export class RoadmapController {
   }
 }
 
-// ============================================================
-// STAGES CONTROLLER
-// ============================================================
 @Controller({ path: 'stages', version: '1' })
 export class StagesController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
   // GET /api/v1/stages/:stageId/theory
   @Get(':stageId/theory')
-  async getTheory(@Param('stageId') stageId: string, @Req() req: Request) {
+  async getTheory(
+    @Param('stageId') stageId: string,
+    @Req() req: Request,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: unknown;
+  }> {
     try {
       const userId = extractUserId(req);
       const data = await this.learningPathService.getTheory(stageId, userId);
-      return { success: true, message: 'Lấy dữ liệu lý thuyết thành công', data };
+      return {
+        success: true,
+        message: 'Lấy dữ liệu lý thuyết thành công',
+        data,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw error; // re-throw ForbiddenException as-is
@@ -85,7 +91,11 @@ export class StagesController {
   async completeStage(
     @Param('stageId') stageId: string,
     @Req() req: Request,
-  ) {
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: unknown;
+  }> {
     const userId = extractUserId(req);
     const data = await this.learningPathService.completeStage(stageId, userId);
     return { success: true, message: 'Hoàn thành stage thành công', data };
@@ -96,7 +106,7 @@ export class StagesController {
   async unlockPractice(
     @Param('stageId') stageId: string,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     const userId = extractUserId(req);
     const data = await this.learningPathService.unlockPractice(stageId, userId);
     return { success: true, message: 'Đã mở khóa không gian bài tập', data };
@@ -104,11 +114,18 @@ export class StagesController {
 
   // GET /api/v1/stages/:stageId/practices
   @Get(':stageId/practices')
-  async getPractices(@Param('stageId') stageId: string, @Req() req: Request) {
+  async getPractices(
+    @Param('stageId') stageId: string,
+    @Req() req: Request,
+  ): Promise<unknown> {
     try {
       const userId = extractUserId(req);
       const data = await this.learningPathService.getPractices(stageId, userId);
-      return { success: true, message: 'Lấy danh sách bài tập thành công', data };
+      return {
+        success: true,
+        message: 'Lấy danh sách bài tập thành công',
+        data,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw error; // re-throw ForbiddenException as-is
@@ -121,20 +138,21 @@ export class StagesController {
     @Param('stageId') stageId: string,
     @Body() body: VideoProgressDto,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     const userId = extractUserId(req);
     const data = await this.learningPathService.updateVideoProgress(
       stageId,
       body.watchPercentage,
       userId,
     );
-    return { success: true, message: 'Cập nhật tiến độ video thành công', data };
+    return {
+      success: true,
+      message: 'Cập nhật tiến độ video thành công',
+      data,
+    };
   }
 }
 
-// ============================================================
-// EXERCISES CONTROLLER
-// ============================================================
 @Controller({ path: 'exercises', version: '1' })
 export class ExercisesController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -145,7 +163,7 @@ export class ExercisesController {
     @Param('exerciseId') exerciseId: string,
     @Body() body: SubmitCodeDto,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     const userId = extractUserId(req);
     const data = await this.learningPathService.submitCode(
       exerciseId,
@@ -156,16 +174,13 @@ export class ExercisesController {
   }
 }
 
-// ============================================================
-// LEARNING CONTENT CONTROLLER
-// ============================================================
 @Controller({ path: 'learning-content', version: '1' })
 export class LearningContentController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
   // GET /api/v1/learning-content/skills
   @Get('skills')
-  async getAvailableSkills() {
+  async getAvailableSkills(): Promise<unknown> {
     const data = await this.learningPathService.getAvailableSkills();
     return { success: true, message: 'Lấy danh sách skills thành công', data };
   }
@@ -175,7 +190,7 @@ export class LearningContentController {
   async getFullStageContent(
     @Param('stageId') stageId: string,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     try {
       const userId = extractUserId(req);
       const data = await this.learningPathService.getFullStageContent(
@@ -191,7 +206,7 @@ export class LearningContentController {
 
   // GET /api/v1/learning-content/progress/summary
   @Get('progress/summary')
-  async getProgressSummary(@Req() req: Request) {
+  async getProgressSummary(@Req() req: Request): Promise<unknown> {
     const userId = extractUserId(req);
     const data = await this.learningPathService.getProgressSummary(userId);
     return { success: true, message: 'Lấy tiến độ học tập thành công', data };
@@ -202,7 +217,7 @@ export class LearningContentController {
   async syncPlacementTest(
     @Body() body: PlacementTestDto,
     @Req() req: Request,
-  ) {
+  ): Promise<unknown> {
     const userId = extractUserId(req);
     // FIX Bug 4: pass skillId from body so multi-skill placements work correctly
     const data = await this.learningPathService.syncPlacementTest(

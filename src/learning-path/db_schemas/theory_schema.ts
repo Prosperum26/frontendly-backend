@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-// ============================================================
-// ReferenceLink — link tài liệu tham khảo trong Theory
-// ============================================================
 @Schema({ _id: false })
 export class ReferenceLink {
   @Prop({ required: true })
@@ -15,14 +12,8 @@ export class ReferenceLink {
   @Prop({ type: String, enum: ['doc', 'video'], default: 'doc' })
   type!: 'doc' | 'video';
 }
-
 export const ReferenceLinkSchema = SchemaFactory.createForClass(ReferenceLink);
-
-// ============================================================
-// Theory Schema — nội dung lý thuyết của 1 Stage
-// ============================================================
 export type TheoryDocument = HydratedDocument<Theory>;
-
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Theory {
   @Prop({ type: String, required: true, unique: true })
@@ -37,7 +28,6 @@ export class Theory {
   @Prop({ default: '' })
   proTips!: string;
 
-  // Phase 2: optional intro video URL; 80% watch threshold awards XP
   @Prop({ default: '' })
   videoUrl!: string;
 

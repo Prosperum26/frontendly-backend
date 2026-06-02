@@ -9,9 +9,7 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
-import {
-  UserLearningProgressDocument,
-} from '@/learning-path/db_schemas/learning_path_schemas';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
 
 const XP_PER_LEVEL = 500;
@@ -60,14 +58,21 @@ export class UserService {
   // ── GET /users/progress ────────────────────────────────────
   // Returns flat ProgressResponse shape the FE reads as `res.data`.
   // Falls back to zero state for new / unauthenticated users.
-  async getProgress(userId: string) {
+  async getProgress(userId: string): Promise<{
+    level: number;
+    xp: number;
+    xpToNextLevel: number;
+    progressPercent: number;
+    streak: number;
+    rank: string;
+  }> {
     try {
       const dbProgress = await this.userProgressModel
         .findOne({ userId })
         .lean();
 
       if (dbProgress) {
-        const totalXp = dbProgress.currentXp ?? 0;
+        const totalXp = dbProgress.currentXp;
         const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
         const xpInLevel = totalXp % XP_PER_LEVEL;
         return {
@@ -75,7 +80,7 @@ export class UserService {
           xp: xpInLevel,
           xpToNextLevel: XP_PER_LEVEL,
           progressPercent: Math.round((xpInLevel / XP_PER_LEVEL) * 100),
-          streak: dbProgress.streakDays ?? 0,
+          streak: dbProgress.streakDays,
           rank: '-',
         };
       }
@@ -96,14 +101,21 @@ export class UserService {
   // ── GET /users/badges ──────────────────────────────────────
   // Returns { badges: Badge[] }. The FE reads `res.data.badges`.
   // Falls back to empty array for new / unauthenticated users.
-  async getBadges(userId: string) {
+  async getBadges(userId: string): Promise<{
+    badges: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      isUnlocked: boolean;
+    }>;
+  }> {
     try {
       const dbProgress = await this.userProgressModel
         .findOne({ userId })
         .lean();
 
       if (dbProgress && dbProgress.badges.length > 0) {
-        const earnedIds = dbProgress.badges as string[];
+        const earnedIds = <string[]>dbProgress.badges;
 
         const milestones = await this.milestoneModel
           .find({ 'stages.id': { $in: earnedIds } })
@@ -116,8 +128,8 @@ export class UserService {
               stageInfo.set(s.id, {
                 title: s.title,
                 icon:
-                  (s as { icon?: string }).icon ||
-                  (m as { icon?: string }).icon ||
+                  (<{ icon?: string }>s).icon ||
+                  (<{ icon?: string }>m).icon ||
                   '',
               });
             }

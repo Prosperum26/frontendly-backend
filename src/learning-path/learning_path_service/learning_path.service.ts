@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -21,12 +22,10 @@ import {
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 import { TheoryDocument } from '../db_schemas/theory_schema';
 
-// ============================================================
-// LEARNING PATH SERVICE  — DB-first → fallback to dummy data
-// ============================================================
-
 @Injectable()
 export class LearningPathService {
+  private readonly logger: Logger = new Logger(LearningPathService.name);
+
   constructor(
     @InjectModel('Milestone')
     private readonly milestoneModel: Model<MilestoneDocument>,
@@ -40,10 +39,6 @@ export class LearningPathService {
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
   ) {}
 
-  // ──────────────────────────────────────────────────────────
-  // PRIVATE HELPERS
-  // ──────────────────────────────────────────────────────────
-
   private getTodayString(): string {
     return new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
   }
@@ -52,26 +47,19 @@ export class LearningPathService {
     return lastStreakDate !== this.getTodayString();
   }
 
-  /**
-   * Returns the stageId that immediately precedes the given stageId in
-   * the ordered milestone structure, or null if it is the first stage overall.
-   * Also returns the skillId of the containing roadmap.
-   *
-   * FIX (Bug 5): now returns skillId so callers can scope DB queries correctly.
-   */
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   private async findStageContext(stageId: string): Promise<{
     prevStageId: string | null;
     milestoneId: string | null;
     skillId: string;
   }> {
-    // ── DB path ───────────────────────────────────────────
     const dbMilestone = await this.milestoneModel
       .findOne({ 'stages.id': stageId })
       .lean();
 
     if (dbMilestone) {
       const si = dbMilestone.stages.findIndex(s => s.id === stageId);
-      const milestoneId = dbMilestone.id as string;
+      const milestoneId = <string>dbMilestone.id;
 
       // Look up the roadmap to get skillId (and possibly previous milestone)
       const dbRoadmap = await this.roadmapModel
@@ -80,19 +68,23 @@ export class LearningPathService {
       const skillId = dbRoadmap?.skillId ?? 'frontend';
 
       if (si > 0) {
-        return { prevStageId: dbMilestone.stages[si - 1].id, milestoneId, skillId };
+        return {
+          prevStageId: dbMilestone.stages[si - 1].id,
+          milestoneId,
+          skillId,
+        };
       }
 
-      // First stage in this milestone — walk back to previous milestone
       if (dbRoadmap) {
-        const mi = (dbRoadmap.milestoneIds as string[]).indexOf(milestoneId);
+        const mi = (<string[]>dbRoadmap.milestoneIds).indexOf(milestoneId);
         if (mi > 0) {
           const prevMilestone = await this.milestoneModel
             .findOne({ id: dbRoadmap.milestoneIds[mi - 1] })
             .lean();
           if (prevMilestone && prevMilestone.stages.length > 0) {
             return {
-              prevStageId: prevMilestone.stages[prevMilestone.stages.length - 1].id,
+              prevStageId:
+                prevMilestone.stages[prevMilestone.stages.length - 1].id,
               milestoneId,
               skillId,
             };
@@ -102,14 +94,17 @@ export class LearningPathService {
       return { prevStageId: null, milestoneId, skillId }; // first stage overall
     }
 
-    // ── Dummy path ────────────────────────────────────────
     const allMilestones = DUMMY_ROADMAP.milestones;
-    for (let mi = 0; mi < allMilestones.length; mi++) {
+    for (let mi = 0; mi < allMilestones.length; mi += 1) {
       const m = allMilestones[mi];
       const si = m.stages.findIndex(s => s.id === stageId);
       if (si === -1) continue;
       if (si > 0) {
-        return { prevStageId: m.stages[si - 1].id, milestoneId: m.id, skillId: DUMMY_ROADMAP.skillId };
+        return {
+          prevStageId: m.stages[si - 1].id,
+          milestoneId: m.id,
+          skillId: DUMMY_ROADMAP.skillId,
+        };
       }
       if (mi > 0) {
         const prevM = allMilestones[mi - 1];
@@ -119,18 +114,16 @@ export class LearningPathService {
           skillId: DUMMY_ROADMAP.skillId,
         };
       }
-      return { prevStageId: null, milestoneId: m.id, skillId: DUMMY_ROADMAP.skillId };
+      return {
+        prevStageId: null,
+        milestoneId: m.id,
+        skillId: DUMMY_ROADMAP.skillId,
+      };
     }
 
     return { prevStageId: null, milestoneId: null, skillId: 'frontend' };
   }
 
-  /**
-   * Strict unlock check: throw ForbiddenException if the user cannot
-   * access stageId yet (previous stage not completed).
-   *
-   * FIX (Bug 5): uses skillId to scope the userProgress query correctly.
-   */
   private async assertStageAccessible(
     stageId: string,
     userId: string,
@@ -138,7 +131,6 @@ export class LearningPathService {
     const { prevStageId, skillId } = await this.findStageContext(stageId);
     if (!prevStageId) return; // first stage — always accessible
 
-    // DB path — scoped to skillId to prevent cross-skill contamination
     const dbProgress = await this.userProgressModel
       .findOne({ userId, skillId })
       .lean();
@@ -154,27 +146,29 @@ export class LearningPathService {
       return;
     }
 
-    // Dummy path
     const progress = getUserProgress(userId);
     const prev = progress.stages[prevStageId];
-    if (!prev?.isCompleted) {
+    if (!prev.isCompleted) {
       throw new ForbiddenException(
         'Complete the previous stage before accessing this one.',
       );
     }
   }
 
-  /**
-   * Compute milestone-level and course-level progress percentages.
-   */
   private computeProgress(
     milestones: Array<{ id: string; stages: Array<{ id: string }> }>,
-    unlockedMap: Map<string, {
-      earnedStars: number;
-      isPracticeUnlocked: boolean;
-      videoWatchPercentage: number;
-    }>,
-  ) {
+    unlockedMap: Map<
+      string,
+      {
+        earnedStars: number;
+        isPracticeUnlocked: boolean;
+        videoWatchPercentage: number;
+      }
+    >,
+  ): {
+    courseProgressPercentage: number;
+    milestoneProgress: Record<string, number>;
+  } {
     let totalStages = 0;
     let totalCompleted = 0;
     const milestoneProgress: Record<string, number> = {};
@@ -186,32 +180,30 @@ export class LearningPathService {
 
       for (const s of m.stages) {
         if ((unlockedMap.get(s.id)?.earnedStars ?? 0) >= 3) {
-          completedInMilestone++;
-          totalCompleted++;
+          completedInMilestone += 1;
+          totalCompleted += 1;
         }
       }
 
-      milestoneProgress[m.id] = stageCount > 0
-        ? Math.round((completedInMilestone / stageCount) * 100)
-        : 0;
+      milestoneProgress[m.id] =
+        stageCount > 0
+          ? Math.round((completedInMilestone / stageCount) * 100)
+          : 0;
     }
 
-    const courseProgressPercentage = totalStages > 0
-      ? Math.round((totalCompleted / totalStages) * 100)
-      : 0;
+    const courseProgressPercentage =
+      totalStages > 0 ? Math.round((totalCompleted / totalStages) * 100) : 0;
 
     return { courseProgressPercentage, milestoneProgress };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // API 1: GET /api/v1/roadmaps/:skillId
-  // ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   async getRoadmap(
     skillId: string,
     page: number = 1,
     limit: number = 5,
     userId: string = 'dummy-user-001',
-  ) {
+  ): Promise<unknown> {
     // ── DB path ──────────────────────────────────────────────
     const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
     if (dbRoadmap) {
@@ -220,12 +212,14 @@ export class LearningPathService {
         .lean();
 
       // FIX Bug 1: sort milestones to match the roadmap's declared order
-      const milestoneIdOrder = dbRoadmap.milestoneIds as string[];
-      const dbMilestones = rawMilestones.sort(
+      const milestoneIdOrder = <string[]>dbRoadmap.milestoneIds;
+      const sortedMilestones = [...rawMilestones];
+      sortedMilestones.sort(
         (a, b) =>
-          milestoneIdOrder.indexOf(a.id as string) -
-          milestoneIdOrder.indexOf(b.id as string),
+          milestoneIdOrder.indexOf(<string>a.id) -
+          milestoneIdOrder.indexOf(<string>b.id),
       );
+      const dbMilestones = sortedMilestones;
 
       const dbProgress = await this.userProgressModel
         .findOne({ userId, skillId })
@@ -258,11 +252,14 @@ export class LearningPathService {
         const allCompleted = stagesWithProgress.every(s => s.isCompleted);
         const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
         // First milestone is always at least in_progress for new users with no history
-        const computedStatus: 'locked' | 'in_progress' | 'completed' = allCompleted
-          ? 'completed'
-          : anyProgress || index === 0
-          ? 'in_progress'
-          : 'locked';
+        let computedStatus: 'locked' | 'in_progress' | 'completed';
+        if (allCompleted) {
+          computedStatus = 'completed';
+        } else if (anyProgress || index === 0) {
+          computedStatus = 'in_progress';
+        } else {
+          computedStatus = 'locked';
+        }
 
         return {
           id: milestone.id,
@@ -281,7 +278,10 @@ export class LearningPathService {
           currentXp: dbProgress?.currentXp ?? 0,
           streakDays: dbProgress?.streakDays ?? 0,
         },
-        milestones: milestonesWithProgress.slice(startIndex, startIndex + limit),
+        milestones: milestonesWithProgress.slice(
+          startIndex,
+          startIndex + limit,
+        ),
         pagination: {
           currentPage: page,
           limit,
@@ -308,31 +308,39 @@ export class LearningPathService {
       ]),
     );
 
-    const milestonesWithProgress = DUMMY_ROADMAP.milestones.map((milestone, index) => {
-      const stagesWithProgress = milestone.stages.map(stage => {
-        const prog = unlockedMap.get(stage.id);
-        const earnedStars = prog?.earnedStars ?? stage.earnedStars;
+    const milestonesWithProgress = DUMMY_ROADMAP.milestones.map(
+      (milestone, index) => {
+        const stagesWithProgress = milestone.stages.map(stage => {
+          const prog = unlockedMap.get(stage.id);
+          const earnedStars = prog?.earnedStars ?? stage.earnedStars;
+          return {
+            id: stage.id,
+            title: stage.title,
+            isCompleted: earnedStars >= 3,
+            earnedStars,
+            stageProgressPercentage: Math.round((earnedStars / 3) * 100),
+          };
+        });
+
+        const allCompleted = stagesWithProgress.every(s => s.isCompleted);
+        const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
+        let computedStatus: 'locked' | 'in_progress' | 'completed';
+        if (allCompleted) {
+          computedStatus = 'completed';
+        } else if (anyProgress || index === 0) {
+          computedStatus = 'in_progress';
+        } else {
+          computedStatus = 'locked';
+        }
+
         return {
-          id: stage.id,
-          title: stage.title,
-          isCompleted: earnedStars >= 3,
-          earnedStars,
-          stageProgressPercentage: Math.round((earnedStars / 3) * 100),
+          id: milestone.id,
+          title: milestone.title,
+          status: computedStatus,
+          stages: stagesWithProgress,
         };
-      });
-
-      const allCompleted = stagesWithProgress.every(s => s.isCompleted);
-      const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
-      const computedStatus = (allCompleted ? 'completed' : anyProgress || index === 0 ? 'in_progress' : 'locked') as
-        'locked' | 'in_progress' | 'completed';
-
-      return {
-        id: milestone.id,
-        title: milestone.title,
-        status: computedStatus,
-        stages: stagesWithProgress,
-      };
-    });
+      },
+    );
 
     const startIndex = (page - 1) * limit;
 
@@ -356,7 +364,11 @@ export class LearningPathService {
   // ──────────────────────────────────────────────────────────
   // API 2: GET /api/v1/stages/:stageId/theory
   // ──────────────────────────────────────────────────────────
-  async getTheory(stageId: string, userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async getTheory(
+    stageId: string,
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     await this.assertStageAccessible(stageId, userId);
 
     const dbTheory = await this.theoryModel.findOne({ stageId }).lean();
@@ -366,12 +378,12 @@ export class LearningPathService {
         title: dbTheory.title,
         contentHtml: dbTheory.contentHtml,
         proTips: dbTheory.proTips,
-        videoUrl: (dbTheory as { videoUrl?: string }).videoUrl ?? '',
+        videoUrl: (<{ videoUrl?: string }>dbTheory).videoUrl ?? '',
         referenceLinks: dbTheory.referenceLinks,
       };
     }
 
-    const theory = DUMMY_THEORIES[stageId] as Record<string, unknown> | undefined;
+    const theory = <Record<string, unknown> | undefined>DUMMY_THEORIES[stageId];
     if (!theory) {
       throw new NotFoundException(`Theory not found for stage: ${stageId}`);
     }
@@ -381,13 +393,19 @@ export class LearningPathService {
   // ──────────────────────────────────────────────────────────
   // API 3: PATCH /api/v1/stages/:stageId/unlock-practice
   // ──────────────────────────────────────────────────────────
-  async unlockPractice(stageId: string, userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async unlockPractice(
+    stageId: string,
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     await this.assertStageAccessible(stageId, userId);
 
     try {
       const existing = await this.userProgressModel.findOne({ userId }).lean();
       if (existing) {
-        const stageEntry = existing.unlockedStages.find(s => s.stageId === stageId);
+        const stageEntry = existing.unlockedStages.find(
+          s => s.stageId === stageId,
+        );
         if (stageEntry) {
           await this.userProgressModel.updateOne(
             { userId, 'unlockedStages.stageId': stageId },
@@ -416,6 +434,7 @@ export class LearningPathService {
     }
 
     const progress = getUserProgress(userId);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!progress.stages[stageId]) {
       progress.stages[stageId] = {
         isPracticeUnlocked: true,
@@ -432,13 +451,16 @@ export class LearningPathService {
     return { stageId, isPracticeUnlocked: true };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // API 4: GET /api/v1/stages/:stageId/practices
-  // ──────────────────────────────────────────────────────────
-  async getPractices(stageId: string, userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async getPractices(
+    stageId: string,
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
     if (dbProgress) {
-      const stageEntry = dbProgress.unlockedStages.find(s => s.stageId === stageId);
+      const stageEntry = dbProgress.unlockedStages.find(
+        s => s.stageId === stageId,
+      );
       if (!stageEntry?.isPracticeUnlocked) {
         throw new ForbiddenException(
           'Complete the theory section before accessing practices.',
@@ -458,10 +480,10 @@ export class LearningPathService {
           })),
         };
       }
-      // No DB exercises — fall through to dummy
     } else {
       const progress = getUserProgress(userId);
-      if (!progress.stages[stageId]?.isPracticeUnlocked) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!progress.stages[stageId].isPracticeUnlocked) {
         throw new ForbiddenException(
           'Complete the theory section before accessing practices.',
         );
@@ -469,24 +491,27 @@ export class LearningPathService {
     }
 
     const practices = DUMMY_PRACTICES[stageId];
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!practices) {
       throw new NotFoundException(`Practices not found for stage: ${stageId}`);
     }
     return practices;
   }
 
-  // ──────────────────────────────────────────────────────────
-  // API 5: POST /api/v1/exercises/:exerciseId/submit
-  // ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/member-ordering, sonarjs/cognitive-complexity
   async submitCode(
     exerciseId: string,
     submittedCode: { html: string; js: string },
     userId: string = 'dummy-user-001',
-  ) {
+  ): Promise<unknown> {
     const parts = exerciseId.split('_');
     const stageId = parts.length >= 2 ? parts[1] : 's1';
     const exerciseIndex = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
-    const levelMap: Record<number, string> = { 1: 'easy', 2: 'medium', 3: 'hard' };
+    const levelMap: Record<number, string> = {
+      1: 'easy',
+      2: 'medium',
+      3: 'hard',
+    };
     const level = levelMap[exerciseIndex] || 'easy';
 
     const hasCode =
@@ -499,7 +524,7 @@ export class LearningPathService {
         feedback: 'Code quá ngắn hoặc rỗng. Vui lòng viết code và thử lại.',
         xpEarned: 0,
         streakIncremented: false,
-        badgeEarned: null as string | null,
+        badgeEarned: <string | null>null,
         stageUpdates: { stageId, totalEarnedStars: 0, isStageCompleted: false },
       };
     }
@@ -511,15 +536,21 @@ export class LearningPathService {
 
     // ── DB path ─────────────────────────────────────────────
     try {
-      const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
       if (dbProgress) {
-        const stageEntry = dbProgress.unlockedStages.find(s => s.stageId === stageId);
+        const stageEntry = dbProgress.unlockedStages.find(
+          s => s.stageId === stageId,
+        );
         const currentStars = stageEntry?.earnedStars ?? 0;
         const newStars = Math.max(currentStars, exerciseIndex);
         const isNowCompleted = newStars >= 3;
 
         // Streak: first exercise of the day only
-        const streakIncremented = this.shouldIncrementStreak(dbProgress.lastStreakDate);
+        const streakIncremented = this.shouldIncrementStreak(
+          dbProgress.lastStreakDate,
+        );
         const newStreakDays = streakIncremented
           ? dbProgress.streakDays + 1
           : dbProgress.streakDays;
@@ -572,7 +603,10 @@ export class LearningPathService {
               },
             };
 
-        await this.userProgressModel.updateOne(stageUpdate.filter, stageUpdate.update);
+        await this.userProgressModel.updateOne(
+          stageUpdate.filter,
+          stageUpdate.update,
+        );
 
         /* eslint no-console: ["error", { allow: ["log"] }] */
         console.log(
@@ -585,7 +619,11 @@ export class LearningPathService {
           xpEarned,
           streakIncremented,
           badgeEarned,
-          stageUpdates: { stageId, totalEarnedStars: newStars, isStageCompleted: isNowCompleted },
+          stageUpdates: {
+            stageId,
+            totalEarnedStars: newStars,
+            isStageCompleted: isNowCompleted,
+          },
         };
       }
     } catch {
@@ -596,7 +634,8 @@ export class LearningPathService {
     const progress = getUserProgress(userId);
     progress.currentXp += xpEarned;
 
-    if (!progress.stages[stageId]) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
+    if (progress.stages[stageId] === undefined) {
       progress.stages[stageId] = {
         isPracticeUnlocked: true,
         earnedStars: 0,
@@ -612,19 +651,25 @@ export class LearningPathService {
     if (stageProgress.earnedStars < exerciseIndex) {
       stageProgress.earnedStars = exerciseIndex;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
     stageProgress.isCompleted = stageProgress.earnedStars >= 3;
 
     // Streak
-    const streakIncremented = this.shouldIncrementStreak(progress.lastStreakDate);
+    const streakIncremented = this.shouldIncrementStreak(
+      progress.lastStreakDate,
+    );
     if (streakIncremented) {
       progress.streakDays += 1;
       progress.lastStreakDate = this.getTodayString();
     }
 
     // Badge
-    const badgeEarned = stageProgress.isCompleted && !wasPreviouslyCompleted
-      ? stageId
-      : null;
+    let badgeEarned: string | null;
+    if (stageProgress.isCompleted && !wasPreviouslyCompleted) {
+      badgeEarned = stageId;
+    } else {
+      badgeEarned = null;
+    }
     if (badgeEarned && !progress.badges.includes(stageId)) {
       progress.badges.push(stageId);
     }
@@ -651,26 +696,27 @@ export class LearningPathService {
     };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // PATCH /api/v1/stages/:stageId/video-progress
-  // Award XP once when user crosses the 80% watch threshold.
-  // FIX Bug 3: upsert progress record when none exists yet.
-  // ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/member-ordering, sonarjs/cognitive-complexity
   async updateVideoProgress(
     stageId: string,
     watchPercentage: number,
     userId: string = 'dummy-user-001',
-  ) {
+  ): Promise<unknown> {
     const clampedPct = Math.min(100, Math.max(0, watchPercentage));
     const VIDEO_XP_THRESHOLD = 80;
 
     try {
-      const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
 
       if (dbProgress) {
-        const stageEntry = dbProgress.unlockedStages.find(s => s.stageId === stageId);
+        const stageEntry = dbProgress.unlockedStages.find(
+          s => s.stageId === stageId,
+        );
         const prevPct = stageEntry?.videoWatchPercentage ?? 0;
-        const crossesThreshold = prevPct < VIDEO_XP_THRESHOLD && clampedPct >= VIDEO_XP_THRESHOLD;
+        const crossesThreshold =
+          prevPct < VIDEO_XP_THRESHOLD && clampedPct >= VIDEO_XP_THRESHOLD;
         const xpEarned = crossesThreshold ? XP_REWARDS.videoIntro : 0;
 
         if (stageEntry) {
@@ -709,7 +755,8 @@ export class LearningPathService {
 
       // FIX Bug 3: no progress document exists yet — resolve skillId and upsert
       const { skillId } = await this.findStageContext(stageId);
-      const xpEarned = clampedPct >= VIDEO_XP_THRESHOLD ? XP_REWARDS.videoIntro : 0;
+      const xpEarned =
+        clampedPct >= VIDEO_XP_THRESHOLD ? XP_REWARDS.videoIntro : 0;
 
       await this.userProgressModel.updateOne(
         { userId, skillId },
@@ -750,8 +797,8 @@ export class LearningPathService {
       // fall through to dummy
     }
 
-    // Dummy fallback
     const progress = getUserProgress(userId);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!progress.stages[stageId]) {
       progress.stages[stageId] = {
         isPracticeUnlocked: false,
@@ -779,17 +826,14 @@ export class LearningPathService {
     };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // POST /api/v1/learning-content/sync-placement-test
-  // FIX Bug 4: now accepts skillId from caller.
-  // ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/member-ordering, sonarjs/cognitive-complexity
   async syncPlacementTest(
     skipToMilestoneId: string,
     userId: string = 'dummy-user-001',
     skillId: string = 'frontend',
-  ) {
+  ): Promise<unknown> {
     const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
-    const milestoneIds: string[] = (dbRoadmap?.milestoneIds as string[]) ?? [];
+    const milestoneIds: string[] = <string[]>(dbRoadmap?.milestoneIds ?? []);
     const skipIndex = milestoneIds.indexOf(skipToMilestoneId);
     const completedStageIds: string[] = [];
 
@@ -831,11 +875,13 @@ export class LearningPathService {
 
     // Dummy fallback
     const dummyMilestones = DUMMY_ROADMAP.milestones;
-    const dummySkipIndex = dummyMilestones.findIndex(m => m.id === skipToMilestoneId);
+    const dummySkipIndex = dummyMilestones.findIndex(
+      m => m.id === skipToMilestoneId,
+    );
     const progress = getUserProgress(userId);
 
     if (dummySkipIndex > 0) {
-      for (let mi = 0; mi < dummySkipIndex; mi++) {
+      for (let mi = 0; mi < dummySkipIndex; mi += 1) {
         for (const s of dummyMilestones[mi].stages) {
           if (!completedStageIds.includes(s.id)) completedStageIds.push(s.id);
           progress.stages[s.id] = {
@@ -847,7 +893,9 @@ export class LearningPathService {
           };
         }
       }
-      progress.badges = [...new Set([...progress.badges, ...completedStageIds])];
+      progress.badges = [
+        ...new Set([...progress.badges, ...completedStageIds]),
+      ];
     }
 
     return {
@@ -858,16 +906,13 @@ export class LearningPathService {
     };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // PATCH /api/v1/stages/:stageId/complete
-  // Explicit "commit complete" action. Awards streak for today (once per day)
-  // and a badge (with icon) when the stage reaches earnedStars >= 3.
-  // Progress is NOT modified here — exercises already handle that.
-  // ──────────────────────────────────────────────────────────
-  async completeStage(stageId: string, userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering, sonarjs/cognitive-complexity
+  async completeStage(
+    stageId: string,
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     const { milestoneId } = await this.findStageContext(stageId);
 
-    // Resolve badge icon: prefer stage icon, fall back to parent milestone icon
     let badgeIcon = '';
     if (milestoneId) {
       const parentMilestone = await this.milestoneModel
@@ -876,21 +921,27 @@ export class LearningPathService {
       if (parentMilestone) {
         const stageDoc = parentMilestone.stages.find(s => s.id === stageId);
         badgeIcon =
-          (stageDoc as { icon?: string })?.icon ||
-          (parentMilestone as { icon?: string }).icon ||
+          (<{ icon?: string }>stageDoc).icon ||
+          (<{ icon?: string }>parentMilestone).icon ||
           '';
       }
     }
 
     // ── DB path ─────────────────────────────────────────────
     try {
-      const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
       if (dbProgress) {
-        const stageEntry = dbProgress.unlockedStages.find(s => s.stageId === stageId);
+        const stageEntry = dbProgress.unlockedStages.find(
+          s => s.stageId === stageId,
+        );
         const isStageComplete = (stageEntry?.earnedStars ?? 0) >= 3;
         const alreadyBadged = !!stageEntry?.badgeEarned;
 
-        const streakIncremented = this.shouldIncrementStreak(dbProgress.lastStreakDate);
+        const streakIncremented = this.shouldIncrementStreak(
+          dbProgress.lastStreakDate,
+        );
         const newStreakDays = streakIncremented
           ? dbProgress.streakDays + 1
           : dbProgress.streakDays;
@@ -944,16 +995,18 @@ export class LearningPathService {
         };
       }
     } catch {
-      // fall through to dummy
+      // noop
     }
 
-    // ── Dummy fallback ───────────────────────────────────────
     const progress = getUserProgress(userId);
     const sp = progress.stages[stageId];
-    const isStageComplete = (sp?.earnedStars ?? 0) >= 3;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const isStageComplete = (sp.earnedStars ?? 0) >= 3;
     const alreadyBadged = progress.badges.includes(stageId);
 
-    const streakIncremented = this.shouldIncrementStreak(progress.lastStreakDate);
+    const streakIncremented = this.shouldIncrementStreak(
+      progress.lastStreakDate,
+    );
     if (streakIncremented) {
       progress.streakDays += 1;
       progress.lastStreakDate = this.getTodayString();
@@ -977,7 +1030,8 @@ export class LearningPathService {
   // ──────────────────────────────────────────────────────────
   // GET /api/v1/learning-content/skills
   // ──────────────────────────────────────────────────────────
-  async getAvailableSkills() {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async getAvailableSkills(): Promise<unknown> {
     const dbRoadmaps = await this.roadmapModel
       .find({})
       .select('skillId skillTitle')
@@ -985,19 +1039,28 @@ export class LearningPathService {
 
     if (dbRoadmaps.length > 0) {
       return {
-        skills: dbRoadmaps.map(r => ({ skillId: r.skillId, skillTitle: r.skillTitle })),
+        skills: dbRoadmaps.map(r => ({
+          skillId: r.skillId,
+          skillTitle: r.skillTitle,
+        })),
       };
     }
 
     return {
-      skills: [{ skillId: DUMMY_ROADMAP.skillId, skillTitle: DUMMY_ROADMAP.skillTitle }],
+      skills: [
+        {
+          skillId: DUMMY_ROADMAP.skillId,
+          skillTitle: DUMMY_ROADMAP.skillTitle,
+        },
+      ],
     };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // GET /api/v1/learning-content/stages/:stageId/full
-  // ──────────────────────────────────────────────────────────
-  async getFullStageContent(stageId: string, userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async getFullStageContent(
+    stageId: string,
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     const [theory, practices] = await Promise.all([
       this.getTheory(stageId, userId),
       this.getPractices(stageId, userId).catch(() => null),
@@ -1006,10 +1069,10 @@ export class LearningPathService {
     return { stageId, theory, practices };
   }
 
-  // ──────────────────────────────────────────────────────────
-  // GET /api/v1/learning-content/progress/summary
-  // ──────────────────────────────────────────────────────────
-  async getProgressSummary(userId: string = 'dummy-user-001') {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  async getProgressSummary(
+    userId: string = 'dummy-user-001',
+  ): Promise<unknown> {
     const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
 
     if (dbProgress) {
@@ -1023,13 +1086,14 @@ export class LearningPathService {
             .lean()
         : [];
 
-      // FIX Bug 1 (same as getRoadmap): sort by declared roadmap order
-      const milestoneIdOrder = (dbRoadmap?.milestoneIds as string[]) ?? [];
-      const dbMilestones = rawMilestones.sort(
+      const milestoneIdOrder = <string[]>(dbRoadmap?.milestoneIds ?? []);
+      const sortedMilestones = [...rawMilestones];
+      sortedMilestones.sort(
         (a, b) =>
-          milestoneIdOrder.indexOf(a.id as string) -
-          milestoneIdOrder.indexOf(b.id as string),
+          milestoneIdOrder.indexOf(<string>a.id) -
+          milestoneIdOrder.indexOf(<string>b.id),
       );
+      const dbMilestones = sortedMilestones;
 
       const unlockedMap = new Map(
         dbProgress.unlockedStages.map(us => [
@@ -1045,8 +1109,13 @@ export class LearningPathService {
       const { courseProgressPercentage, milestoneProgress } =
         this.computeProgress(dbMilestones, unlockedMap);
 
-      const totalStages = dbMilestones.reduce((sum, m) => sum + m.stages.length, 0);
-      const completedStages = dbProgress.unlockedStages.filter(s => s.earnedStars >= 3).length;
+      const totalStages = dbMilestones.reduce(
+        (sum, m) => sum + m.stages.length,
+        0,
+      );
+      const completedStages = dbProgress.unlockedStages.filter(
+        s => s.earnedStars >= 3,
+      ).length;
 
       return {
         userId,
@@ -1063,7 +1132,6 @@ export class LearningPathService {
       };
     }
 
-    // Dummy fallback
     const progress = getUserProgress(userId);
     const allMilestones = DUMMY_ROADMAP.milestones;
     const unlockedMap = new Map(
@@ -1089,7 +1157,8 @@ export class LearningPathService {
       lastActiveMilestoneId: progress.lastActiveMilestoneId,
       courseProgressPercentage,
       totalStages: allMilestones.reduce((sum, m) => sum + m.stages.length, 0),
-      completedStages: Object.values(progress.stages).filter(s => s.isCompleted).length,
+      completedStages: Object.values(progress.stages).filter(s => s.isCompleted)
+        .length,
       milestoneProgress,
       stages: progress.stages,
     };

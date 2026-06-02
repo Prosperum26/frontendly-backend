@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-// ============================================================
-// Stage Schema — một bước học nhỏ trong Milestone
-// ============================================================
 export type StageDocument = HydratedDocument<Stage>;
 
 @Schema({ _id: false })
@@ -26,9 +23,6 @@ export class Stage {
 
 export const StageSchema = SchemaFactory.createForClass(Stage);
 
-// ============================================================
-// Milestone Schema — một cột mốc lớn trong lộ trình học
-// ============================================================
 export type MilestoneDocument = HydratedDocument<Milestone>;
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
@@ -46,7 +40,6 @@ export class Milestone {
   })
   status!: 'locked' | 'in_progress' | 'completed';
 
-  // Phase 2: icon name/slug used as the earned badge icon
   @Prop({ default: '' })
   icon!: string;
 
