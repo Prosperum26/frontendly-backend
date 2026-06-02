@@ -420,7 +420,7 @@ const XP_REWARDS: Record<string, number> = {
   easy: 30,
   medium: 50,
   hard: 100,
-  videoIntro: 20,
+  videoIntro: 50,
 };
 
 export {

@@ -3,6 +3,12 @@ import mongoose from 'mongoose';
 
 import { ROADMAPS, MILESTONES, THEORIES } from './learning-data';
 
+interface RoadmapData {
+  skillId: string;
+  skillTitle: string;
+  milestoneIds: string[];
+}
+
 const StageSchema = new mongoose.Schema(
   {
     id: { type: String, required: true },
@@ -72,9 +78,8 @@ async function seed(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log('Connected.\n');
 
-  // Seed roadmaps
   let roadmapCount = 0;
-  for (const roadmap of ROADMAPS as any) {
+  for (const roadmap of <RoadmapData[]>ROADMAPS) {
     await Roadmap.updateOne(
       { skillId: roadmap.skillId },
       {
@@ -95,7 +100,6 @@ async function seed(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`Roadmaps — upserted ${roadmapCount} documents\n`);
 
-  // Seed milestones
   let milestoneCount = 0;
   for (const m of MILESTONES) {
     const stages = m.stages.map((s: any) => ({
@@ -124,7 +128,6 @@ async function seed(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`Milestones — upserted ${milestoneCount} documents\n`);
 
-  // 3. Seed theories ────────────────────────────────────────────────────────
   const theories = Object.values(THEORIES);
   let theoryCount = 0;
   for (const t of <any[]>theories) {
