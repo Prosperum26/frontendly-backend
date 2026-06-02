@@ -193,7 +193,6 @@ async function seed(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`Exercises — upserted ${exerciseCount} documents\n`);
 
-  // Done ────────────────────────────────────────────────────────────────────
   // eslint-disable-next-line no-console
   console.log('Seeding complete!');
   await mongoose.disconnect();
