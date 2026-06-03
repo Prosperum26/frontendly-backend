@@ -13,7 +13,7 @@ type CommonConfigType = z.infer<typeof commonConfigSchema>;
 
 export const commonConfigObj = registerAs('common', () => {
   const config: CommonConfigType = {
-    nodeEnv: (<NodeEnv>(process.env.NODE_ENV || 'local')),
+    nodeEnv: <NodeEnv>(process.env.NODE_ENV || 'local'),
     port: parseInt(process.env.PORT || '3000', 10),
     dbUri: process.env.DB_URI || 'mongodb://localhost:27017/frontendly',
   };
