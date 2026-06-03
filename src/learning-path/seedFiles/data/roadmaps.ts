@@ -2,13 +2,8 @@ import { Roadmap } from '@/learning-path/types/learning-path.types';
 
 export const ROADMAPS: Roadmap[] = [
   {
-    skillId: 'javascript',
-    skillTitle: 'Frontend Learning Path',
+    skillId: 'react',
+    skillTitle: 'React.js Learning Path',
     milestoneIds: ['m1', 'm2', 'm3'],
-  },
-  {
-    skillId: 'backend',
-    skillTitle: 'Backend Learning Path',
-    milestoneIds: ['bm1', 'bm2', 'bm3', 'bm4'],
   },
 ];
