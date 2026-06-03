@@ -45,7 +45,12 @@ export type RoadmapDocument = HydratedDocument<Roadmap>;
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Roadmap {
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    enum: ['javascript', 'backend'],
+  })
   skillId!: string;
 
   @Prop({ required: true })

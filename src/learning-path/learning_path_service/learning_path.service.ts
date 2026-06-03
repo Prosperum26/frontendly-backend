@@ -48,6 +48,15 @@ export class LearningPathService {
     return lastStreakDate !== this.getTodayString();
   }
 
+  private findSkillIdFromMilestone(milestoneId: string): string {
+    for (const roadmap of ROADMAPS) {
+      if (roadmap.milestoneIds.includes(milestoneId)) {
+        return roadmap.skillId;
+      }
+    }
+    return 'frontend'; // fallback default
+  }
+
   // eslint-disable-next-line sonarjs/cognitive-complexity
   private async findStageContext(stageId: string): Promise<{
     prevStageId: string | null;
@@ -66,7 +75,8 @@ export class LearningPathService {
       const dbRoadmap = await this.roadmapModel
         .findOne({ milestoneIds: milestoneId })
         .lean();
-      const skillId = dbRoadmap?.skillId ?? 'frontend';
+      const skillId =
+        dbRoadmap?.skillId ?? this.findSkillIdFromMilestone(milestoneId);
 
       if (si > 0) {
         return {
@@ -100,11 +110,12 @@ export class LearningPathService {
       const m = allMilestones[mi];
       const si = m.stages.findIndex(s => s.id === stageId);
       if (si === -1) continue;
+      const skillId = this.findSkillIdFromMilestone(m.id);
       if (si > 0) {
         return {
           prevStageId: m.stages[si - 1].id,
           milestoneId: m.id,
-          skillId: 'frontend',
+          skillId,
         };
       }
       if (mi > 0) {
@@ -112,13 +123,13 @@ export class LearningPathService {
         return {
           prevStageId: prevM.stages[prevM.stages.length - 1].id,
           milestoneId: m.id,
-          skillId: 'frontend',
+          skillId,
         };
       }
       return {
         prevStageId: null,
         milestoneId: m.id,
-        skillId: 'frontend',
+        skillId,
       };
     }
 
@@ -294,7 +305,7 @@ export class LearningPathService {
     }
 
     // ── Dummy fallback ───────────────────────────────────────
-    if (!['frontend', 'javascript'].includes(skillId)) {
+    if (!ROADMAPS.some(r => r.skillId === skillId)) {
       throw new NotFoundException(`Roadmap not found for skill: ${skillId}`);
     }
 
@@ -310,38 +321,47 @@ export class LearningPathService {
       ]),
     );
 
-    const milestonesWithProgress = MILESTONES.map((milestone, index) => {
-      const stagesWithProgress = milestone.stages.map(stage => {
-        const prog = unlockedMap.get(stage.id);
-        const earnedStars = prog?.earnedStars ?? stage.earnedStars;
+    // Filter milestones by skillId for dummy fallback
+    const roadmap = ROADMAPS.find(r => r.skillId === skillId);
+    const relevantMilestoneIds = roadmap?.milestoneIds ?? [];
+    const filteredMilestones = MILESTONES.filter(m =>
+      relevantMilestoneIds.includes(m.id),
+    );
+
+    const milestonesWithProgress = filteredMilestones.map(
+      (milestone, index) => {
+        const stagesWithProgress = milestone.stages.map(stage => {
+          const prog = unlockedMap.get(stage.id);
+          const earnedStars = prog?.earnedStars ?? stage.earnedStars;
+          return {
+            id: stage.id,
+            title: stage.title,
+            isCompleted: earnedStars >= 3,
+            earnedStars,
+            stageProgressPercentage: Math.round((earnedStars / 3) * 100),
+          };
+        });
+
+        const allCompleted = stagesWithProgress.every(s => s.isCompleted);
+        const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
+        let computedStatus: 'locked' | 'in_progress' | 'completed';
+        if (allCompleted) {
+          computedStatus = 'completed';
+        } else if (anyProgress || index === 0) {
+          computedStatus = 'in_progress';
+        } else {
+          computedStatus = 'locked';
+        }
+
         return {
-          id: stage.id,
-          title: stage.title,
-          isCompleted: earnedStars >= 3,
-          earnedStars,
-          stageProgressPercentage: Math.round((earnedStars / 3) * 100),
+          id: milestone.id,
+          title: milestone.title,
+          icon: milestone.icon,
+          status: computedStatus,
+          stages: stagesWithProgress,
         };
-      });
-
-      const allCompleted = stagesWithProgress.every(s => s.isCompleted);
-      const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
-      let computedStatus: 'locked' | 'in_progress' | 'completed';
-      if (allCompleted) {
-        computedStatus = 'completed';
-      } else if (anyProgress || index === 0) {
-        computedStatus = 'in_progress';
-      } else {
-        computedStatus = 'locked';
-      }
-
-      return {
-        id: milestone.id,
-        title: milestone.title,
-        icon: milestone.icon,
-        status: computedStatus,
-        stages: stagesWithProgress,
-      };
-    });
+      },
+    );
 
     const startIndex = (page - 1) * limit;
 
@@ -875,7 +895,11 @@ export class LearningPathService {
     }
 
     // Dummy fallback
-    const dummyMilestones = MILESTONES;
+    const roadmap = ROADMAPS.find(r => r.skillId === skillId);
+    const relevantMilestoneIds = roadmap?.milestoneIds ?? [];
+    const dummyMilestones = MILESTONES.filter(m =>
+      relevantMilestoneIds.includes(m.id),
+    );
     const dummySkipIndex = dummyMilestones.findIndex(
       m => m.id === skipToMilestoneId,
     );
@@ -937,7 +961,9 @@ export class LearningPathService {
         const stageEntry = dbProgress.unlockedStages.find(
           s => s.stageId === stageId,
         );
-        const isStageComplete = (stageEntry?.earnedStars ?? 0) >= 3;
+        const currentStars = stageEntry?.earnedStars ?? 0;
+        const newStars = Math.max(currentStars, 3);
+        const isStageComplete = newStars >= 3;
         const alreadyBadged = !!stageEntry?.badgeEarned;
 
         const streakIncremented = this.shouldIncrementStreak(
@@ -964,6 +990,8 @@ export class LearningPathService {
             {
               $set: {
                 ...topLevelSet,
+                'unlockedStages.$.earnedStars': newStars,
+                'unlockedStages.$.isPracticeUnlocked': true,
                 ...(awardBadge && { 'unlockedStages.$.badgeEarned': true }),
               },
               ...(awardBadge && { $push: { badges: stageId } }),
@@ -977,12 +1005,13 @@ export class LearningPathService {
               $push: {
                 unlockedStages: {
                   stageId,
-                  isPracticeUnlocked: false,
-                  earnedStars: 0,
+                  isPracticeUnlocked: true,
+                  earnedStars: newStars,
                   videoWatchPercentage: 0,
-                  badgeEarned: false,
+                  badgeEarned: awardBadge,
                 },
               },
+              ...(awardBadge && { $push: { badges: stageId } }),
             },
           );
         }
@@ -1000,9 +1029,24 @@ export class LearningPathService {
     }
 
     const progress = getUserProgress(userId);
+    if (progress.stages[stageId] === undefined) {
+      progress.stages[stageId] = {
+        isPracticeUnlocked: true,
+        earnedStars: 3,
+        isCompleted: true,
+        theoryRead: true,
+        videoWatchPercentage: 0,
+      };
+    }
+
     const sp = progress.stages[stageId];
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const isStageComplete = (sp.earnedStars ?? 0) >= 3;
+    if (sp.earnedStars < 3) {
+      sp.earnedStars = 3;
+    }
+    sp.isCompleted = true;
+    sp.isPracticeUnlocked = true;
+
+    const isStageComplete = sp.isCompleted;
     const alreadyBadged = progress.badges.includes(stageId);
 
     const streakIncremented = this.shouldIncrementStreak(
