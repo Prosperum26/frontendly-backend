@@ -50,13 +50,16 @@ export interface Practice {
 }
 
 export interface UserProgress {
-  stages: Record<string, {
-    isPracticeUnlocked: boolean;
-    earnedStars: number;
-    isCompleted: boolean;
-    theoryRead: boolean;
-    videoWatchPercentage: number;
-  }>;
+  stages: Record<
+    string,
+    {
+      isPracticeUnlocked: boolean;
+      earnedStars: number;
+      isCompleted: boolean;
+      theoryRead: boolean;
+      videoWatchPercentage: number;
+    }
+  >;
   currentXp: number;
   streakDays: number;
   lastStreakDate: string | null;
