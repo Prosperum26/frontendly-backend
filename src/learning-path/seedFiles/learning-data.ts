@@ -4,6 +4,11 @@ const ROADMAPS = [
     skillTitle: 'Frontend Learning Path',
     milestoneIds: ['m1', 'm2', 'm3'],
   },
+  {
+    skillId: 'backend',
+    skillTitle: 'Backend Learning Path',
+    milestoneIds: ['bm1', 'bm2', 'bm3', 'bm4'],
+  },
 ];
 
 const MILESTONES = [
@@ -98,6 +103,134 @@ const MILESTONES = [
       {
         id: 's12',
         title: '4. Async Data Logic',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+    ],
+  },
+  {
+    id: 'bm1',
+    title: 'Backend Foundations',
+    icon: 'server',
+    status: <const>'completed',
+    stages: [
+      {
+        id: 'bs1',
+        title: '1. Node.js Basics',
+        isCompleted: true,
+        earnedStars: 3,
+      },
+      {
+        id: 'bs2',
+        title: '2. npm & Package Management',
+        isCompleted: true,
+        earnedStars: 3,
+      },
+      {
+        id: 'bs3',
+        title: '3. CommonJS Modules',
+        isCompleted: true,
+        earnedStars: 3,
+      },
+      {
+        id: 'bs4',
+        title: '4. Event Loop',
+        isCompleted: true,
+        earnedStars: 3,
+      },
+    ],
+  },
+  {
+    id: 'bm2',
+    title: 'Express Framework',
+    icon: 'express',
+    status: <const>'in_progress',
+    stages: [
+      {
+        id: 'bs5',
+        title: '1. Express Setup & Routing',
+        isCompleted: true,
+        earnedStars: 2,
+      },
+      {
+        id: 'bs6',
+        title: '2. Middleware',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs7',
+        title: '3. Request & Response',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs8',
+        title: '4. Error Handling',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+    ],
+  },
+  {
+    id: 'bm3',
+    title: 'Database Integration',
+    icon: 'database',
+    status: <const>'locked',
+    stages: [
+      {
+        id: 'bs9',
+        title: '1. MongoDB Basics',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs10',
+        title: '2. Mongoose ODM',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs11',
+        title: '3. CRUD Operations',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs12',
+        title: '4. Data Validation',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+    ],
+  },
+  {
+    id: 'bm4',
+    title: 'Authentication & Security',
+    icon: 'security',
+    status: <const>'locked',
+    stages: [
+      {
+        id: 'bs13',
+        title: '1. JWT Authentication',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs14',
+        title: '2. Password Hashing',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs15',
+        title: '3. Authorization',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'bs16',
+        title: '4. Security Best Practices',
         isCompleted: false,
         earnedStars: 0,
       },
@@ -298,9 +431,665 @@ const THEORIES: Record<string, object> = {
       },
     ],
   },
+  bs1: {
+    stageId: 'bs1',
+    title: 'Node.js Basics',
+    videoUrl: '',
+    contentHtml:
+      "<h1>Node.js Basics</h1><p>Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine.</p><h2>Key Concepts</h2><ul><li>Event-driven architecture</li><li>Non-blocking I/O</li><li>REPL environment</li><li>File system operations</li></ul>",
+    proTips:
+      'Use async/await for file operations to avoid blocking the event loop.',
+    referenceLinks: [
+      {
+        title: 'Node.js Documentation',
+        url: 'https://nodejs.org/en/docs/',
+        type: 'doc',
+      },
+    ],
+  },
+  bs2: {
+    stageId: 'bs2',
+    title: 'npm & Package Management',
+    videoUrl: '',
+    contentHtml:
+      "<h1>npm & Package Management</h1><p>npm is the package manager for Node.js and the world's largest software registry.</p><h2>Key Commands</h2><ul><li>npm init</li><li>npm install</li><li>package.json</li><li>Dependencies vs DevDependencies</li></ul>",
+    proTips:
+      'Use --save-exact for production dependencies to ensure version consistency.',
+    referenceLinks: [
+      {
+        title: 'npm Documentation',
+        url: 'https://docs.npmjs.com/',
+        type: 'doc',
+      },
+    ],
+  },
+  bs3: {
+    stageId: 'bs3',
+    title: 'CommonJS Modules',
+    videoUrl: '',
+    contentHtml:
+      '<h1>CommonJS Modules</h1><p>CommonJS is the module system used by Node.js before ES6 modules.</p><h2>Key Concepts</h2><ul><li>require()</li><li>module.exports</li><li>__dirname and __filename</li></ul>',
+    proTips: 'Use ES6 modules (import/export) for new projects when possible.',
+    referenceLinks: [
+      {
+        title: 'Node.js Modules',
+        url: 'https://nodejs.org/api/modules.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs4: {
+    stageId: 'bs4',
+    title: 'Event Loop',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Event Loop</h1><p>The Node.js event loop enables asynchronous, non-blocking I/O operations.</p><h2>Phases</h2><ul><li>Timers</li><li>Pending callbacks</li><li>Idle, prepare</li><li>Poll</li><li>Check</li><li>Close callbacks</li></ul>',
+    proTips: 'Avoid blocking the event loop with CPU-intensive tasks.',
+    referenceLinks: [
+      {
+        title: 'Node.js Event Loop',
+        url: 'https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/',
+        type: 'doc',
+      },
+    ],
+  },
+  bs5: {
+    stageId: 'bs5',
+    title: 'Express Setup & Routing',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Express Setup & Routing</h1><p>Express is a minimal and flexible Node.js web application framework.</p><h2>Key Concepts</h2><ul><li>Express application setup</li><li>Route handlers</li><li>HTTP methods (GET, POST, PUT, DELETE)</li><li>Route parameters</li></ul>',
+    proTips: 'Use express.Router() to organize routes into separate modules.',
+    referenceLinks: [
+      {
+        title: 'Express Documentation',
+        url: 'https://expressjs.com/en/guide/routing.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs6: {
+    stageId: 'bs6',
+    title: 'Middleware',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Middleware</h1><p>Middleware functions have access to the request object, response object, and next middleware function.</p><h2>Types</h2><ul><li>Application-level middleware</li><li>Router-level middleware</li><li>Error-handling middleware</li><li>Built-in middleware</li></ul>',
+    proTips:
+      'Always call next() to pass control to the next middleware function.',
+    referenceLinks: [
+      {
+        title: 'Express Middleware',
+        url: 'https://expressjs.com/en/guide/writing-middleware.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs7: {
+    stageId: 'bs7',
+    title: 'Request & Response',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Request & Response</h1><p>Understanding how to handle HTTP requests and send responses in Express.</p><h2>Key Concepts</h2><ul><li>req.body, req.params, req.query</li><li>res.send(), res.json(), res.status()</li><li>Request headers</li><li>Response headers</li></ul>',
+    proTips: 'Use body-parser middleware to parse JSON request bodies.',
+    referenceLinks: [
+      {
+        title: 'Express Request & Response',
+        url: 'https://expressjs.com/en/4x/api.html#req',
+        type: 'doc',
+      },
+    ],
+  },
+  bs8: {
+    stageId: 'bs8',
+    title: 'Error Handling',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Error Handling</h1><p>Proper error handling is crucial for building robust Express applications.</p><h2>Key Concepts</h2><ul><li>Error-handling middleware</li><li>try/catch blocks</li><li>Async error handling</li><li>Error logging</li></ul>',
+    proTips:
+      'Always have a catch-all error handler at the end of your middleware chain.',
+    referenceLinks: [
+      {
+        title: 'Express Error Handling',
+        url: 'https://expressjs.com/en/guide/error-handling.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs9: {
+    stageId: 'bs9',
+    title: 'MongoDB Basics',
+    videoUrl: '',
+    contentHtml:
+      '<h1>MongoDB Basics</h1><p>MongoDB is a document-oriented NoSQL database designed for ease of development and scaling.</p><h2>Key Concepts</h2><ul><li>Documents and Collections</li><li>BSON data format</li><li>CRUD operations</li><li>Query operators</li></ul>',
+    proTips: 'Use indexes to improve query performance on large collections.',
+    referenceLinks: [
+      {
+        title: 'MongoDB Documentation',
+        url: 'https://docs.mongodb.com/manual/',
+        type: 'doc',
+      },
+    ],
+  },
+  bs10: {
+    stageId: 'bs10',
+    title: 'Mongoose ODM',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Mongoose ODM</h1><p>Mongoose is an Object Data Modeling (ODM) library for MongoDB and Node.js.</p><h2>Key Concepts</h2><ul><li>Schemas and Models</li><li>Validation</li><li>Middleware</li><li>Population</li></ul>',
+    proTips: 'Define schemas with validation rules to ensure data integrity.',
+    referenceLinks: [
+      {
+        title: 'Mongoose Documentation',
+        url: 'https://mongoosejs.com/docs/',
+        type: 'doc',
+      },
+    ],
+  },
+  bs11: {
+    stageId: 'bs11',
+    title: 'CRUD Operations',
+    videoUrl: '',
+    contentHtml:
+      '<h1>CRUD Operations</h1><p>CRUD stands for Create, Read, Update, and Delete - the basic operations for data persistence.</p><h2>Operations</h2><ul><li>create() and save()</li><li>find() and findOne()</li><li>findByIdAndUpdate()</li><li>findByIdAndDelete()</li></ul>',
+    proTips: 'Use async/await for all database operations.',
+    referenceLinks: [
+      {
+        title: 'Mongoose CRUD',
+        url: 'https://mongoosejs.com/docs/documents.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs12: {
+    stageId: 'bs12',
+    title: 'Data Validation',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Data Validation</h1><p>Validation ensures data integrity before saving to the database.</p><h2>Types</h2><ul><li>Built-in validators</li><li>Custom validators</li><li>Async validators</li><li>Schema validation</li></ul>',
+    proTips:
+      'Use both schema validation and application-level validation for robust data integrity.',
+    referenceLinks: [
+      {
+        title: 'Mongoose Validation',
+        url: 'https://mongoosejs.com/docs/validation.html',
+        type: 'doc',
+      },
+    ],
+  },
+  bs13: {
+    stageId: 'bs13',
+    title: 'JWT Authentication',
+    videoUrl: '',
+    contentHtml:
+      '<h1>JWT Authentication</h1><p>JSON Web Tokens (JWT) are a compact, URL-safe means of representing claims to be transferred between two parties.</p><h2>Key Concepts</h2><ul><li>JWT structure (header, payload, signature)</li><li>Signing and verification</li><li>Token expiration</li><li>Refresh tokens</li></ul>',
+    proTips: 'Store JWTs in HTTP-only cookies for better security.',
+    referenceLinks: [
+      {
+        title: 'JWT Introduction',
+        url: 'https://jwt.io/introduction',
+        type: 'doc',
+      },
+    ],
+  },
+  bs14: {
+    stageId: 'bs14',
+    title: 'Password Hashing',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Password Hashing</h1><p>Password hashing is a one-way function that transforms passwords into secure hashes.</p><h2>Key Concepts</h2><ul><li>Bcrypt hashing</li><li>Salt rounds</li><li>Hash comparison</li><li>Security best practices</li></ul>',
+    proTips: 'Use bcrypt with at least 10 salt rounds for production.',
+    referenceLinks: [
+      {
+        title: 'Bcrypt Documentation',
+        url: 'https://github.com/kelektiv/node.bcrypt.js',
+        type: 'doc',
+      },
+    ],
+  },
+  bs15: {
+    stageId: 'bs15',
+    title: 'Authorization',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Authorization</h1><p>Authorization determines what resources an authenticated user can access.</p><h2>Key Concepts</h2><ul><li>Role-based access control (RBAC)</li><li>Permission checks</li><li>Middleware guards</li><li>Resource ownership</li></ul>',
+    proTips: 'Implement authorization at both the route and resource level.',
+    referenceLinks: [
+      {
+        title: 'Authorization Best Practices',
+        url: 'https://owasp.org/www-community/Authorization_Cheat_Sheet',
+        type: 'doc',
+      },
+    ],
+  },
+  bs16: {
+    stageId: 'bs16',
+    title: 'Security Best Practices',
+    videoUrl: '',
+    contentHtml:
+      '<h1>Security Best Practices</h1><p>Implementing security best practices to protect your application from common vulnerabilities.</p><h2>Key Practices</h2><ul><li>Input validation and sanitization</li><li>Rate limiting</li><li>CORS configuration</li><li>Helmet middleware</li><li>Environment variables</li></ul>',
+    proTips: 'Never commit sensitive data like API keys to version control.',
+    referenceLinks: [
+      {
+        title: 'OWASP Top 10',
+        url: 'https://owasp.org/www-project-top-ten/',
+        type: 'doc',
+      },
+    ],
+  },
 };
 
 const PRACTICES: Record<string, object> = {};
+    stageId: 's1',
+    exercises: [
+      {
+        id: 'ex_s1_1',
+        level: 'easy',
+        title: 'Create Semantic Structure',
+        instruction:
+          'Create a semantic HTML structure for a blog post with header, main, article, and footer.',
+        boilerplateCode: {
+          html: '<div>\n  <h1>My Blog</h1>\n  <div>Content here</div>\n</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s1_2',
+        level: 'medium',
+        title: 'Build Navigation',
+        instruction:
+          'Create a semantic navigation menu using <nav> and <ul> elements.',
+        boilerplateCode: {
+          html: '<div>\n  <a href="#">Home</a>\n  <a href="#">About</a>\n</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s1_3',
+        level: 'hard',
+        title: 'Complete Article Page',
+        instruction:
+          'Build a complete article page with proper semantic tags including header, nav, main, article, section, aside, and footer.',
+        boilerplateCode: {
+          html: '<div>\n  <h1>Article Title</h1>\n  <p>Content</p>\n</div>',
+          js: '',
+        },
+      },
+    ],
+  },
+  s2: {
+    stageId: 's2',
+    exercises: [
+      {
+        id: 'ex_s2_1',
+        level: 'easy',
+        title: 'Select by Class',
+        instruction:
+          'Select all elements with class "card" and change their background color.',
+        boilerplateCode: {
+          html: '<div class="card">Card 1</div>\n<div class="card">Card 2</div>',
+          js: '// Select elements with class "card"',
+        },
+      },
+      {
+        id: 'ex_s2_2',
+        level: 'medium',
+        title: 'Attribute Selectors',
+        instruction:
+          'Select all input elements with type "email" and add a border.',
+        boilerplateCode: {
+          html: '<input type="email">\n<input type="text">',
+          js: '// Select email inputs',
+        },
+      },
+      {
+        id: 'ex_s2_3',
+        level: 'hard',
+        title: 'Complex Selector',
+        instruction:
+          'Select all list items inside an ordered list with class "features" and change their color.',
+        boilerplateCode: {
+          html: '<ol class="features">\n  <li>Feature 1</li>\n  <li>Feature 2</li>\n</ol>',
+          js: '// Select list items',
+        },
+      },
+    ],
+  },
+  s3: {
+    stageId: 's3',
+    exercises: [
+      {
+        id: 'ex_s3_1',
+        level: 'easy',
+        title: 'Box Model Basics',
+        instruction: 'Set padding of 20px and margin of 10px on a div.',
+        boilerplateCode: {
+          html: '<div class="box">Content</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s3_2',
+        level: 'medium',
+        title: 'Border Box',
+        instruction:
+          'Apply box-sizing: border-box to an element with width, padding, and border.',
+        boilerplateCode: {
+          html: '<div class="container">Content</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s3_3',
+        level: 'hard',
+        title: 'Layout Calculation',
+        instruction:
+          'Calculate and set the exact width of an element considering padding, border, and margin.',
+        boilerplateCode: {
+          html: '<div class="element">Content</div>',
+          js: '',
+        },
+      },
+    ],
+  },
+  s4: {
+    stageId: 's4',
+    exercises: [
+      {
+        id: 'ex_s4_1',
+        level: 'easy',
+        title: 'Basic Flexbox',
+        instruction:
+          'Create a flex container with 3 items aligned horizontally.',
+        boilerplateCode: {
+          html: '<div class="container">\n  <div>Item 1</div>\n  <div>Item 2</div>\n  <div>Item 3</div>\n</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s4_2',
+        level: 'medium',
+        title: 'Flex Direction',
+        instruction: 'Create a flex container with items arranged vertically.',
+        boilerplateCode: {
+          html: '<div class="container">\n  <div>Item 1</div>\n  <div>Item 2</div>\n</div>',
+          js: '',
+        },
+      },
+      {
+        id: 'ex_s4_3',
+        level: 'hard',
+        title: 'Flexbox Layout',
+        instruction:
+          'Create a responsive card layout using flexbox that wraps on smaller screens.',
+        boilerplateCode: {
+          html: '<div class="card-container">\n  <div class="card">Card 1</div>\n  <div class="card">Card 2</div>\n  <div class="card">Card 3</div>\n</div>',
+          js: '',
+        },
+      },
+    ],
+  },
+  bs1: {
+    stageId: 'bs1',
+    exercises: [
+      {
+        id: 'ex_bs1_1',
+        level: 'easy',
+        title: 'Hello World Server',
+        instruction:
+          'Create a simple Node.js server that responds with "Hello World" on port 3000.',
+        boilerplateCode: {
+          html: '',
+          js: 'const http = require("http");\n\n// Create server here',
+        },
+      },
+      {
+        id: 'ex_bs1_2',
+        level: 'medium',
+        title: 'File System Read',
+        instruction:
+          'Read a file asynchronously using fs.readFile and log its contents.',
+        boilerplateCode: {
+          html: '',
+          js: 'const fs = require("fs");\n\n// Read file asynchronously',
+        },
+      },
+      {
+        id: 'ex_bs1_3',
+        level: 'hard',
+        title: 'Event Emitter',
+        instruction:
+          'Create a custom EventEmitter that emits events and handles them with listeners.',
+        boilerplateCode: {
+          html: '',
+          js: 'const EventEmitter = require("events");\n\n// Create custom event emitter',
+        },
+      },
+    ],
+  },
+  bs2: {
+    stageId: 'bs2',
+    exercises: [
+      {
+        id: 'ex_bs2_1',
+        level: 'easy',
+        title: 'Initialize Package',
+        instruction:
+          'Create a package.json file with basic metadata using npm init.',
+        boilerplateCode: {
+          html: '',
+          js: '// This exercise requires terminal commands\n// npm init -y',
+        },
+      },
+      {
+        id: 'ex_bs2_2',
+        level: 'medium',
+        title: 'Install Dependencies',
+        instruction:
+          'Install express as a dependency and save it to package.json.',
+        boilerplateCode: {
+          html: '',
+          js: '// npm install express --save',
+        },
+      },
+      {
+        id: 'ex_bs2_3',
+        level: 'hard',
+        title: 'Package Scripts',
+        instruction:
+          'Add custom scripts to package.json for start, test, and dev commands.',
+        boilerplateCode: {
+          html: '',
+          js: '// Modify package.json scripts section',
+        },
+      },
+    ],
+  },
+  bs3: {
+    stageId: 'bs3',
+    exercises: [
+      {
+        id: 'ex_bs3_1',
+        level: 'easy',
+        title: 'Export Function',
+        instruction:
+          'Create a module that exports a function and import it in another file.',
+        boilerplateCode: {
+          html: '',
+          js: '// module.exports = function() {\n//   return "Hello";\n// }',
+        },
+      },
+      {
+        id: 'ex_bs3_2',
+        level: 'medium',
+        title: 'Require Module',
+        instruction: 'Require a custom module and use its exported function.',
+        boilerplateCode: {
+          html: '',
+          js: 'const myModule = require("./myModule");\n\n// Use the module',
+        },
+      },
+      {
+        id: 'ex_bs3_3',
+        level: 'hard',
+        title: 'Module Pattern',
+        instruction:
+          'Create a module using the module pattern with private and public methods.',
+        boilerplateCode: {
+          html: '',
+          js: '// Implement module pattern',
+        },
+      },
+    ],
+  },
+  bs5: {
+    stageId: 'bs5',
+    exercises: [
+      {
+        id: 'ex_bs5_1',
+        level: 'easy',
+        title: 'Basic Express App',
+        instruction:
+          'Create a basic Express application with a GET route that returns JSON.',
+        boilerplateCode: {
+          html: '',
+          js: 'const express = require("express");\nconst app = express();\n\n// Add GET route here',
+        },
+      },
+      {
+        id: 'ex_bs5_2',
+        level: 'medium',
+        title: 'Route Parameters',
+        instruction:
+          'Create a route with parameters (e.g., /users/:id) that returns user data.',
+        boilerplateCode: {
+          html: '',
+          js: 'const express = require("express");\nconst app = express();\n\n// Add route with parameters',
+        },
+      },
+      {
+        id: 'ex_bs5_3',
+        level: 'hard',
+        title: 'RESTful Routes',
+        instruction:
+          'Implement full CRUD routes for a resource (GET, POST, PUT, DELETE).',
+        boilerplateCode: {
+          html: '',
+          js: 'const express = require("express");\nconst app = express();\n\n// Implement CRUD routes',
+        },
+      },
+    ],
+  },
+  bs9: {
+    stageId: 'bs9',
+    exercises: [
+      {
+        id: 'ex_bs9_1',
+        level: 'easy',
+        title: 'Connect to MongoDB',
+        instruction:
+          'Connect to a MongoDB database using the MongoDB Node.js driver.',
+        boilerplateCode: {
+          html: '',
+          js: 'const { MongoClient } = require("mongodb");\n\n// Connect to MongoDB',
+        },
+      },
+      {
+        id: 'ex_bs9_2',
+        level: 'medium',
+        title: 'Insert Document',
+        instruction: 'Insert a document into a MongoDB collection.',
+        boilerplateCode: {
+          html: '',
+          js: '// Insert document into collection',
+        },
+      },
+      {
+        id: 'ex_bs9_3',
+        level: 'hard',
+        title: 'Query Documents',
+        instruction: 'Query documents from MongoDB with filters and sorting.',
+        boilerplateCode: {
+          html: '',
+          js: '// Query documents with filters',
+        },
+      },
+    ],
+  },
+  bs10: {
+    stageId: 'bs10',
+    exercises: [
+      {
+        id: 'ex_bs10_1',
+        level: 'easy',
+        title: 'Define Schema',
+        instruction:
+          'Define a Mongoose schema for a User model with name and email fields.',
+        boilerplateCode: {
+          html: '',
+          js: 'const mongoose = require("mongoose");\n\n// Define User schema',
+        },
+      },
+      {
+        id: 'ex_bs10_2',
+        level: 'medium',
+        title: 'Create Model',
+        instruction:
+          'Create a Mongoose model from the schema and use it to save a document.',
+        boilerplateCode: {
+          html: '',
+          js: '// Create model and save document',
+        },
+      },
+      {
+        id: 'ex_bs10_3',
+        level: 'hard',
+        title: 'Schema Validation',
+        instruction:
+          'Add validation rules to the Mongoose schema (required, unique, etc.).',
+        boilerplateCode: {
+          html: '',
+          js: '// Add validation to schema',
+        },
+      },
+    ],
+  },
+  bs13: {
+    stageId: 'bs13',
+    exercises: [
+      {
+        id: 'ex_bs13_1',
+        level: 'easy',
+        title: 'Generate JWT',
+        instruction: 'Generate a JWT token using the jsonwebtoken library.',
+        boilerplateCode: {
+          html: '',
+          js: 'const jwt = require("jsonwebtoken");\n\n// Generate JWT token',
+        },
+      },
+      {
+        id: 'ex_bs13_2',
+        level: 'medium',
+        title: 'Verify JWT',
+        instruction: 'Verify a JWT token and extract the payload.',
+        boilerplateCode: {
+          html: '',
+          js: '// Verify JWT token',
+        },
+      },
+      {
+        id: 'ex_bs13_3',
+        level: 'hard',
+        title: 'Auth Middleware',
+        instruction:
+          'Create Express middleware that verifies JWT tokens for protected routes.',
+        boilerplateCode: {
+          html: '',
+          js: '// Create auth middleware',
+        },
+      },
+    ],
+  },
+};
 
 export interface StageProgress {
   isPracticeUnlocked: boolean;
