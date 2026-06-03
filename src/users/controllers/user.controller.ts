@@ -7,25 +7,42 @@ import { MyProfileResponse } from '../dtos';
 import { UserService } from '../services';
 import { ReqUser } from '@/auth/decorators';
 
+interface UserProfilePayload {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  name: string;
+  userTitle: string;
+  avatarUrl: string;
+}
+
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
-  public myProfile(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
-  ): MyProfileResponse {
+  public myProfile(@ReqUser() authUser: Express.AuthenticatedHttpUser): {
+    data: UserProfilePayload;
+  } {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!authUser.profile) {
+    if (!authUser?.profile) {
       return {
-        email: 'guest@example.com',
-        firstName: 'Guest',
-        lastName: 'User',
-        avatarUrl: '',
+        data: {
+          name: 'Guest User',
+          userTitle: 'Frontend Learner',
+          avatarUrl: '',
+        },
       };
     }
-    return new MyProfileResponse(authUser.profile);
+    const profile = new MyProfileResponse(authUser.profile);
+    return {
+      data: {
+        ...profile,
+        name: `${profile.firstName} ${profile.lastName}`.trim(),
+        userTitle: 'Frontend Learner',
+      },
+    };
   }
 
   @Get('progress')
