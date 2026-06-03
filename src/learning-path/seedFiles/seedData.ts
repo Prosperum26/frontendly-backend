@@ -116,6 +116,7 @@ async function seed(): Promise<void> {
           id: m.id,
           title: m.title,
           status: m.status,
+          icon: m.icon,
           stages,
         },
       },

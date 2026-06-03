@@ -265,6 +265,7 @@ export class LearningPathService {
         return {
           id: milestone.id,
           title: milestone.title,
+          icon: milestone.icon,
           status: computedStatus,
           stages: stagesWithProgress,
         };
@@ -293,7 +294,7 @@ export class LearningPathService {
     }
 
     // ── Dummy fallback ───────────────────────────────────────
-    if (skillId !== 'frontend') {
+    if (!['frontend', 'javascript'].includes(skillId)) {
       throw new NotFoundException(`Roadmap not found for skill: ${skillId}`);
     }
 
@@ -336,6 +337,7 @@ export class LearningPathService {
       return {
         id: milestone.id,
         title: milestone.title,
+        icon: milestone.icon,
         status: computedStatus,
         stages: stagesWithProgress,
       };
@@ -344,7 +346,7 @@ export class LearningPathService {
     const startIndex = (page - 1) * limit;
 
     return {
-      skillId: 'frontend',
+      skillId,
       skillTitle: ROADMAPS[0].skillTitle,
       userProgress: {
         currentXp: progress.currentXp,

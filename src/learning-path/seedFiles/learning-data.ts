@@ -1,18 +1,8 @@
 const ROADMAPS = [
   {
-    skillId: 'frontend-foundations',
-    skillTitle: 'Frontend Mastery Foundations',
-    milestoneIds: ['m1'],
-  },
-  {
-    skillId: 'modern-ui-architecture',
-    skillTitle: 'Modern UI Architecture',
-    milestoneIds: ['m2'],
-  },
-  {
-    skillId: 'dynamic-dom-manipulation',
-    skillTitle: 'Dynamic DOM Manipulation',
-    milestoneIds: ['m3'],
+    skillId: 'javascript',
+    skillTitle: 'Frontend Learning Path',
+    milestoneIds: ['m1', 'm2', 'm3'],
   },
 ];
 
