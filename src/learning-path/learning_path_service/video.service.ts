@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
-import { XPService, StageContextService } from '../services';
+import { XPService, StageContextService, UserUtilsService } from '../services';
 
 @Injectable()
 export class VideoService {
@@ -14,6 +14,7 @@ export class VideoService {
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
     private readonly xpService: XPService,
     private readonly stageContextService: StageContextService,
+    private readonly userUtilsService: UserUtilsService,
   ) {}
 
   async updateVideoProgress(
