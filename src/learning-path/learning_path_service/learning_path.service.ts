@@ -8,19 +8,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import {
-  DUMMY_ROADMAP,
-  DUMMY_THEORIES,
-  DUMMY_PRACTICES,
-  XP_REWARDS,
-  getUserProgress,
-} from './dummy-data';
-import {
   LpExerciseDocument,
   RoadmapDocument,
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 import { TheoryDocument } from '../db_schemas/theory_schema';
+import {
+  ROADMAPS,
+  MILESTONES,
+  THEORIES,
+  PRACTICES,
+  XP_REWARDS,
+  getUserProgress,
+} from '../seedFiles/learning-data';
 
 @Injectable()
 export class LearningPathService {
@@ -94,7 +95,7 @@ export class LearningPathService {
       return { prevStageId: null, milestoneId, skillId }; // first stage overall
     }
 
-    const allMilestones = DUMMY_ROADMAP.milestones;
+    const allMilestones = MILESTONES;
     for (let mi = 0; mi < allMilestones.length; mi += 1) {
       const m = allMilestones[mi];
       const si = m.stages.findIndex(s => s.id === stageId);
@@ -103,7 +104,7 @@ export class LearningPathService {
         return {
           prevStageId: m.stages[si - 1].id,
           milestoneId: m.id,
-          skillId: DUMMY_ROADMAP.skillId,
+          skillId: 'frontend',
         };
       }
       if (mi > 0) {
@@ -111,13 +112,13 @@ export class LearningPathService {
         return {
           prevStageId: prevM.stages[prevM.stages.length - 1].id,
           milestoneId: m.id,
-          skillId: DUMMY_ROADMAP.skillId,
+          skillId: 'frontend',
         };
       }
       return {
         prevStageId: null,
         milestoneId: m.id,
-        skillId: DUMMY_ROADMAP.skillId,
+        skillId: 'frontend',
       };
     }
 
@@ -308,45 +309,43 @@ export class LearningPathService {
       ]),
     );
 
-    const milestonesWithProgress = DUMMY_ROADMAP.milestones.map(
-      (milestone, index) => {
-        const stagesWithProgress = milestone.stages.map(stage => {
-          const prog = unlockedMap.get(stage.id);
-          const earnedStars = prog?.earnedStars ?? stage.earnedStars;
-          return {
-            id: stage.id,
-            title: stage.title,
-            isCompleted: earnedStars >= 3,
-            earnedStars,
-            stageProgressPercentage: Math.round((earnedStars / 3) * 100),
-          };
-        });
-
-        const allCompleted = stagesWithProgress.every(s => s.isCompleted);
-        const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
-        let computedStatus: 'locked' | 'in_progress' | 'completed';
-        if (allCompleted) {
-          computedStatus = 'completed';
-        } else if (anyProgress || index === 0) {
-          computedStatus = 'in_progress';
-        } else {
-          computedStatus = 'locked';
-        }
-
+    const milestonesWithProgress = MILESTONES.map((milestone, index) => {
+      const stagesWithProgress = milestone.stages.map(stage => {
+        const prog = unlockedMap.get(stage.id);
+        const earnedStars = prog?.earnedStars ?? stage.earnedStars;
         return {
-          id: milestone.id,
-          title: milestone.title,
-          status: computedStatus,
-          stages: stagesWithProgress,
+          id: stage.id,
+          title: stage.title,
+          isCompleted: earnedStars >= 3,
+          earnedStars,
+          stageProgressPercentage: Math.round((earnedStars / 3) * 100),
         };
-      },
-    );
+      });
+
+      const allCompleted = stagesWithProgress.every(s => s.isCompleted);
+      const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
+      let computedStatus: 'locked' | 'in_progress' | 'completed';
+      if (allCompleted) {
+        computedStatus = 'completed';
+      } else if (anyProgress || index === 0) {
+        computedStatus = 'in_progress';
+      } else {
+        computedStatus = 'locked';
+      }
+
+      return {
+        id: milestone.id,
+        title: milestone.title,
+        status: computedStatus,
+        stages: stagesWithProgress,
+      };
+    });
 
     const startIndex = (page - 1) * limit;
 
     return {
-      skillId: DUMMY_ROADMAP.skillId,
-      skillTitle: DUMMY_ROADMAP.skillTitle,
+      skillId: 'frontend',
+      skillTitle: ROADMAPS[0].skillTitle,
       userProgress: {
         currentXp: progress.currentXp,
         streakDays: progress.streakDays,
@@ -383,7 +382,7 @@ export class LearningPathService {
       };
     }
 
-    const theory = <Record<string, unknown> | undefined>DUMMY_THEORIES[stageId];
+    const theory = <Record<string, unknown> | undefined>THEORIES[stageId];
     if (!theory) {
       throw new NotFoundException(`Theory not found for stage: ${stageId}`);
     }
@@ -490,7 +489,7 @@ export class LearningPathService {
       }
     }
 
-    const practices = DUMMY_PRACTICES[stageId];
+    const practices = PRACTICES[stageId];
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!practices) {
       throw new NotFoundException(`Practices not found for stage: ${stageId}`);
@@ -874,7 +873,7 @@ export class LearningPathService {
     }
 
     // Dummy fallback
-    const dummyMilestones = DUMMY_ROADMAP.milestones;
+    const dummyMilestones = MILESTONES;
     const dummySkipIndex = dummyMilestones.findIndex(
       m => m.id === skipToMilestoneId,
     );
@@ -1049,8 +1048,8 @@ export class LearningPathService {
     return {
       skills: [
         {
-          skillId: DUMMY_ROADMAP.skillId,
-          skillTitle: DUMMY_ROADMAP.skillTitle,
+          skillId: 'frontend',
+          skillTitle: ROADMAPS[0].skillTitle,
         },
       ],
     };
@@ -1133,7 +1132,7 @@ export class LearningPathService {
     }
 
     const progress = getUserProgress(userId);
-    const allMilestones = DUMMY_ROADMAP.milestones;
+    const allMilestones = MILESTONES;
     const unlockedMap = new Map(
       Object.entries(progress.stages).map(([sid, sp]) => [
         sid,
