@@ -143,6 +143,7 @@ export class StagesController {
     const data = await this.learningPathService.updateVideoProgress(
       stageId,
       body.watchPercentage,
+      body.seekPercentage ?? 0,
       userId,
     );
     return {
