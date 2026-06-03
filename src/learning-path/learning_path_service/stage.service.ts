@@ -4,7 +4,11 @@ import { Model } from 'mongoose';
 
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
-import { StageContextService, ProgressService } from '../services';
+import {
+  StageContextService,
+  ProgressService,
+  UserUtilsService,
+} from '../services';
 
 @Injectable()
 export class StageService {
@@ -17,6 +21,7 @@ export class StageService {
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
     private readonly stageContextService: StageContextService,
     private readonly progressService: ProgressService,
+    private readonly userUtilsService: UserUtilsService,
   ) {}
 
   async completeStage(
@@ -31,6 +36,20 @@ export class StageService {
   }> {
     const { milestoneId } =
       await this.stageContextService.findStageContext(stageId);
+
+    // Skip saving progress for guest users
+    if (this.userUtilsService.isGuestUser(userId)) {
+      this.logger.debug(
+        `Guest user ${userId} - skipping stage completion save`,
+      );
+      return {
+        stageId,
+        streakIncremented: false,
+        newStreakDays: 0,
+        badgeEarned: null,
+        isStageComplete: false,
+      };
+    }
 
     let badgeIcon = '';
     if (milestoneId) {

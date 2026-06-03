@@ -28,6 +28,19 @@ export class VideoService {
     const VIDEO_XP_THRESHOLD = 80;
     const MAX_SEEK_THRESHOLD = 20;
 
+    // Skip saving progress for guest users
+    if (this.userUtilsService.isGuestUser(userId)) {
+      this.logger.debug(`Guest user ${userId} - skipping video progress save`);
+      return {
+        stageId,
+        videoWatchPercentage: clampedPct,
+        videoSeekPercentage: clampedSeekPct,
+        xpEarned: 0,
+        thresholdReached: clampedPct >= VIDEO_XP_THRESHOLD,
+        seekExceeded: clampedSeekPct > MAX_SEEK_THRESHOLD,
+      };
+    }
+
     try {
       const dbProgress = await this.userProgressModel
         .findOne({ userId })
@@ -149,6 +162,21 @@ export class VideoService {
     const clampedSeekPct = Math.min(100, Math.max(0, seekPercentage));
     const VIDEO_XP_THRESHOLD = 80;
     const MAX_SEEK_THRESHOLD = 20;
+
+    // Skip saving progress for guest users
+    if (this.userUtilsService.isGuestUser(userId)) {
+      this.logger.debug(
+        `Guest user ${userId} - skipping intro video progress save`,
+      );
+      return {
+        videoWatchPercentage: clampedPct,
+        videoSeekPercentage: clampedSeekPct,
+        xpEarned: 0,
+        thresholdReached: clampedPct >= VIDEO_XP_THRESHOLD,
+        seekExceeded: clampedSeekPct > MAX_SEEK_THRESHOLD,
+        xpAlreadyAwarded: false,
+      };
+    }
 
     try {
       const dbProgress = await this.userProgressModel
