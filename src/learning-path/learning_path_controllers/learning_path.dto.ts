@@ -43,6 +43,12 @@ export class VideoProgressDto {
   @Min(0)
   @Max(100)
   watchPercentage!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  seekPercentage?: number;
 }
 
 // Phase 2: POST /learning-content/sync-placement-test

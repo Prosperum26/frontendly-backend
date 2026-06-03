@@ -79,6 +79,9 @@ export class UnlockedStage {
   @Prop({ default: 0, min: 0, max: 100 })
   videoWatchPercentage!: number;
 
+  @Prop({ default: 0, min: 0, max: 100 })
+  videoSeekPercentage!: number;
+
   @Prop({ default: false })
   badgeEarned!: boolean;
 }
@@ -119,6 +122,15 @@ export class UserLearningProgress {
 
   @Prop({ type: String, default: null })
   skipToMilestoneId!: string | null;
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  introVideoWatchPercentage!: number;
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  introVideoSeekPercentage!: number;
+
+  @Prop({ default: false })
+  introVideoXpAwarded!: boolean;
 
   @Prop({ type: [UnlockedStageSchema], default: [] })
   unlockedStages!: UnlockedStage[];
