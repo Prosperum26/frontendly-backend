@@ -1,4 +1,4 @@
-import { Roadmap } from '../../../types/learning-path.types';
+import { Roadmap } from '@/learning-path/types/learning-path.types';
 
 export const ROADMAPS: Roadmap[] = [
   {

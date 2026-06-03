@@ -1,4 +1,4 @@
-import { Milestone } from '../../../types/learning-path.types';
+import { Milestone } from '@/learning-path/types/learning-path.types';
 
 export const MILESTONES: Milestone[] = [
   {
