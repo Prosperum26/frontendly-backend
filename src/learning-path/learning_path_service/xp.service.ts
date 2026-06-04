@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { XP_REWARDS } from '../seedFiles/data';
-import { XPRewards } from '../types/learning-path.types';
+import { XpRewards } from '../types/learning-path.types';
 
 @Injectable()
-export class XPService {
-  private readonly logger: Logger = new Logger(XPService.name);
+export class XpService {
+  private readonly logger: Logger = new Logger(XpService.name);
 
   /**
    * Calculate XP reward based on exercise level
    */
-  getXPReward(level: 'easy' | 'medium' | 'hard'): number {
+  getXpReward(level: 'easy' | 'medium' | 'hard'): number {
     return XP_REWARDS[level] || 0;
   }
 
@@ -49,8 +49,8 @@ export class XPService {
   /**
    * Validate XP reward configuration
    */
-  validateXPRewards(): boolean {
-    const rewards: XPRewards = XP_REWARDS;
+  validateXpRewards(): boolean {
+    const rewards: XpRewards = XP_REWARDS;
     return (
       rewards.easy > 0 &&
       rewards.medium > rewards.easy &&

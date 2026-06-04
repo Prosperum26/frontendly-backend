@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { XpService, StageContextService, UserUtilsService } from '.';
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
-import { XPService, StageContextService, UserUtilsService } from '../learning_path_service';
 
 @Injectable()
 export class VideoService {
@@ -12,7 +12,7 @@ export class VideoService {
   constructor(
     @InjectModel('UserLearningProgress')
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
-    private readonly xpService: XPService,
+    private readonly xpService: XpService,
     private readonly stageContextService: StageContextService,
     private readonly userUtilsService: UserUtilsService,
   ) {}

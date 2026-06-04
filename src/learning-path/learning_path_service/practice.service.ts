@@ -2,12 +2,12 @@ import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { XpService, ProgressService } from '.';
 import {
   LpExerciseDocument,
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
 import { PRACTICES } from '../seedFiles/learning-data';
-import { XPService, ProgressService } from '../learning_path_service';
 
 @Injectable()
 export class PracticeService {
@@ -18,7 +18,7 @@ export class PracticeService {
     private readonly lpExerciseModel: Model<LpExerciseDocument>,
     @InjectModel('UserLearningProgress')
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
-    private readonly xpService: XPService,
+    private readonly xpService: XpService,
     private readonly progressService: ProgressService,
   ) {}
 
@@ -133,7 +133,7 @@ export class PracticeService {
       };
     }
 
-    const xpEarned = this.xpService.getXPReward(level);
+    const xpEarned = this.xpService.getXpReward(level);
 
     try {
       const dbProgress = await this.userProgressModel

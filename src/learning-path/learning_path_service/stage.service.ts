@@ -2,13 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { StageContextService, ProgressService, UserUtilsService } from '.';
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
-import {
-  StageContextService,
-  ProgressService,
-  UserUtilsService,
-} from '../learning_path_service';
 
 @Injectable()
 export class StageService {
@@ -51,19 +47,7 @@ export class StageService {
       };
     }
 
-    let badgeIcon = '';
-    if (milestoneId) {
-      const parentMilestone = await this.milestoneModel
-        .findOne({ id: milestoneId })
-        .lean();
-      if (parentMilestone) {
-        const stageDoc = parentMilestone.stages.find(s => s.id === stageId);
-        badgeIcon =
-          (<{ icon?: string }>stageDoc).icon ||
-          (<{ icon?: string }>parentMilestone).icon ||
-          '';
-      }
-    }
+    const badgeIcon = await this.resolveBadgeIcon(stageId, milestoneId);
 
     try {
       const dbProgress = await this.userProgressModel
@@ -141,5 +125,45 @@ export class StageService {
     } catch {
       throw new Error('Database not available. Please try again later.');
     }
+  }
+
+  private async resolveBadgeIcon(
+    stageId: string,
+    milestoneId: string | null | undefined,
+  ): Promise<string> {
+    if (!milestoneId) {
+      return '';
+    }
+
+    const parentMilestone = await this.milestoneModel
+      .findOne({ id: milestoneId })
+      .lean();
+
+    if (!parentMilestone) {
+      return '';
+    }
+
+    const stageDoc = parentMilestone.stages.find(s => s.id === stageId);
+    return (
+      (<{ icon?: string }>stageDoc).icon ||
+      (<{ icon?: string }>parentMilestone).icon ||
+      ''
+    );
+  }
+
+  private buildTopLevelSet(
+    stageId: string,
+    milestoneId: string | undefined,
+    streakIncremented: boolean,
+    newStreakDays: number,
+  ): Record<string, unknown> {
+    return {
+      lastActiveStageId: stageId,
+      ...(milestoneId && { lastActiveMilestoneId: milestoneId }),
+      ...(streakIncremented && {
+        streakDays: newStreakDays,
+        lastStreakDate: this.progressService.getTodayString(),
+      }),
+    };
   }
 }

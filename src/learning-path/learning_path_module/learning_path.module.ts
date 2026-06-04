@@ -14,6 +14,12 @@ import {
   ExercisesController,
   LearningContentController,
 } from '../learning_path_controllers/learning_path.controller';
+import {
+  XpService,
+  StageContextService,
+  ProgressService,
+  UserUtilsService,
+} from '../learning_path_service';
 import { LearningPathService } from '../learning_path_service/learning_path.service';
 import { PlacementService } from '../learning_path_service/placement.service';
 import { PracticeService } from '../learning_path_service/practice.service';
@@ -22,12 +28,6 @@ import { RoadmapService } from '../learning_path_service/roadmap.service';
 import { StageService } from '../learning_path_service/stage.service';
 import { TheoryService } from '../learning_path_service/theory.service';
 import { VideoService } from '../learning_path_service/video.service';
-import {
-  XPService,
-  StageContextService,
-  ProgressService,
-  UserUtilsService,
-} from '../learning_path_service';
 
 @Module({
   imports: [
@@ -54,7 +54,7 @@ import {
     StageService,
     PlacementService,
     ProgressSummaryService,
-    XPService,
+    XpService,
     StageContextService,
     ProgressService,
     UserUtilsService,
@@ -68,7 +68,7 @@ import {
     StageService,
     PlacementService,
     ProgressSummaryService,
-    XPService,
+    XpService,
     StageContextService,
     ProgressService,
     UserUtilsService,

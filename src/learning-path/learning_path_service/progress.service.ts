@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { XPService } from './xp.service';
+import { XpService } from './xp.service';
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 
@@ -15,7 +15,7 @@ export class ProgressService {
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
     @InjectModel('Milestone')
     private readonly milestoneModel: Model<MilestoneDocument>,
-    private readonly xpService: XPService,
+    private readonly xpService: XpService,
   ) {}
 
   /**
