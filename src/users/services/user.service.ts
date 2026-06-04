@@ -124,8 +124,8 @@ export class UserService {
         const stageInfo = new Map<string, { title: string; icon: string }>();
         for (const m of milestones) {
           for (const s of m.stages) {
-            if (earnedIds.includes(s.id)) {
-              stageInfo.set(s.id, {
+            if (earnedIds.includes(<string>s.id)) {
+              stageInfo.set(<string>s.id, {
                 title: s.title,
                 icon:
                   (<{ icon?: string }>s).icon ||
