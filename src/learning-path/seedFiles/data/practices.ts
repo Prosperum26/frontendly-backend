@@ -1,154 +1,72 @@
 import { Practice } from '@/learning-path/types/learning-path.types';
 
+const createReactPractice = (
+  stageId: string,
+  title: string,
+  focus: string,
+): Practice => ({
+  stageId,
+  exercises: [
+    {
+      id: `ex_${stageId}_1`,
+      level: 'easy',
+      title: `${title} Starter`,
+      instruction: `Create a small React component that demonstrates ${focus}.`,
+      boilerplateCode: {
+        html: '<div id="root"></div>',
+        js: `function App() {\n  return <section>\n    <h1>${title}</h1>\n    <p>Practice ${focus}</p>\n  </section>;\n}\n\nexport default App;`,
+      },
+    },
+    {
+      id: `ex_${stageId}_2`,
+      level: 'medium',
+      title: `${title} Interaction`,
+      instruction: `Extend the component with a realistic UI interaction using ${focus}.`,
+      boilerplateCode: {
+        html: '<div id="root"></div>',
+        js: `import { useState } from 'react';\n\nfunction App() {\n  const [active, setActive] = useState(false);\n\n  return <button onClick={() => setActive(!active)}>\n    {active ? 'Active' : 'Inactive'}\n  </button>;\n}\n\nexport default App;`,
+      },
+    },
+    {
+      id: `ex_${stageId}_3`,
+      level: 'hard',
+      title: `${title} Mini Feature`,
+      instruction: `Build a polished mini feature that combines ${focus} with reusable React structure.`,
+      boilerplateCode: {
+        html: '<div id="root"></div>',
+        js: `const items = ['Learn', 'Practice', 'Complete'];\n\nfunction App() {\n  return <main>\n    {items.map((item) => <article key={item}>{item}</article>)}\n  </main>;\n}\n\nexport default App;`,
+      },
+    },
+  ],
+});
+
 export const PRACTICES: Record<string, Practice> = {
-  s1: {
-    stageId: 's1',
-    exercises: [
-      {
-        id: 'ex_s1_1',
-        level: 'easy',
-        title: 'Create Semantic Structure',
-        instruction:
-          'Create a semantic HTML structure for a blog post with header, main, article, and footer.',
-        boilerplateCode: {
-          html: '<div>\n  <h1>My Blog</h1>\n  <div>Content here</div>\n</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s1_2',
-        level: 'medium',
-        title: 'Build Navigation',
-        instruction:
-          'Create a semantic navigation menu using <nav> and <ul> elements.',
-        boilerplateCode: {
-          html: '<div>\n  <a href="#">Home</a>\n  <a href="#">About</a>\n</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s1_3',
-        level: 'hard',
-        title: 'Complete Article Page',
-        instruction:
-          'Build a complete article page with proper semantic tags including header, nav, main, article, section, aside, and footer.',
-        boilerplateCode: {
-          html: '<div>\n  <h1>Article Title</h1>\n  <p>Content</p>\n</div>',
-          js: '',
-        },
-      },
-    ],
-  },
-  s2: {
-    stageId: 's2',
-    exercises: [
-      {
-        id: 'ex_s2_1',
-        level: 'easy',
-        title: 'Select by Class',
-        instruction:
-          'Select all elements with class "card" and change their background color.',
-        boilerplateCode: {
-          html: '<div class="card">Card 1</div>\n<div class="card">Card 2</div>',
-          js: '// Select elements with class "card"',
-        },
-      },
-      {
-        id: 'ex_s2_2',
-        level: 'medium',
-        title: 'Attribute Selectors',
-        instruction:
-          'Select all input elements with type "email" and add a border.',
-        boilerplateCode: {
-          html: '<input type="email">\n<input type="text">',
-          js: '// Select email inputs',
-        },
-      },
-      {
-        id: 'ex_s2_3',
-        level: 'hard',
-        title: 'Complex Selector',
-        instruction:
-          'Select all list items inside an ordered list with class "features" and change their color.',
-        boilerplateCode: {
-          html: '<ol class="features">\n  <li>Feature 1</li>\n  <li>Feature 2</li>\n</ol>',
-          js: '// Select list items',
-        },
-      },
-    ],
-  },
-  s3: {
-    stageId: 's3',
-    exercises: [
-      {
-        id: 'ex_s3_1',
-        level: 'easy',
-        title: 'Box Model Basics',
-        instruction: 'Set padding of 20px and margin of 10px on a div.',
-        boilerplateCode: {
-          html: '<div class="box">Content</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s3_2',
-        level: 'medium',
-        title: 'Border Box',
-        instruction:
-          'Apply box-sizing: border-box to an element with width, padding, and border.',
-        boilerplateCode: {
-          html: '<div class="container">Content</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s3_3',
-        level: 'hard',
-        title: 'Layout Calculation',
-        instruction:
-          'Calculate and set the exact width of an element considering padding, border, and margin.',
-        boilerplateCode: {
-          html: '<div class="element">Content</div>',
-          js: '',
-        },
-      },
-    ],
-  },
-  s4: {
-    stageId: 's4',
-    exercises: [
-      {
-        id: 'ex_s4_1',
-        level: 'easy',
-        title: 'Basic Flexbox',
-        instruction:
-          'Create a flex container with 3 items aligned horizontally.',
-        boilerplateCode: {
-          html: '<div class="container">\n  <div>Item 1</div>\n  <div>Item 2</div>\n  <div>Item 3</div>\n</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s4_2',
-        level: 'medium',
-        title: 'Flex Direction',
-        instruction: 'Create a flex container with items arranged vertically.',
-        boilerplateCode: {
-          html: '<div class="container">\n  <div>Item 1</div>\n  <div>Item 2</div>\n</div>',
-          js: '',
-        },
-      },
-      {
-        id: 'ex_s4_3',
-        level: 'hard',
-        title: 'Flexbox Layout',
-        instruction:
-          'Create a responsive card layout using flexbox that wraps on smaller screens.',
-        boilerplateCode: {
-          html: '<div class="card-container">\n  <div class="card">Card 1</div>\n  <div class="card">Card 2</div>\n  <div class="card">Card 3</div>\n</div>',
-          js: '',
-        },
-      },
-    ],
-  },
+  s1: createReactPractice('s1', 'Introduction to React', 'React components'),
+  s2: createReactPractice(
+    's2',
+    'JSX & Components',
+    'JSX and component composition',
+  ),
+  s3: createReactPractice('s3', 'Props & State', 'props and local state'),
+  s4: createReactPractice('s4', 'Event Handling', 'React event handlers'),
+  s5: createReactPractice('s5', 'useState & useEffect', 'state and effects'),
+  s6: createReactPractice('s6', 'Custom Hooks', 'custom hook extraction'),
+  s7: createReactPractice('s7', 'Context API', 'shared context state'),
+  s8: createReactPractice('s8', 'useReducer', 'reducer-based state updates'),
+  s9: createReactPractice(
+    's9',
+    'Component Composition',
+    'composable React layouts',
+  ),
+  s10: createReactPractice(
+    's10',
+    'Performance Optimization',
+    'memoization and render control',
+  ),
+  s11: createReactPractice('s11', 'Custom Patterns', 'reusable React patterns'),
+  s12: createReactPractice(
+    's12',
+    'Testing React Components',
+    'testable component design',
+  ),
 };

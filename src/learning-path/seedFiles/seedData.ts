@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 
-import { ROADMAPS, MILESTONES, THEORIES } from './learning-data';
+import { ROADMAPS, MILESTONES, THEORIES, PRACTICES } from './learning-data';
 
 interface RoadmapData {
   skillId: string;
@@ -65,9 +65,36 @@ const TheorySchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
 );
 
+const ExerciseSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    level: { type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' },
+    title: { type: String, required: true },
+    instruction: { type: String, required: true },
+    boilerplateCode: {
+      html: { type: String, default: '' },
+      js: { type: String, default: '' },
+    },
+  },
+  { _id: false },
+);
+
+const LpExerciseSchema = new mongoose.Schema(
+  {
+    stageId: { type: String, required: true, unique: true },
+    exercises: { type: [ExerciseSchema], default: [] },
+  },
+  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+);
+
 const Roadmap = mongoose.model('Roadmap', RoadmapSchema, 'roadmaps');
 const Milestone = mongoose.model('Milestone', MilestoneSchema, 'milestones');
 const Theory = mongoose.model('Theory', TheorySchema, 'theories');
+const LpExercise = mongoose.model(
+  'LpExercise',
+  LpExerciseSchema,
+  'lp_exercises',
+);
 
 async function seed(): Promise<void> {
   const uri = process.env.DB_URI || 'mongodb://localhost:27017/frontendly';
@@ -143,6 +170,21 @@ async function seed(): Promise<void> {
   }
   // eslint-disable-next-line no-console
   console.log(`Theories  — upserted ${theoryCount} documents\n`);
+
+  const practices = Object.values(PRACTICES);
+  let practiceCount = 0;
+  for (const p of <any[]>practices) {
+    await LpExercise.updateOne(
+      { stageId: p.stageId },
+      { $set: { stageId: p.stageId, exercises: p.exercises } },
+      { upsert: true },
+    );
+    practiceCount += 1;
+    // eslint-disable-next-line no-console
+    console.log(`Practice "${p.stageId}" — ${p.exercises.length} exercises`);
+  }
+  // eslint-disable-next-line no-console
+  console.log(`Practices — upserted ${practiceCount} documents\n`);
 
   // eslint-disable-next-line no-console
   console.log('Seeding complete!');

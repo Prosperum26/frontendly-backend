@@ -66,9 +66,10 @@ export interface UserProgress {
   badges: string[];
 }
 
-export interface XPRewards {
+export interface XpRewards {
   easy: number;
   medium: number;
   hard: number;
+  theory: number;
   videoIntro: number;
 }
