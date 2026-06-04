@@ -49,7 +49,7 @@ export class Roadmap {
     type: String,
     required: true,
     unique: true,
-    enum: ['javascript', 'backend'],
+    enum: ['react'],
   })
   skillId!: string;
 
@@ -71,10 +71,19 @@ export class UnlockedStage {
   stageId!: string;
 
   @Prop({ default: false })
+  theoryCompleted!: boolean;
+
+  @Prop({ default: false })
+  theoryXpAwarded!: boolean;
+
+  @Prop({ default: false })
   isPracticeUnlocked!: boolean;
 
   @Prop({ default: 0 })
   earnedStars!: number;
+
+  @Prop({ default: false })
+  hasSubmittedExercise!: boolean;
 
   @Prop({ default: 0, min: 0, max: 100 })
   videoWatchPercentage!: number;

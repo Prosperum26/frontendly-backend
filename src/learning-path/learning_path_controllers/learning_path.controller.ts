@@ -132,7 +132,7 @@ export class StagesController {
     }
   }
 
-  // Phase 2: PATCH /api/v1/stages/:stageId/video-progress
+  // PATCH /api/v1/stages/:stageId/video-progress
   @Patch(':stageId/video-progress')
   async updateVideoProgress(
     @Param('stageId') stageId: string,
@@ -149,6 +149,24 @@ export class StagesController {
     return {
       success: true,
       message: 'Cập nhật tiến độ video thành công',
+      data,
+    };
+  }
+
+  // GET /api/v1/milestones/:milestoneId/status
+  @Get('milestone/:milestoneId/status')
+  async getMilestoneStatus(
+    @Param('milestoneId') milestoneId: string,
+    @Req() req: Request,
+  ): Promise<unknown> {
+    const userId = extractUserId(req);
+    const data = await this.learningPathService.getMilestoneStatus(
+      milestoneId,
+      userId,
+    );
+    return {
+      success: true,
+      message: 'Lấy trạng thái milestone thành công',
       data,
     };
   }

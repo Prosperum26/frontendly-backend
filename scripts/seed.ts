@@ -2,10 +2,16 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import mongoose, { Schema } from 'mongoose';
 
+import {
+  MILESTONES,
+  ROADMAPS,
+  PRACTICES,
+  THEORIES,
+} from '../src/learning-path/seedFiles/data';
+
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const MONGO_URI =
-  process.env.DB_URI ?? 'mongodb://localhost:27017/frontendly';
+const MONGO_URI = process.env.DB_URI ?? 'mongodb://localhost:27017/frontendly';
 
 // ── Lightweight schemas (no NestJS decorators needed) ────────────────────────
 
@@ -44,51 +50,50 @@ const RoadmapSchema = new Schema(
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
 );
 
+const ExerciseSchema = new Schema(
+  {
+    id: { type: String, required: true },
+    level: { type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' },
+    title: { type: String, required: true },
+    instruction: { type: String, required: true },
+    boilerplateCode: {
+      html: { type: String, default: '' },
+      js: { type: String, default: '' },
+    },
+  },
+  { _id: false },
+);
+
+const LpExerciseSchema = new Schema(
+  {
+    stageId: { type: String, required: true, unique: true },
+    exercises: { type: [ExerciseSchema], default: [] },
+  },
+  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+);
+
+const TheorySchema = new Schema(
+  {
+    stageId: { type: String, required: true, unique: true },
+    title: { type: String, required: true },
+    videoUrl: { type: String, default: '' },
+    contentHtml: { type: String, default: '' },
+    proTips: { type: String, default: '' },
+    referenceLinks: [
+      {
+        title: { type: String, required: true },
+        url: { type: String, required: true },
+        type: { type: String, default: 'doc' },
+      },
+    ],
+  },
+  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+);
+
 const Milestone = mongoose.model('Milestone', MilestoneSchema);
 const Roadmap = mongoose.model('Roadmap', RoadmapSchema);
-
-// ── Seed data ─────────────────────────────────────────────────────────────────
-
-const MILESTONES = [
-  {
-    id: 'milestone-js-001',
-    title: 'JavaScript Fundamentals',
-    status: 'in_progress',
-    icon: 'foundation',
-    stages: [
-      { id: 'stage-js-001', title: '1. Variables & Data Types', icon: 'foundation', isCompleted: false, earnedStars: 0 },
-      { id: 'stage-js-002', title: '2. Operators & Expressions', icon: 'foundation', isCompleted: false, earnedStars: 0 },
-      { id: 'stage-js-003', title: '3. Control Flow', icon: 'foundation', isCompleted: false, earnedStars: 0 },
-    ],
-  },
-  {
-    id: 'milestone-js-002',
-    title: 'Functions & Scope',
-    status: 'locked',
-    icon: 'code',
-    stages: [
-      { id: 'stage-js-004', title: '1. Function Declarations', icon: 'code', isCompleted: false, earnedStars: 0 },
-      { id: 'stage-js-005', title: '2. Arrow Functions', icon: 'code', isCompleted: false, earnedStars: 0 },
-      { id: 'stage-js-006', title: '3. Closures & Scope', icon: 'code', isCompleted: false, earnedStars: 0 },
-    ],
-  },
-  {
-    id: 'milestone-js-003',
-    title: 'Arrays & Objects',
-    status: 'locked',
-    icon: 'array',
-    stages: [
-      { id: 'stage-js-007', title: '1. Array Methods', icon: 'array', isCompleted: false, earnedStars: 0 },
-      { id: 'stage-js-008', title: '2. Object Destructuring', icon: 'array', isCompleted: false, earnedStars: 0 },
-    ],
-  },
-];
-
-const ROADMAP = {
-  skillId: 'javascript',
-  skillTitle: 'JavaScript',
-  milestoneIds: MILESTONES.map((m) => m.id),
-};
+const LpExercise = mongoose.model('LpExercise', LpExerciseSchema);
+const Theory = mongoose.model('Theory', TheorySchema);
 
 // ── Runner ────────────────────────────────────────────────────────────────────
 
@@ -98,6 +103,7 @@ async function seed(): Promise<void> {
   console.log('Connected.\n');
 
   // Upsert milestones
+  console.log('Seeding Milestones...');
   for (const data of MILESTONES) {
     await Milestone.findOneAndUpdate({ id: data.id }, data, {
       upsert: true,
@@ -108,12 +114,43 @@ async function seed(): Promise<void> {
   }
 
   // Upsert roadmap
-  await Roadmap.findOneAndUpdate({ skillId: ROADMAP.skillId }, ROADMAP, {
-    upsert: true,
-    returnDocument: 'after',
-    setDefaultsOnInsert: true,
-  });
-  console.log(`  ✓ Roadmap skillId="${ROADMAP.skillId}"`);
+  console.log('\nSeeding Roadmap...');
+  for (const roadmap of ROADMAPS) {
+    await Roadmap.findOneAndUpdate({ skillId: roadmap.skillId }, roadmap, {
+      upsert: true,
+      returnDocument: 'after',
+      setDefaultsOnInsert: true,
+    });
+    console.log(`  ✓ Roadmap skillId="${roadmap.skillId}"`);
+  }
+
+  // Upsert practices/exercises
+  console.log('\nSeeding Practices (LpExercise)...');
+  for (const [stageId, practice] of Object.entries(PRACTICES)) {
+    await LpExercise.findOneAndUpdate(
+      { stageId: practice.stageId },
+      { stageId: practice.stageId, exercises: practice.exercises },
+      {
+        upsert: true,
+        returnDocument: 'after',
+        setDefaultsOnInsert: true,
+      },
+    );
+    console.log(
+      `  ✓ Practice for stage "${stageId}" (${practice.exercises.length} exercises)`,
+    );
+  }
+
+  // Upsert theories
+  console.log('\nSeeding Theories...');
+  for (const [stageId, theory] of Object.entries(THEORIES)) {
+    await Theory.findOneAndUpdate({ stageId: theory.stageId }, theory, {
+      upsert: true,
+      returnDocument: 'after',
+      setDefaultsOnInsert: true,
+    });
+    console.log(`  ✓ Theory for stage "${stageId}" (${theory.title})`);
+  }
 
   console.log('\nSeeding complete.');
   await mongoose.disconnect();
