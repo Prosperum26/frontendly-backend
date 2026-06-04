@@ -8,9 +8,9 @@ export class XpService {
   private readonly logger: Logger = new Logger(XpService.name);
 
   /**
-   * Calculate XP reward based on exercise level
+   * Calculate XP reward based on exercise level or content type
    */
-  getXpReward(level: 'easy' | 'medium' | 'hard'): number {
+  getXpReward(level: 'easy' | 'medium' | 'hard' | 'theory'): number {
     return XP_REWARDS[level] || 0;
   }
 

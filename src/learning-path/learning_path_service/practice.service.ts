@@ -2,7 +2,7 @@ import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { XpService, ProgressService } from '.';
+import { XpService, ProgressService, UserUtilsService } from '.';
 import {
   LpExerciseDocument,
   UserLearningProgressDocument,
@@ -20,12 +20,19 @@ export class PracticeService {
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
     private readonly xpService: XpService,
     private readonly progressService: ProgressService,
+    private readonly userUtilsService: UserUtilsService,
   ) {}
 
   async unlockPractice(
     stageId: string,
     userId: string = 'dummy-user-001',
   ): Promise<unknown> {
+    // Skip saving progress for guest users
+    if (this.userUtilsService.isGuestUser(userId)) {
+      this.logger.debug(`Guest user ${userId} - skipping practice unlock save`);
+      return { stageId, isPracticeUnlocked: true };
+    }
+
     try {
       const existing = await this.userProgressModel.findOne({ userId }).lean();
       if (existing) {
@@ -134,6 +141,26 @@ export class PracticeService {
     }
 
     const xpEarned = this.xpService.getXpReward(level);
+
+    // Skip saving progress for guest users
+    if (this.userUtilsService.isGuestUser(userId)) {
+      const parts = exerciseId.split('_');
+      const exerciseIndex = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
+      const isCompleted = exerciseIndex >= 3;
+      this.logger.debug(`Guest user ${userId} - skipping practice submit save`);
+      return {
+        status: 'passed',
+        feedback: 'Chính xác! Test case đã vượt qua (Chế độ Khách).',
+        xpEarned,
+        streakIncremented: false,
+        badgeEarned: null,
+        stageUpdates: {
+          stageId,
+          totalEarnedStars: exerciseIndex,
+          isStageCompleted: isCompleted,
+        },
+      };
+    }
 
     try {
       const dbProgress = await this.userProgressModel

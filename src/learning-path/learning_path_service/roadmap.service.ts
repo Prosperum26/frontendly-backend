@@ -61,10 +61,11 @@ export class RoadmapService {
         const stagesWithProgress = milestone.stages.map(stage => {
           const prog = unlockedMap.get(stage.id);
           const earnedStars = prog?.earnedStars ?? 0;
+          const hasSubmittedExercise = prog?.isPracticeUnlocked ?? false;
           return {
             id: stage.id,
             title: stage.title,
-            isCompleted: earnedStars >= 3,
+            isCompleted: hasSubmittedExercise,
             earnedStars,
             stageProgressPercentage: Math.round((earnedStars / 3) * 100),
           };
