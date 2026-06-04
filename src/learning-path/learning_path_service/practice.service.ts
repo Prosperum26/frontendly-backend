@@ -7,7 +7,7 @@ import {
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
 import { PRACTICES } from '../seedFiles/learning-data';
-import { XPService, ProgressService } from '../services';
+import { XPService, ProgressService } from '../learning_path_service';
 
 @Injectable()
 export class PracticeService {

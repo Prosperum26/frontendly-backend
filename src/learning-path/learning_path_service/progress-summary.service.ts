@@ -7,7 +7,7 @@ import {
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
-import { ProgressService } from '../services';
+import { ProgressService } from '../learning_path_service';
 
 @Injectable()
 export class ProgressSummaryService {

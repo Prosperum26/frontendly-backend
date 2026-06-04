@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
-import { XPService, StageContextService, UserUtilsService } from '../services';
+import { XPService, StageContextService, UserUtilsService } from '../learning_path_service';
 
 @Injectable()
 export class VideoService {

@@ -8,7 +8,7 @@ import {
   StageContextService,
   ProgressService,
   UserUtilsService,
-} from '../services';
+} from '../learning_path_service';
 
 @Injectable()
 export class StageService {

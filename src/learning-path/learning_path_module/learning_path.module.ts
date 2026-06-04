@@ -27,7 +27,7 @@ import {
   StageContextService,
   ProgressService,
   UserUtilsService,
-} from '../services';
+} from '../learning_path_service';
 
 @Module({
   imports: [

@@ -7,7 +7,7 @@ import { RoadmapService } from './roadmap.service';
 import { StageService } from './stage.service';
 import { TheoryService } from './theory.service';
 import { VideoService } from './video.service';
-import { StageContextService } from '../services';
+import { StageContextService } from '../learning_path_service';
 
 @Injectable()
 export class LearningPathService {

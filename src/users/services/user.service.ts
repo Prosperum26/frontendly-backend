@@ -26,16 +26,11 @@ export class UserService {
     private milestoneModel: Model<MilestoneDocument>,
   ) {}
 
-  /**
-   * Create a new user. If that user already exists, update the existing user
-   * (uniqueness is determined by email).
-   */
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
     await createUserSchema.parseAsync(options);
     const { email, googleId, firstName, lastName, picture } = options;
-    // Update user information in case it doesn't already exist
     const update: UpdateQuery<User> = {
       googleId,
       firstName,
@@ -55,9 +50,6 @@ export class UserService {
     };
   }
 
-  // ── GET /users/progress ────────────────────────────────────
-  // Returns flat ProgressResponse shape the FE reads as `res.data`.
-  // Falls back to zero state for new / unauthenticated users.
   async getProgress(userId: string): Promise<{
     level: number;
     xp: number;
@@ -98,9 +90,6 @@ export class UserService {
     };
   }
 
-  // ── GET /users/badges ──────────────────────────────────────
-  // Returns { badges: Badge[] }. The FE reads `res.data.badges`.
-  // Falls back to empty array for new / unauthenticated users.
   async getBadges(userId: string): Promise<{
     badges: Array<{
       id: string;
