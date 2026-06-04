@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { StageContextService, ProgressService, UserUtilsService } from '.';
-import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
+import { StageContextService, ProgressService, UserUtilsService, XpService } from '.';
+import { UserLearningProgressDocument, RoadmapDocument } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 
 @Injectable()
@@ -13,11 +13,14 @@ export class StageService {
   constructor(
     @InjectModel('Milestone')
     private readonly milestoneModel: Model<MilestoneDocument>,
+    @InjectModel('Roadmap')
+    private readonly roadmapModel: Model<RoadmapDocument>,
     @InjectModel('UserLearningProgress')
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
     private readonly stageContextService: StageContextService,
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
+    private readonly xpService: XpService,
   ) {}
 
   async completeStage(
@@ -29,6 +32,8 @@ export class StageService {
     newStreakDays: number;
     badgeEarned: { stageId: string; icon: string } | null;
     isStageComplete: boolean;
+    xpEarned: number;
+    isMilestoneComplete?: boolean;
   }> {
     const { milestoneId } =
       await this.stageContextService.findStageContext(stageId);
@@ -44,6 +49,7 @@ export class StageService {
         newStreakDays: 0,
         badgeEarned: null,
         isStageComplete: false,
+        xpEarned: 0,
       };
     }
 
@@ -74,6 +80,9 @@ export class StageService {
 
       const awardBadge = isStageComplete && !alreadyBadged;
 
+      // Award XP for completing practice (stage)
+      const xpEarned = isStageComplete ? this.xpService.getXpReward('hard') : 0;
+
       const topLevelSet: Record<string, unknown> = {
         lastActiveStageId: stageId,
         ...(milestoneId && { lastActiveMilestoneId: milestoneId }),
@@ -94,6 +103,7 @@ export class StageService {
               'unlockedStages.$.hasSubmittedExercise': true,
               ...(awardBadge && { 'unlockedStages.$.badgeEarned': true }),
             },
+            ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
             ...(awardBadge && { $push: { badges: stageId } }),
           },
         );
@@ -101,7 +111,10 @@ export class StageService {
         await this.userProgressModel.updateOne(
           { userId },
           {
-            $set: topLevelSet,
+            $set: {
+              ...topLevelSet,
+            },
+            ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
             $push: {
               unlockedStages: {
                 stageId,
@@ -117,12 +130,23 @@ export class StageService {
         );
       }
 
+      if (isStageComplete) {
+        const { skillId } = await this.stageContextService.findStageContext(stageId);
+        await this.unlockNextStage(stageId, userId, skillId);
+      }
+
+      const isMilestoneComplete = milestoneId
+        ? await this.isMilestoneCompleted(milestoneId, userId)
+        : false;
+
       return {
         stageId,
         streakIncremented,
         newStreakDays,
         badgeEarned: awardBadge ? { stageId, icon: badgeIcon } : null,
         isStageComplete,
+        isMilestoneComplete,
+        xpEarned,
       };
     } catch {
       throw new Error('Database not available. Please try again later.');
@@ -167,5 +191,162 @@ export class StageService {
         lastStreakDate: this.progressService.getTodayString(),
       }),
     };
+  }
+
+  async unlockNextStage(
+    stageId: string,
+    userId: string,
+    skillId: string,
+  ): Promise<void> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return;
+    }
+
+    try {
+      const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
+      if (!dbRoadmap) return;
+
+      const milestoneIds = <string[]>dbRoadmap.milestoneIds;
+      const milestones = await this.milestoneModel
+        .find({ id: { $in: milestoneIds } })
+        .lean();
+
+      milestones.sort((a, b) => milestoneIds.indexOf(a.id) - milestoneIds.indexOf(b.id));
+
+      const allStages = milestones.flatMap(m => m.stages);
+      const currentIndex = allStages.findIndex(s => s.id === stageId);
+      if (currentIndex === -1 || currentIndex >= allStages.length - 1) {
+        return;
+      }
+
+      const nextStageId = allStages[currentIndex + 1].id;
+
+      // Use only userId (not skillId) to match how completeStage creates the document
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
+
+      if (dbProgress) {
+        const nextStageEntry = dbProgress.unlockedStages.find(s => s.stageId === nextStageId);
+        if (nextStageEntry) {
+          // Entry exists — just ensure isPracticeUnlocked is set correctly
+          await this.userProgressModel.updateOne(
+            { userId, 'unlockedStages.stageId': nextStageId },
+            { $set: { 'unlockedStages.$.isPracticeUnlocked': false } },
+          );
+        } else {
+          // Push new unlocked stage entry
+          await this.userProgressModel.updateOne(
+            { userId },
+            {
+              $push: {
+                unlockedStages: {
+                  stageId: nextStageId,
+                  isPracticeUnlocked: false,
+                  earnedStars: 0,
+                  videoWatchPercentage: 0,
+                  badgeEarned: false,
+                  theoryCompleted: false,
+                  theoryXpAwarded: false,
+                  hasSubmittedExercise: false,
+                },
+              },
+            },
+          );
+        }
+      } else {
+        this.logger.warn(`unlockNextStage: no progress document found for userId=${userId}`);
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to unlock next stage: ${String(error)}`);
+    }
+  }
+
+  async completeTheory(
+    stageId: string,
+    userId: string,
+  ): Promise<{ xpEarned: number }> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return { xpEarned: 0 };
+    }
+
+    try {
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
+
+      if (!dbProgress) {
+        return { xpEarned: 0 };
+      }
+
+      const stageEntry = dbProgress.unlockedStages.find(
+        s => s.stageId === stageId,
+      );
+
+      const alreadyAwarded = stageEntry?.theoryXpAwarded ?? false;
+      const xpEarned = alreadyAwarded ? 0 : this.xpService.getXpReward('theory');
+
+      if (stageEntry) {
+        if (!stageEntry.theoryCompleted || !alreadyAwarded) {
+          await this.userProgressModel.updateOne(
+            { userId, 'unlockedStages.stageId': stageId },
+            {
+              $set: {
+                'unlockedStages.$.theoryCompleted': true,
+                'unlockedStages.$.theoryXpAwarded': true,
+                'unlockedStages.$.isPracticeUnlocked': true,
+              },
+              ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
+            },
+          );
+        }
+      } else {
+        await this.userProgressModel.updateOne(
+          { userId },
+          {
+            $push: {
+              unlockedStages: {
+                stageId,
+                theoryCompleted: true,
+                theoryXpAwarded: true,
+                isPracticeUnlocked: true,
+                earnedStars: 0,
+                videoWatchPercentage: 0,
+                badgeEarned: false,
+              },
+            },
+            ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
+          },
+        );
+      }
+
+      return { xpEarned };
+    } catch (error) {
+      this.logger.warn(`Failed to complete theory: ${String(error)}`);
+      return { xpEarned: 0 };
+    }
+  }
+
+  async isMilestoneCompleted(
+    milestoneId: string,
+    userId: string,
+  ): Promise<boolean> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return false;
+    }
+
+    try {
+      const milestone = await this.milestoneModel.findOne({ id: milestoneId }).lean();
+      if (!milestone) return false;
+
+      const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+      if (!dbProgress) return false;
+
+      const unlockedMap = new Map(dbProgress.unlockedStages.map(s => [s.stageId, s.earnedStars]));
+      return milestone.stages.every(s => (unlockedMap.get(s.id) ?? 0) >= 1);
+    } catch (error) {
+      this.logger.warn(`Error checking milestone completion: ${String(error)}`);
+      return false;
+    }
   }
 }

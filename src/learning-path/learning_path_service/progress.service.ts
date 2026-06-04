@@ -43,6 +43,7 @@ export class ProgressService {
         earnedStars: number;
         isPracticeUnlocked: boolean;
         videoWatchPercentage: number;
+        theoryCompleted?: boolean;
       }
     >,
   ): {
@@ -50,29 +51,31 @@ export class ProgressService {
     milestoneProgress: Record<string, number>;
   } {
     let totalStages = 0;
-    let totalCompleted = 0;
+    let totalCompletedProgress = 0;
     const milestoneProgress: Record<string, number> = {};
 
     for (const m of milestones) {
       const stageCount = m.stages.length;
       totalStages += stageCount;
-      let completedInMilestone = 0;
+      let completedProgressInMilestone = 0;
 
       for (const s of m.stages) {
-        if ((unlockedMap.get(s.id)?.earnedStars ?? 0) >= 3) {
-          completedInMilestone += 1;
-          totalCompleted += 1;
-        }
+        const prog = unlockedMap.get(s.id);
+        const earnedStars = prog?.earnedStars ?? 0;
+        const theoryCompleted = prog?.theoryCompleted ?? false;
+        const stageProgress = (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
+        completedProgressInMilestone += stageProgress;
+        totalCompletedProgress += stageProgress;
       }
 
       milestoneProgress[m.id] =
         stageCount > 0
-          ? Math.round((completedInMilestone / stageCount) * 100)
+          ? Math.round(completedProgressInMilestone / stageCount)
           : 0;
     }
 
     const courseProgressPercentage =
-      totalStages > 0 ? Math.round((totalCompleted / totalStages) * 100) : 0;
+      totalStages > 0 ? Math.round(totalCompletedProgress / totalStages) : 0;
 
     return { courseProgressPercentage, milestoneProgress };
   }
@@ -132,23 +135,21 @@ export class ProgressService {
     return { streakIncremented, newStreakDays };
   }
 
-  /**
-   * Calculate milestone progress percentage
-   */
   calculateMilestoneProgress(
     milestone: { stages: Array<{ id: string }> },
-    unlockedMap: Map<string, { earnedStars: number }>,
+    unlockedMap: Map<string, { earnedStars: number; theoryCompleted?: boolean }>,
   ): number {
     const stageCount = milestone.stages.length;
     if (stageCount === 0) return 0;
 
-    let completed = 0;
+    let completedProgress = 0;
     for (const s of milestone.stages) {
-      if ((unlockedMap.get(s.id)?.earnedStars ?? 0) >= 3) {
-        completed += 1;
-      }
+      const prog = unlockedMap.get(s.id);
+      const earnedStars = prog?.earnedStars ?? 0;
+      const theoryCompleted = prog?.theoryCompleted ?? false;
+      completedProgress += (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
     }
 
-    return Math.round((completed / stageCount) * 100);
+    return Math.round(completedProgress / stageCount);
   }
 }

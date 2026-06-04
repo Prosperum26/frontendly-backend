@@ -53,37 +53,40 @@ export class RoadmapService {
             earnedStars: us.earnedStars,
             isPracticeUnlocked: us.isPracticeUnlocked,
             videoWatchPercentage: us.videoWatchPercentage,
+            theoryCompleted: us.theoryCompleted,
           },
         ]),
       );
 
+      let prevMilestoneCompleted = false;
       const milestonesWithProgress = dbMilestones.map((milestone, index) => {
         const stagesWithProgress = milestone.stages.map(stage => {
           const prog = unlockedMap.get(stage.id);
           const earnedStars = prog?.earnedStars ?? 0;
-          const hasSubmittedExercise = prog?.isPracticeUnlocked ?? false;
+          const theoryCompleted = prog?.theoryCompleted ?? false;
+          const stageProgressPercentage = (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
           return {
             id: stage.id,
             title: stage.title,
-            isCompleted: hasSubmittedExercise,
+            isCompleted: earnedStars >= 1,
             earnedStars,
-            stageProgressPercentage: Math.round((earnedStars / 3) * 100),
+            stageProgressPercentage,
           };
         });
 
         const allCompleted = stagesWithProgress.every(s => s.isCompleted);
-        const anyProgress = stagesWithProgress.some(s => s.earnedStars > 0);
 
-        // First milestone is always in_progress if not completed
-        // Other milestones are locked until previous milestone is completed
         let computedStatus: 'locked' | 'in_progress' | 'completed';
         if (allCompleted) {
           computedStatus = 'completed';
-        } else if (index === 0 || anyProgress) {
+        } else if (index === 0 || prevMilestoneCompleted) {
           computedStatus = 'in_progress';
         } else {
           computedStatus = 'locked';
         }
+
+        // Update previous milestone completion flag for next iteration
+        prevMilestoneCompleted = computedStatus === 'completed';
 
         return {
           id: milestone.id,

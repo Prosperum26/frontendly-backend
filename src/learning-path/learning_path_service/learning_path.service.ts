@@ -1,6 +1,6 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 
-import { StageContextService } from '.';
+import { StageContextService, UserUtilsService } from '.';
 import { PlacementService } from './placement.service';
 import { PracticeService } from './practice.service';
 import { ProgressSummaryService } from './progress-summary.service';
@@ -22,6 +22,7 @@ export class LearningPathService {
     private readonly placementService: PlacementService,
     private readonly progressSummaryService: ProgressSummaryService,
     private readonly stageContextService: StageContextService,
+    private readonly userUtilsService: UserUtilsService,
   ) {}
 
   async getRoadmap(
@@ -38,6 +39,7 @@ export class LearningPathService {
     userId: string = 'dummy-user-001',
   ): Promise<unknown> {
     await this.assertStageAccessible(stageId, userId);
+    await this.stageService.completeTheory(stageId, userId);
     return this.theoryService.getTheory(stageId);
   }
 
@@ -45,8 +47,8 @@ export class LearningPathService {
     stageId: string,
     userId: string = 'dummy-user-001',
   ): Promise<unknown> {
-    // Don't check stage accessibility - user can unlock practice immediately after viewing theory
-    // Stage completion order will be enforced at submit/complete endpoints
+    // Automatically complete theory and award points immediately when user navigates to practice
+    await this.stageService.completeTheory(stageId, userId);
     return this.practiceService.unlockPractice(stageId, userId);
   }
 
@@ -71,19 +73,36 @@ export class LearningPathService {
       stageId: string;
       totalEarnedStars: number;
       isStageCompleted: boolean;
+      isMilestoneCompleted?: boolean;
     };
   }> {
     const parts = exerciseId.split('_');
     const stageId = parts.length >= 2 ? parts[1] : 's1';
-    const { milestoneId } =
+    const { milestoneId, skillId } =
       await this.stageContextService.findStageContext(stageId);
-    return this.practiceService.submitCode(
+    const result = await this.practiceService.submitCode(
       exerciseId,
       submittedCode,
       stageId,
       milestoneId || '',
       userId,
     );
+
+    if (result.stageUpdates.totalEarnedStars >= 1) {
+      await this.stageService.unlockNextStage(stageId, userId, skillId);
+    }
+
+    const isMilestoneCompleted = milestoneId
+      ? await this.stageService.isMilestoneCompleted(milestoneId, userId)
+      : false;
+
+    return {
+      ...result,
+      stageUpdates: {
+        ...result.stageUpdates,
+        isMilestoneCompleted,
+      },
+    };
   }
 
   async updateVideoProgress(
@@ -135,6 +154,7 @@ export class LearningPathService {
     newStreakDays: number;
     badgeEarned: { stageId: string; icon: string } | null;
     isStageComplete: boolean;
+    isMilestoneComplete?: boolean;
   }> {
     return this.stageService.completeStage(stageId, userId);
   }
@@ -200,7 +220,24 @@ export class LearningPathService {
     stageId: string,
     userId: string,
   ): Promise<void> {
-    // Luôn cho phép truy cập lý thuyết (theory) để tránh lỗi 403
-    return;
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return;
+    }
+
+    const { prevStageId } = await this.stageContextService.findStageContext(stageId);
+    if (!prevStageId) {
+      return;
+    }
+
+    const progress = await this.progressSummaryService.getProgressSummary(userId).catch(() => null);
+    if (!progress || typeof progress !== 'object') {
+      throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó.');
+    }
+
+    const unlockedStages = (<{ unlockedStages?: Array<{ stageId: string; earnedStars: number }> }>progress).unlockedStages || [];
+    const prevStage = unlockedStages.find(s => s.stageId === prevStageId);
+    if (!prevStage || (prevStage.earnedStars || 0) < 1) {
+      throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó trước khi truy cập bài học này.');
+    }
   }
 }

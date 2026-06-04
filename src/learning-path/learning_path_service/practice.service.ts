@@ -276,7 +276,7 @@ export class PracticeService {
   ): { filter: Record<string, unknown>; update: Record<string, unknown> } {
     if (stageEntry) {
       return {
-        filter: { userId: '', 'unlockedStages.stageId': stageId },
+        filter: { 'unlockedStages.stageId': stageId },
         update: {
           $inc: { currentXp: xpEarned },
           $set: {
@@ -290,7 +290,7 @@ export class PracticeService {
     }
 
     return {
-      filter: { userId: '' },
+      filter: {},
       update: {
         $inc: { currentXp: xpEarned },
         $set: topLevelSet,

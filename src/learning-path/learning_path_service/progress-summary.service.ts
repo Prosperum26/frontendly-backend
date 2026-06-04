@@ -55,6 +55,7 @@ export class ProgressSummaryService {
             earnedStars: us.earnedStars,
             isPracticeUnlocked: us.isPracticeUnlocked,
             videoWatchPercentage: us.videoWatchPercentage,
+            theoryCompleted: us.theoryCompleted,
           },
         ]),
       );
