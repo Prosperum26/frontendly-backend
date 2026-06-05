@@ -5,7 +5,20 @@ const seedExercises = [
     title: 'Thẻ Tiêu Đề Cơ Bản',
     description:
       'Hãy bắt đầu với HTML bằng cách tạo một thẻ tiêu đề lớn nhất (H1) chứa dòng chữ "Xin chào FrontEndly".',
-    target_design_url: 'https://cdn.frontendly.com/designs/html-easy.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/html-easy-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/html-easy-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -32,7 +45,20 @@ const seedExercises = [
     title: 'Danh Sách Không Thứ Tự',
     description:
       'Tạo một danh sách không thứ tự (ul) chứa 3 mục (li): HTML, CSS, JavaScript.',
-    target_design_url: 'https://cdn.frontendly.com/designs/html-med.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/html-med-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/html-med-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -62,7 +88,20 @@ const seedExercises = [
     title: 'Xây Dựng Form Đăng Nhập',
     description:
       'Tạo một form gồm 2 input (type text và password) và 1 button submit.',
-    target_design_url: 'https://cdn.frontendly.com/designs/html-hard.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/html-hard-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/html-hard-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -98,7 +137,20 @@ const seedExercises = [
     title: 'Đổi Màu Nền và Chữ',
     description:
       'Dùng CSS để đổi màu nền của thẻ div thành "#333" và màu chữ thành "#fff".',
-    target_design_url: 'https://cdn.frontendly.com/designs/css-easy.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/css-easy-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/css-easy-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -128,7 +180,20 @@ const seedExercises = [
     module: 'MILESTONE 2: CSS Box Model',
     title: 'Margin và Padding',
     description: 'Thêm padding 20px và margin 10px cho phần tử .box.',
-    target_design_url: 'https://cdn.frontendly.com/designs/css-med.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/css-med-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/css-med-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -159,7 +224,20 @@ const seedExercises = [
     title: 'Box-Sizing và Border',
     description:
       'Sử dụng box-sizing: border-box và thêm một viền (border) nét đứt (dashed) màu đỏ dày 2px.',
-    target_design_url: 'https://cdn.frontendly.com/designs/css-hard.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/css-hard-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/css-hard-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -190,7 +268,20 @@ const seedExercises = [
     title: 'Khởi động Flexbox',
     description:
       'Biến .container thành một flex container để các thẻ con nằm ngang.',
-    target_design_url: 'https://cdn.frontendly.com/designs/flex-easy.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/flex-easy-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/flex-easy-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -214,7 +305,20 @@ const seedExercises = [
     title: 'Căn giữa tuyệt đối với Flexbox',
     description:
       'Dùng Flexbox để căn giữa nội dung cả theo chiều ngang (justify-content) và dọc (align-items).',
-    target_design_url: 'https://cdn.frontendly.com/designs/flex-med.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/flex-med-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/flex-med-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -245,7 +349,20 @@ const seedExercises = [
     title: 'Responsive với Flex-Wrap',
     description:
       'Cho phép các item rớt xuống hàng khi không đủ không gian bằng flex-wrap và tạo khoảng cách gap 15px.',
-    target_design_url: 'https://cdn.frontendly.com/designs/flex-hard.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/flex-hard-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/flex-hard-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -276,7 +393,20 @@ const seedExercises = [
     title: 'Tạo lưới 3 cột',
     description:
       'Sử dụng grid-template-columns để tạo một lưới chia đều 3 cột bằng 1fr.',
-    target_design_url: 'https://cdn.frontendly.com/designs/grid-easy.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/grid-easy-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/grid-easy-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -307,7 +437,20 @@ const seedExercises = [
     title: 'Rows và Gap trong Grid',
     description:
       'Thiết lập các hàng có chiều cao 100px và khoảng cách giữa các ô là 10px.',
-    target_design_url: 'https://cdn.frontendly.com/designs/grid-med.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/grid-med-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/grid-med-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -337,7 +480,20 @@ const seedExercises = [
     module: 'MILESTONE 4: CSS Grid',
     title: 'Grid Column Spanning',
     description: 'Làm cho item đầu tiên trải dài qua 2 cột bằng grid-column.',
-    target_design_url: 'https://cdn.frontendly.com/designs/grid-hard.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/grid-hard-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/grid-hard-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -361,7 +517,20 @@ const seedExercises = [
     title: 'Truy xuất phần tử DOM',
     description:
       'Dùng JavaScript thay đổi nội dung (innerHTML) của thẻ có id là "title" thành "JS thật kỳ diệu".',
-    target_design_url: 'https://cdn.frontendly.com/designs/js-easy.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/js-easy-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/js-easy-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -385,7 +554,20 @@ const seedExercises = [
     title: 'Lắng nghe Sự kiện Click',
     description:
       'Bắt sự kiện click trên id "btn". Khi click, đổi background của "box" sang "red".',
-    target_design_url: 'https://cdn.frontendly.com/designs/js-med.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/js-med-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/js-med-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',
@@ -416,7 +598,20 @@ const seedExercises = [
     title: 'Thêm class bằng classList',
     description:
       'Dùng JS kiểm tra xem #text có class "hidden" không. Nếu chưa thì add vào, nếu có rồi thì remove đi (hoặc dùng toggle).',
-    target_design_url: 'https://cdn.frontendly.com/designs/js-hard.png',
+    target_designs: [
+      {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+        url: 'https://cdn.frontendly.com/designs/js-hard-desktop.png',
+      },
+      {
+        deviceType: 'tablet',
+        width: 768,
+        height: 1024,
+        url: 'https://cdn.frontendly.com/designs/js-hard-tablet.png',
+      },
+    ],
     html_content: '',
     css_content: '',
     js_content: '',

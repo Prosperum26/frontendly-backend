@@ -5,11 +5,12 @@ const seedSubmissions = [
     exerciseId: 'ex_html_1',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content: '<h1>Xin chào FrontEndly</h1>',
     css_content: '',
     js_content: '',
@@ -20,11 +21,12 @@ const seedSubmissions = [
     exerciseId: 'ex_html_2',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content:
       '<ul>\n  <li>HTML</li>\n  <li>CSS</li>\n  <li>JavaScript</li>\n</ul>',
     css_content: '',
@@ -35,18 +37,15 @@ const seedSubmissions = [
     userId: 'user_03',
     exerciseId: 'ex_form_3',
     isCompleted: false,
-    match_percentage: 0.0, // Đạt 3/4 yêu cầu
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
-      { requirementId: 'req_3', passed: true, message: 'Thành công' },
-      {
-        requirementId: 'req_4',
-        passed: false,
-        message: 'Chưa đạt: Có button loại submit.',
-      },
+    match_percentage: 0.0,
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
+      { requirementId: 'req_3', passed: true },
+      { requirementId: 'req_4', passed: false },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content:
       '<form>\n  <input type="text" placeholder="Username" />\n  <input type="password" placeholder="Password" />\n  \n</form>',
     css_content: '',
@@ -58,11 +57,12 @@ const seedSubmissions = [
     exerciseId: 'ex_color_1',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content: '<div class="box">Học CSS thật vui</div>',
     css_content: '.box {\n  background-color: #333;\n  color: #fff;\n}',
     js_content: '',
@@ -73,19 +73,16 @@ const seedSubmissions = [
     exerciseId: 'ex_spacing_2',
     isCompleted: false,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      {
-        requirementId: 'req_2',
-        passed: false,
-        message: 'Chưa đạt: Phần tử .box phải có margin là 10px.',
-      },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: false },
     ],
     lint_errors: {
       html_err: [],
       css_err: [{ line: 3, message: 'Expected a semicolon.' }],
       js_err: [],
     },
+    visual_results: [],
     html_content: '<div class="box">CSS Box Model</div>',
     css_content:
       '.box {\n  background-color: blue\n  color: white;\n  padding: 20px;\n}',
@@ -97,11 +94,12 @@ const seedSubmissions = [
     exerciseId: 'ex_border_3',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content: '<div class="box">Viền đứt</div>',
     css_content:
       '.box {\n  width: 200px;\n  padding: 30px;\n  box-sizing: border-box;\n  border: 2px dashed red;\n}',
@@ -113,10 +111,9 @@ const seedSubmissions = [
     exerciseId: 'ex_flex_1',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-    ],
+    requirementResult: [{ requirementId: 'req_1', passed: true }],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content:
       '<div class="container">\n  <div class="item">1</div>\n  <div class="item">2</div>\n</div>',
     css_content: '.container {\n  display: flex;\n}',
@@ -128,11 +125,12 @@ const seedSubmissions = [
     exerciseId: 'ex_flexalign_2',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-      { requirementId: 'req_2', passed: true, message: 'Thành công' },
+    requirementResult: [
+      { requirementId: 'req_1', passed: true },
+      { requirementId: 'req_2', passed: true },
     ],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content:
       '<div class="container">\n  <div class="item">Center Me</div>\n</div>',
     css_content:
@@ -145,10 +143,9 @@ const seedSubmissions = [
     exerciseId: 'ex_dom_1',
     isCompleted: true,
     match_percentage: 0.0,
-    evaluationResults: [
-      { requirementId: 'req_1', passed: true, message: 'Thành công' },
-    ],
+    requirementResult: [{ requirementId: 'req_1', passed: true }],
     lint_errors: { html_err: [], css_err: [], js_err: [] },
+    visual_results: [],
     html_content: '<h1 id="title">Chưa chạy JS</h1>',
     css_content: '',
     js_content:
@@ -160,18 +157,13 @@ const seedSubmissions = [
     exerciseId: 'ex_classlist_3',
     isCompleted: false,
     match_percentage: 0.0,
-    evaluationResults: [
-      {
-        requirementId: 'req_1',
-        passed: false,
-        message: 'Chưa đạt: Cuối cùng #text phải có class "hidden".',
-      },
-    ],
+    requirementResult: [{ requirementId: 'req_1', passed: false }],
     lint_errors: {
       html_err: [],
       css_err: [],
       js_err: [{ line: 3, message: "'txt' is not defined." }],
     },
+    visual_results: [],
     html_content: '<p id="text">Văn bản này có thể bị ẩn</p>',
     css_content: '.hidden { display: none; }',
     js_content:

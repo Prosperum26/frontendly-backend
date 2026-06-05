@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { CheckLint } from './checkLint.service';
+import { VisualRegressionService } from './visual_regression.service';
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { SubmissionDocument } from '../db_schemas/submission_schema';
 import { SubmitResponse } from '../dtos/submitCodeResponse';
-import { RequirementEvaluator } from '../evaluators/requirements.evaluators';
+import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
+import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
 
 @Injectable()
 export class EditorService {
@@ -17,9 +23,10 @@ export class EditorService {
     private readonly submissionModel: Model<SubmissionDocument>,
     private readonly codeLint: CheckLint,
     private readonly reqCheck: RequirementEvaluator,
+    private readonly visualRegressionService: VisualRegressionService,
   ) {}
 
-  // Take exercise
+  // Lấy bài tập
   async getExerciseById(exerciseId: string): Promise<Exercise> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
@@ -31,6 +38,7 @@ export class EditorService {
     return exercise;
   }
 
+  // Lấy lần submit cuối
   async getLastSubmit(
     exerciseId: string,
     userId: string,
@@ -54,6 +62,7 @@ export class EditorService {
     };
   }
 
+  // Lấy bài tập
   async getExercise(exerciseId: string, userId: string): Promise<Exercise> {
     const rawExercise = await this.getExerciseById(exerciseId);
     if (!rawExercise) {
@@ -71,65 +80,162 @@ export class EditorService {
     }
   }
 
-  // Evaluate Code
-  async submitExerciseEasyOrMed(
+  // Evaluate Code khi user submit
+  async submitCode(
     userId: string,
     exerciseId: string,
     editorContent: any,
   ): Promise<SubmitResponse> {
-    const { html, css, js } = editorContent;
-    const exercise = await this.getExerciseById(exerciseId);
-    const lintResult = await this.codeLint.checkLintUserCode(html, css, js);
-    const lintError =
-      (lintResult.html_err?.length ?? 0) > 0 ||
-      (lintResult.css_err?.length ?? 0) > 0 ||
-      (lintResult.js_err?.length ?? 0) > 0;
+    try {
+      const { html, css, js } = editorContent;
+      const exercise = await this.getExerciseById(exerciseId);
 
-    let results = [];
-    let match_percentage = 0.0;
-    if (!lintError) {
-      results = this.reqCheck.evaluateCode(
+      const lintResult = await this.codeLint.checkLintUserCode(html, css, js);
+
+      const hasLintError =
+        (lintResult?.html_err?.length ?? 0) > 0 ||
+        (lintResult?.css_err?.length ?? 0) > 0 ||
+        (lintResult?.js_err?.length ?? 0) > 0;
+
+      // Khởi tạo các biến chứa kết quả mặc định an toàn tuyệt đối
+      let requirementResults: any[] = Array.isArray(exercise.requirements)
+        ? exercise.requirements.map(req => ({
+            requirementId: req.id,
+            passed: false,
+          }))
+        : [];
+
+      let visualResults: VisualEvaluationDto[] = [];
+      let matchPercentage = 0.0;
+      let isCompleted = false;
+
+      if (hasLintError) {
+        await this.saveSubmission(userId, exerciseId, editorContent, {
+          isCompleted: false,
+          match_percentage: 0,
+          lint_errors: lintResult,
+          requirementResult: requirementResults,
+          visual_results: [],
+        });
+        return {
+          isCompleted: false,
+          match_percentage: 0,
+          lint_errors: lintResult,
+          requirementResult: requirementResults,
+          visual_results: [],
+        };
+      }
+
+      // Đã tháo 'await' ở đây, khớp hoàn toàn với file requirements.evaluators.ts
+      requirementResults = this.reqCheck.evaluateCode(
         html,
         css,
         js,
         exercise.requirements,
       );
-      const countReq = results.length;
-      let countPass = 0;
-      results.forEach(req => {
-        if (req.passed) countPass += 1;
-      });
-      match_percentage = parseFloat(
-        ((countPass / countReq) * 100.0).toFixed(2),
-      );
-    } else {
-      results = exercise.requirements.map(req => {
-        return {
-          requirementId: req.id,
-          passed: false,
-        };
-      });
-    }
 
+      const countReq = requirementResults.length;
+      const countPass = requirementResults.filter(
+        (req: any) => req.passed,
+      ).length;
+      const reqCheck = countReq > 0 ? (countPass / countReq) * 100 : 100;
+      const isRequirementsPassed = reqCheck === 100;
+
+      // An toàn và tường minh tuyệt đối cho phần bài Khó
+      const isHardExercise =
+        exercise.target_designs && exercise.target_designs.length > 0;
+
+      if (isHardExercise) {
+        if (isRequirementsPassed) {
+          visualResults = await this.visualRegressionService.evaluateVisual(
+            html,
+            css,
+            js,
+            exercise.target_designs,
+          );
+
+          const isVisualPassed =
+            visualResults.length > 0 &&
+            visualResults.every(result => result.passed);
+          isCompleted = isVisualPassed;
+
+          if (isCompleted) {
+            matchPercentage = 100.0;
+          } else {
+            const totalVisualScore = visualResults.reduce(
+              (sum, current) => sum + current.matchPercentage,
+              0,
+            );
+            matchPercentage =
+              visualResults.length > 0
+                ? totalVisualScore / visualResults.length
+                : 0;
+          }
+        } else {
+          isCompleted = false;
+          matchPercentage = reqCheck;
+        }
+      } else {
+        isCompleted = isRequirementsPassed;
+        matchPercentage = parseFloat(reqCheck.toFixed(2));
+      }
+
+      const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
+
+      await this.saveSubmission(userId, exerciseId, editorContent, {
+        isCompleted,
+        match_percentage: finalMatchPercentage,
+        lint_errors: lintResult,
+        requirementResult: requirementResults,
+        visual_results: visualResults,
+      });
+
+      return {
+        isCompleted,
+        match_percentage: finalMatchPercentage,
+        lint_errors: lintResult,
+        requirementResult: requirementResults,
+        visual_results: visualResults,
+      };
+    } catch (error: any) {
+      console.error(`[SubmitCode Error] Bài tập ${exerciseId}:`, error.message);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Please try again later!');
+    }
+  }
+
+  // Hàm private yên vị dưới đáy class, chuẩn ESLint member-ordering
+  private async saveSubmission(
+    userId: string,
+    exerciseId: string,
+    editorContent: { html: string; css: string; js: string },
+    resultData: {
+      isCompleted: boolean;
+      match_percentage: number;
+      lint_errors: any;
+      requirementResult: any[];
+      visual_results: any[];
+    },
+  ): Promise<SubmissionDocument> {
     const totalSubmissions = await this.submissionModel.countDocuments();
+
     const newSubmit = new this.submissionModel({
       id: `sub_${totalSubmissions + 1}`,
-      userId: userId,
-      exerciseId: exerciseId,
-      isCompleted: match_percentage === 100.0,
-      match_percentage: match_percentage,
-      evaluationResults: results,
-      html_content: html,
-      css_content: css,
-      js_content: js,
+      userId,
+      exerciseId,
+      html_content: editorContent.html,
+      css_content: editorContent.css,
+      js_content: editorContent.js,
+      isCompleted: resultData.isCompleted,
+      match_percentage: resultData.match_percentage,
+      lint_errors: resultData.lint_errors,
+      requirementResult: resultData.requirementResult,
+      visual_results: resultData.visual_results,
     });
-    await newSubmit.save();
 
-    return {
-      isCompleted: match_percentage === 100.0,
-      match_percentage: match_percentage,
-      lint_errors: lintResult,
-      evaluationResults: results,
-    };
+    await newSubmit.save();
+    return newSubmit;
   }
 }

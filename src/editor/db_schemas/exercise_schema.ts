@@ -23,6 +23,22 @@ export class ExerciseRequirement {
 const ExerciseRequirementSchema =
   SchemaFactory.createForClass(ExerciseRequirement);
 
+@Schema({ _id: false })
+export class TargetDesign {
+  @Prop({ required: true })
+  deviceType!: string;
+
+  @Prop({ required: true })
+  width!: number;
+
+  @Prop({ required: true })
+  height!: number;
+
+  @Prop({ required: true })
+  url!: string;
+}
+const TargetDesignSchema = SchemaFactory.createForClass(TargetDesign);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
   @Prop({ type: String, required: true, unique: true })
@@ -37,8 +53,8 @@ export class Exercise {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ required: true })
-  target_design_url!: string;
+  @Prop({ type: [TargetDesignSchema], default: ['desktop', 'tablet'] })
+  target_designs!: TargetDesign[];
 
   @Prop({ trim: true, default: '', maxlength: 100000 })
   html_content!: string;

@@ -27,16 +27,33 @@ export class LintErrorGroup {
 const LintErrorGroupSchema = SchemaFactory.createForClass(LintErrorGroup);
 
 @Schema({ _id: false })
-export class EvaluationResult {
+export class EvaluationRequirementResult {
   @Prop({ required: true })
   requirementId!: string;
 
   @Prop({ required: true })
   passed!: boolean;
 }
-const EvaluationResultSchema = SchemaFactory.createForClass(EvaluationResult);
+const EvaluationResultSchema = SchemaFactory.createForClass(
+  EvaluationRequirementResult,
+);
 
-// 🟢 4. Schema Chính
+@Schema({ _id: false })
+export class VisualTestResult {
+  @Prop({ required: true })
+  deviceType!: string;
+
+  @Prop({ required: true })
+  passed!: boolean;
+
+  @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
+  matchPercentage!: mongoose.Types.Decimal128;
+
+  @Prop({ type: String, default: null })
+  diffImageUrl!: string | null;
+}
+const VisualTestResultSchema = SchemaFactory.createForClass(VisualTestResult);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Submission {
   @Prop({ type: String, required: true, unique: true })
@@ -55,14 +72,16 @@ export class Submission {
   match_percentage!: mongoose.Types.Decimal128;
 
   @Prop({ type: [EvaluationResultSchema], default: [] })
-  evaluationResults!: EvaluationResult[];
+  requirementResult!: EvaluationRequirementResult[];
 
-  // 👉 THAY ĐỔI Ở ĐÂY: Lưu nguyên 1 object chứa 3 mảng lỗi
   @Prop({
     type: LintErrorGroupSchema,
     default: { html_err: [], css_err: [], js_err: [] },
   })
   lint_errors!: LintErrorGroup;
+
+  @Prop({ type: [VisualTestResultSchema], default: [] })
+  visual_results!: VisualTestResult[];
 
   @Prop({ trim: true, maxlength: 100000, default: '' })
   html_content!: string;

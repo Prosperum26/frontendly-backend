@@ -14,12 +14,12 @@ export class CheckLintInternalCss {
     const { document } = HTML.window;
     const styles = document.querySelectorAll('style');
 
-    let internalCSS = '';
+    let internalCss = '';
     styles.forEach((style: HTMLStyleElement) => {
-      internalCSS += style.innerHTML;
+      internalCss += style.innerHTML;
     });
 
-    if (!internalCSS || internalCSS.trim() === '') return [];
+    if (!internalCss || internalCss.trim() === '') return [];
     const config = {
       rules: {
         'color-no-invalid-hex': true, // mã màu sai
@@ -34,7 +34,7 @@ export class CheckLintInternalCss {
     };
 
     const result = await stylelint.lint({
-      code: internalCSS,
+      code: internalCss,
       config: config,
     });
 

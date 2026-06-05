@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-const { HTMLHint } = require('htmlhint');
+const { htmlHint } = require('htmlhint');
 
 @Injectable()
 export class CheckLintHtml {
@@ -24,7 +24,7 @@ export class CheckLintHtml {
       'inline-style-disabled': true, // Cho inline css
       'inline-script-disabled': true, // Cho inline js
     };
-    const result = await HTMLHint.verify(html, config);
+    const result = await htmlHint.verify(html, config);
     const lintResult = result.map((err: any) => {
       return {
         line: err.line,

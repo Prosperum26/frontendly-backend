@@ -34,13 +34,13 @@ export class EditorController {
   }
 
   @Post(':exerciseId/:userId/submit')
-  async SubmitCode(
+  async submitCode(
     @Param('exerciseId') exerciseId: string,
     @Param('userId') userId: string,
     @Body() submitCode: SubmitCodeDto,
   ): Promise<SubmitResponse> {
     try {
-      return await this.editorService.submitExerciseEasyOrMed(
+      return await this.editorService.submitCode(
         userId,
         exerciseId,
         submitCode.editorContent,

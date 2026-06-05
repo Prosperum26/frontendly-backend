@@ -15,8 +15,8 @@ export class CheckLintInternalJs {
     const script = document.querySelectorAll('script');
 
     let js = '';
-    script.forEach((internalJS: HTMLScriptElement) => {
-      js += internalJS.innerHTML;
+    script.forEach((internalJs: HTMLScriptElement) => {
+      js += internalJs.innerHTML;
     });
 
     if (!js || js.trim() === '') return [];
