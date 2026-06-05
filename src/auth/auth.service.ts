@@ -2,10 +2,9 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 
@@ -17,63 +16,71 @@ import { User } from '@/users/schemas';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService,
     private tokenService: TokenService,
-  ) {}
+  ) { }
 
-  async register(body: RegisterDto): Promise<{ message: string }> {
-    const { email, password, name } = body;
-    const exist = await this.userModel.findOne({ email });
-    if (exist) throw new BadRequestException('Email đã tồn tại');
+  async register(dto: RegisterDto): Promise<{ message: string }> {
+    const { email, password, name } = dto;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    const hashedPassword = await bcrypt.hash(<string>password, 10);
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new BadRequestException('Email đã tồn tại');
+    }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
     await this.userModel.create({
       name,
       email,
       password: hashedPassword,
     });
 
+    this.logger.log(`User registered successfully: ${email}`);
     return { message: 'Đăng ký thành công' };
   }
 
-  async login(body: LoginDto): Promise<{ message: string; token: string }> {
-    const { email, password } = body;
+  async login(dto: LoginDto): Promise<{ message: string; token: string }> {
+    const { email, password } = dto;
 
+    // Find user with password field
     const user = await this.userModel
       .findOne({ email })
       .select('+password')
       .lean();
 
-    const userDoc = <Record<string, string>>(<unknown>user);
-
-    if (
-      !user ||
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      !(await bcrypt.compare(<string>password, <string>userDoc.password))
-    ) {
+    if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
 
-    const tokenDoc = await this.tokenService.create(
-      new Types.ObjectId(userDoc._id),
-    );
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+    }
+
+    // Create access token
+    const tokenDoc = await this.tokenService.create(user._id);
     const token = await this.tokenService.signAccessToken(tokenDoc);
 
+    this.logger.log(`User logged in successfully: ${email}`);
     return { message: 'Đăng nhập thành công', token };
   }
 
   async refreshToken(
-    body: RefreshTokenDto,
+    dto: RefreshTokenDto,
   ): Promise<{ message: string; token: string }> {
     try {
-      const { tokenId } = await this.tokenService.decodeAccessToken(
-        body.refreshToken,
-      );
+      // Decode and validate the refresh token
+      const { tokenId } = await this.tokenService.decodeAccessToken(dto.refreshToken);
 
+      // Check if old token is still valid
       const oldToken = await this.tokenService.findAndValidateToken(
         new Types.ObjectId(tokenId),
       );
@@ -81,15 +88,14 @@ export class AuthService {
         throw new UnauthorizedException('Token đã hết hạn hoặc bị vô hiệu hóa');
       }
 
-      const newTokenDoc = await this.tokenService.create(
-        new Types.ObjectId(oldToken.userId),
-      );
+      // Create new token
+      const newTokenDoc = await this.tokenService.create(oldToken.userId);
       const newToken = await this.tokenService.signAccessToken(newTokenDoc);
 
+      this.logger.log('Token refreshed successfully');
       return { message: 'Refresh token thành công', token: newToken };
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      this.logger.error('Token refresh failed', error);
       throw new UnauthorizedException('Refresh token không hợp lệ');
     }
   }

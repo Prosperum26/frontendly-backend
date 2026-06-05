@@ -27,7 +27,7 @@ import { UserModule } from '@/users/user.module';
     JwtModule.registerAsync({
       inject: [authConfigObj.KEY],
       useFactory: (authConfig: AuthConfig) => ({
-        secret: authConfig.jwtSecret || 'FrontendlySecretKey123',
+        secret: authConfig.jwtSecret,
         signOptions: { expiresIn: '1d' },
       }),
     }),

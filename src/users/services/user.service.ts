@@ -1,7 +1,5 @@
-/* eslint-disable new-cap */
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
 import { Model, UpdateQuery } from 'mongoose';
 
@@ -16,56 +14,76 @@ import {
 
 @Injectable()
 export class UserService {
-  private readonly logger: Logger = new Logger(UserService.name);
+  private readonly logger = new Logger(UserService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>
+  ) { }
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
+    // Validate input data
     await createUserSchema.parseAsync(options);
+
     const { email, googleId, firstName, lastName, picture } = options;
-    const update: UpdateQuery<User> = {
+
+    // Prepare update data
+    const updateData: UpdateQuery<User> = {
       googleId,
       firstName,
       lastName,
       avatarUrl: picture,
     };
-    const res = await this.userModel.findOneAndUpdate({ email }, update, {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: false,
-      includeResultMetadata: true,
-      lean: true,
-    });
+
+    // Find or create user
+    const result = await this.userModel.findOneAndUpdate(
+      { email },
+      updateData,
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: false,
+        includeResultMetadata: true,
+        lean: true,
+      },
+    );
+
+    const isNewUser = !result.lastErrorObject?.updatedExisting;
+    this.logger.log(`User ${isNewUser ? 'created' : 'updated'}: ${email}`);
+
     return {
-      alreadyExists: res.lastErrorObject?.updatedExisting || false,
-      user: res.value!,
+      alreadyExists: result.lastErrorObject?.updatedExisting || false,
+      user: result.value!,
     };
   }
 
   public async updateProfile(
     userId: string,
-    body: UpdateProfileDto,
+    dto: UpdateProfileDto,
   ): Promise<{ message: string; user: User }> {
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
+      .findByIdAndUpdate(userId, { $set: dto }, { new: true, lean: true })
       .select('-password');
 
     if (!updatedUser) {
       throw new BadRequestException('Không tìm thấy người dùng');
     }
 
+    this.logger.log(`User profile updated: ${userId}`);
     return {
       message: 'Cập nhật thông tin thành công',
-      user: <User>(<unknown>updatedUser),
+      user: updatedUser as User,
     };
   }
 
   public async changePassword(
     userId: string,
-    body: ChangePasswordDto,
+    dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
+    const { oldPassword, newPassword } = dto;
+
+    // Find user with password field
     const user = await this.userModel
       .findById(userId)
       .select('+password')
@@ -75,23 +93,21 @@ export class UserService {
       throw new BadRequestException('Không tìm thấy người dùng');
     }
 
-    const userDoc = <Record<string, string>>(<unknown>user);
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const isMatch = await bcrypt.compare(
-      <string>body.oldPassword,
-      <string>userDoc.password,
-    );
-    if (!isMatch) {
+    // Verify old password
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
       throw new BadRequestException('Mật khẩu cũ không chính xác');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    const hashedNewPassword = await bcrypt.hash(<string>body.newPassword, 10);
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
     await this.userModel.findByIdAndUpdate(userId, {
       password: hashedNewPassword,
     });
 
+    this.logger.log(`Password changed for user: ${userId}`);
     return { message: 'Đổi mật khẩu thành công' };
   }
 }
