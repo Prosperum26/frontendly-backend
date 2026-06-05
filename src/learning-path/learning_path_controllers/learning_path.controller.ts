@@ -223,11 +223,17 @@ export class LearningContentController {
     }
   }
 
-  // GET /api/v1/learning-content/progress/summary
+  // GET /api/v1/learning-content/progress/summary?skillId=frontend
   @Get('progress/summary')
-  async getProgressSummary(@Req() req: Request): Promise<unknown> {
+  async getProgressSummary(
+    @Req() req: Request,
+    @Query('skillId') skillId?: string,
+  ): Promise<unknown> {
     const userId = extractUserId(req);
-    const data = await this.learningPathService.getProgressSummary(userId);
+    const data = await this.learningPathService.getProgressSummary(
+      userId,
+      skillId,
+    );
     return { success: true, message: 'Lấy tiến độ học tập thành công', data };
   }
 

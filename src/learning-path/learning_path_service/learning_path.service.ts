@@ -93,7 +93,11 @@ export class LearningPathService {
     }
 
     const isMilestoneCompleted = milestoneId
-      ? await this.stageService.isMilestoneCompleted(milestoneId, userId)
+      ? await this.stageService.isMilestoneCompleted(
+          milestoneId,
+          userId,
+          skillId,
+        )
       : false;
 
     return {
@@ -212,8 +216,9 @@ export class LearningPathService {
 
   async getProgressSummary(
     userId: string = 'dummy-user-001',
+    skillId?: string,
   ): Promise<unknown> {
-    return this.progressSummaryService.getProgressSummary(userId);
+    return this.progressSummaryService.getProgressSummary(userId, skillId);
   }
 
   private async assertStageAccessible(
@@ -224,20 +229,28 @@ export class LearningPathService {
       return;
     }
 
-    const { prevStageId } = await this.stageContextService.findStageContext(stageId);
+    const { prevStageId, skillId } =
+      await this.stageContextService.findStageContext(stageId);
     if (!prevStageId) {
       return;
     }
 
-    const progress = await this.progressSummaryService.getProgressSummary(userId).catch(() => null);
+    const progress = await this.progressSummaryService
+      .getProgressSummary(userId, skillId)
+      .catch(() => null);
     if (!progress || typeof progress !== 'object') {
       throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó.');
     }
 
-    const unlockedStages = (<{ unlockedStages?: Array<{ stageId: string; earnedStars: number }> }>progress).unlockedStages || [];
+    const unlockedStages =
+      (<{ unlockedStages?: Array<{ stageId: string; earnedStars: number }> }>(
+        progress
+      )).unlockedStages || [];
     const prevStage = unlockedStages.find(s => s.stageId === prevStageId);
     if (!prevStage || (prevStage.earnedStars || 0) < 1) {
-      throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó trước khi truy cập bài học này.');
+      throw new ForbiddenException(
+        'Bạn phải hoàn thành bài học trước đó trước khi truy cập bài học này.',
+      );
     }
   }
 }

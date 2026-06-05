@@ -25,8 +25,11 @@ export class ProgressSummaryService {
 
   async getProgressSummary(
     userId: string = 'dummy-user-001',
+    skillId?: string,
   ): Promise<unknown> {
-    const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+    const query: { userId: string; skillId?: string } = { userId };
+    if (skillId) query.skillId = skillId;
+    const dbProgress = await this.userProgressModel.findOne(query).lean();
 
     if (dbProgress) {
       const dbRoadmap = await this.roadmapModel

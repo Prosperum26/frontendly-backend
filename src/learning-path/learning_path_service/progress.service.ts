@@ -63,7 +63,8 @@ export class ProgressService {
         const prog = unlockedMap.get(s.id);
         const earnedStars = prog?.earnedStars ?? 0;
         const theoryCompleted = prog?.theoryCompleted ?? false;
-        const stageProgress = (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
+        const stageProgress =
+          (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
         completedProgressInMilestone += stageProgress;
         totalCompletedProgress += stageProgress;
       }
@@ -137,7 +138,10 @@ export class ProgressService {
 
   calculateMilestoneProgress(
     milestone: { stages: Array<{ id: string }> },
-    unlockedMap: Map<string, { earnedStars: number; theoryCompleted?: boolean }>,
+    unlockedMap: Map<
+      string,
+      { earnedStars: number; theoryCompleted?: boolean }
+    >,
   ): number {
     const stageCount = milestone.stages.length;
     if (stageCount === 0) return 0;
@@ -147,7 +151,8 @@ export class ProgressService {
       const prog = unlockedMap.get(s.id);
       const earnedStars = prog?.earnedStars ?? 0;
       const theoryCompleted = prog?.theoryCompleted ?? false;
-      completedProgress += (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
+      completedProgress +=
+        (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
     }
 
     return Math.round(completedProgress / stageCount);

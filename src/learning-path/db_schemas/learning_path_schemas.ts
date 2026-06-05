@@ -49,7 +49,6 @@ export class Roadmap {
     type: String,
     required: true,
     unique: true,
-    enum: ['react'],
   })
   skillId!: string;
 

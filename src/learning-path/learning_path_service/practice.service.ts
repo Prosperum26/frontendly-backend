@@ -1,4 +1,9 @@
-import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -7,7 +12,6 @@ import {
   LpExerciseDocument,
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
-import { PRACTICES } from '../seedFiles/learning-data';
 
 @Injectable()
 export class PracticeService {
@@ -99,14 +103,15 @@ export class PracticeService {
           })),
         };
       }
+
+      throw new NotFoundException(
+        `Không tìm thấy bài tập cho stage: ${stageId}`,
+      );
     } else {
       throw new ForbiddenException(
         'User progress not found. Please complete the theory section.',
       );
     }
-
-    const practices = PRACTICES[stageId];
-    return practices;
   }
 
   async submitCode(
