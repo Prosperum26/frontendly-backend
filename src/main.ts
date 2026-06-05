@@ -8,6 +8,10 @@ import { CommonConfig, commonConfigObj } from './common/config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
+
+  // THÊM DÒNG NÀY: Bật CORS để cho phép Frontend gọi API
+  app.enableCors();
+
   configApp(app);
   const { port } = <CommonConfig>app.get(commonConfigObj.KEY);
   await app.listen(port, () => {
