@@ -15,6 +15,7 @@ import { Token, TokenSchema } from './schemas';
 import { Session, SessionSchema } from './schemas/session.schema';
 import { GoogleAuthService, TokenService } from './services';
 import { AuthConfig, authConfigObj } from '@/common/config';
+import { EmailModule } from '@/common/email/email.module';
 import { User, UserSchema } from '@/users/schemas';
 import {
   StageProgress,
@@ -25,6 +26,7 @@ import { UserModule } from '@/users/user.module';
 @Module({
   imports: [
     forwardRef(() => UserModule),
+    EmailModule,
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
       { name: Session.name, schema: SessionSchema },

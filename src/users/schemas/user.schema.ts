@@ -7,16 +7,16 @@ export class User {
   email!: string;
 
   @Prop()
-  googleId!: string;
+  googleId?: string;
 
   @Prop()
-  firstName!: string;
+  firstName?: string;
 
   @Prop()
-  lastName!: string;
+  lastName?: string;
 
   @Prop()
-  avatarUrl!: string;
+  avatarUrl?: string;
 
   @Prop()
   username: string;
@@ -38,6 +38,18 @@ export class User {
 
   @Prop({ default: false })
   isDeleted: boolean;
+
+  @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
+  @Prop({ default: 1 })
+  level: number;
+
+  @Prop({ default: 0 })
+  xp: number;
 
   @Prop({ type: Object, default: () => ({}) })
   stats: {

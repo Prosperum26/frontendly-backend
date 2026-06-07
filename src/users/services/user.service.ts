@@ -38,16 +38,23 @@ export class UserService {
       includeResultMetadata: true,
       lean: true,
     });
+
+    const userDoc = res.value!;
+    const formattedUser = {
+      ...userDoc,
+      id: userDoc._id.toString(),
+    };
+
     return {
       alreadyExists: res.lastErrorObject?.updatedExisting || false,
-      user: res.value!,
+      user: <any>formattedUser,
     };
   }
 
   public async updateProfile(
     userId: string,
     body: UpdateProfileDto,
-  ): Promise<{ message: string; user: User }> {
+  ): Promise<{ message: string; user: any }> {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
       .select('-password');
@@ -56,9 +63,14 @@ export class UserService {
       throw new BadRequestException('Không tìm thấy người dùng');
     }
 
+    const formattedUser = {
+      ...updatedUser,
+      id: updatedUser._id.toString(),
+    };
+
     return {
       message: 'Cập nhật thông tin thành công',
-      user: <User>(<unknown>updatedUser),
+      user: <any>formattedUser,
     };
   }
 

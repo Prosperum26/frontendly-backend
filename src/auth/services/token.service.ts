@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as crypto from 'crypto';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import type { Response } from 'express';
 import { Model, Types } from 'mongoose';
 
