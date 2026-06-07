@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
 import { Model, UpdateQuery } from 'mongoose';
 
@@ -13,12 +12,22 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
+import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
+
+const XP_PER_LEVEL = 500;
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel('UserLearningProgress')
+    private userProgressModel: Model<UserLearningProgressDocument>,
+    @InjectModel('Milestone')
+    private milestoneModel: Model<MilestoneDocument>,
+  ) {}
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
@@ -105,5 +114,96 @@ export class UserService {
     });
 
     return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  async getProgress(userId: string): Promise<{
+    level: number;
+    xp: number;
+    xpToNextLevel: number;
+    progressPercent: number;
+    streak: number;
+    rank: string;
+  }> {
+    try {
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
+
+      if (dbProgress) {
+        const totalXp = dbProgress.currentXp;
+        const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
+        const xpInLevel = totalXp % XP_PER_LEVEL;
+        return {
+          level,
+          xp: xpInLevel,
+          xpToNextLevel: XP_PER_LEVEL,
+          progressPercent: Math.round((xpInLevel / XP_PER_LEVEL) * 100),
+          streak: dbProgress.streakDays,
+          rank: '-',
+        };
+      }
+    } catch (err) {
+      this.logger.warn(`getProgress DB error for ${userId}: ${String(err)}`);
+    }
+
+    return {
+      level: 1,
+      xp: 0,
+      xpToNextLevel: XP_PER_LEVEL,
+      progressPercent: 0,
+      streak: 0,
+      rank: '-',
+    };
+  }
+
+  async getBadges(userId: string): Promise<{
+    badges: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      isUnlocked: boolean;
+    }>;
+  }> {
+    try {
+      const dbProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
+
+      if (dbProgress && dbProgress.badges.length > 0) {
+        const earnedIds = <string[]>dbProgress.badges;
+
+        const milestones = await this.milestoneModel
+          .find({ 'stages.id': { $in: earnedIds } })
+          .lean();
+
+        const stageInfo = new Map<string, { title: string; icon: string }>();
+        for (const m of milestones) {
+          for (const s of m.stages) {
+            if (earnedIds.includes(<string>s.id)) {
+              stageInfo.set(<string>s.id, {
+                title: s.title,
+                icon:
+                  (<{ icon?: string }>s).icon ||
+                  (<{ icon?: string }>m).icon ||
+                  '',
+              });
+            }
+          }
+        }
+
+        return {
+          badges: earnedIds.map(id => ({
+            id,
+            name: stageInfo.get(id)?.title ?? id,
+            icon: stageInfo.get(id)?.icon ?? '',
+            isUnlocked: true,
+          })),
+        };
+      }
+    } catch (err) {
+      this.logger.warn(`getBadges DB error for ${userId}: ${String(err)}`);
+    }
+
+    return { badges: [] };
   }
 }

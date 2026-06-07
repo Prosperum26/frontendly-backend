@@ -4,7 +4,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import type { Response } from 'express';

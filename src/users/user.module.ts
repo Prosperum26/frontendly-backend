@@ -11,6 +11,8 @@ import {
 } from './schemas/stage-progress.schema';
 import { UserService } from './services';
 import { AuthModule } from '@/auth/auth.module';
+import { UserLearningProgressSchema } from '@/learning-path/db_schemas/learning_path_schemas';
+import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { AuthModule } from '@/auth/auth.module';
       { name: User.name, schema: UserSchema },
       { name: Badge.name, schema: BadgeSchema },
       { name: StageProgress.name, schema: StageProgressSchema },
+      { name: 'UserLearningProgress', schema: UserLearningProgressSchema },
+      { name: 'Milestone', schema: MilestoneSchema },
     ]),
     forwardRef(() => AuthModule),
   ],

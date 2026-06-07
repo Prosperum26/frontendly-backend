@@ -3,7 +3,9 @@ import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 
 import { Exercise } from '../db_schemas/exercise_schema';
 import { EditorService } from '../editor_service/editor.service';
+import { ConfigureAuth } from '@/auth/decorators';
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({
   path: 'exercises',
   version: '1',

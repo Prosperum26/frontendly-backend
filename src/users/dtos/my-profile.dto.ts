@@ -61,9 +61,9 @@ export class MyProfileResponse {
 
   constructor(user: User) {
     this.email = user.email;
-    this.firstName = user.firstName;
-    this.lastName = user.lastName;
-    this.avatarUrl = user.avatarUrl;
+    this.firstName = user.firstName ?? '';
+    this.lastName = user.lastName ?? '';
+    this.avatarUrl = user.avatarUrl ?? '';
     this.username = user.username;
     this.role = user.role;
     this.stats = user.stats;

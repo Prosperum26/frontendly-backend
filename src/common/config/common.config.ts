@@ -3,16 +3,22 @@ import { z } from 'zod';
 
 const commonConfigSchema = z.object({
   nodeEnv: z.enum(['local', 'development', 'production']),
-  port: z.coerce.number().positive(),
-  dbUri: z.string().nonempty(),
+  port: z.number().positive(),
+  dbUri: z.string().min(1),
 });
 
+type NodeEnv = 'local' | 'development' | 'production';
+
+type CommonConfigType = z.infer<typeof commonConfigSchema>;
+
 export const commonConfigObj = registerAs('common', () => {
-  return commonConfigSchema.parse({
-    nodeEnv: process.env.NODE_ENV,
-    port: process.env.PORT,
-    dbUri: process.env.DB_URI,
-  });
+  const config: CommonConfigType = {
+    nodeEnv: <NodeEnv>(process.env.NODE_ENV || 'local'),
+    port: parseInt(process.env.PORT || '3000', 10),
+    dbUri: process.env.DB_URI || 'mongodb://localhost:27017/frontendly',
+  };
+  commonConfigSchema.parse(config);
+  return config;
 });
 
 export type CommonConfig = ConfigType<typeof commonConfigObj>;

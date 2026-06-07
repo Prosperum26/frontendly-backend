@@ -1,9 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { PassportStrategy } from '@nestjs/passport';
 import { Model, Types } from 'mongoose';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { authConfigObj, AuthConfig } from '@/common/config';
@@ -30,7 +28,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản');
 
     const userDoc = <Record<string, unknown>>(<unknown>user);
-    // eslint-disable-next-line @typescript-eslint/naming-convention, sonarjs/no-unused-vars
     const { password: _password, ...result } = userDoc;
 
     return {

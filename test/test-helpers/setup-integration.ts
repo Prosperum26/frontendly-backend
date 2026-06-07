@@ -1,7 +1,3 @@
-/* eslint-disable import/order */
-/* eslint-disable import/first */
-/* eslint-disable import/no-mutable-exports */
-
 /**
  * Create module for integration tests, which makes some modifications to
  * out-of-process dependencies. Managed dependencies (e.g database, cache) are

@@ -1,24 +1,20 @@
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Server } from 'net';
 
 import { configApp } from './app';
 import { AppModule } from './app.module';
 import { CommonConfig, commonConfigObj } from './common/config';
-
-const logger = new Logger('Bootstrap');
+import { databaseConnect } from './editor/db_schemas/database_test';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
-
-  // THÊM DÒNG NÀY: Bật CORS để cho phép Frontend gọi API
-  app.enableCors();
-
   configApp(app);
-
+  await databaseConnect();
   const { port } = <CommonConfig>app.get(commonConfigObj.KEY);
   await app.listen(port, () => {
-    logger.log(`listening on port ${port}`);
+    /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+    console.log(`listening on port ${port}`);
   });
 }
 
@@ -29,6 +25,7 @@ bootstrap()
     if (process.send) process.send('ready');
   })
   .catch((err: unknown) => {
-    logger.error(err, 'Server startup failed');
+    /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
+    console.error(err, 'Server startup failed');
     process.exit(1);
   });
