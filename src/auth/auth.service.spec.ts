@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AuthService } from './auth.service';
 import { TokenService } from './services';
+import { EmailService } from '@/common/email/email.service';
 import { User } from '@/users/schemas';
 
 describe('AuthService', () => {
@@ -18,6 +19,10 @@ describe('AuthService', () => {
         },
         {
           provide: TokenService,
+          useValue: {},
+        },
+        {
+          provide: EmailService,
           useValue: {},
         },
       ],

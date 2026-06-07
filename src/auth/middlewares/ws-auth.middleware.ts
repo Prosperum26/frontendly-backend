@@ -1,10 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { Types } from 'mongoose';
-import { ExtendedError } from 'socket.io';
-import { Socket } from 'socket.io/dist/socket';
+import { ExtendedError, Socket } from 'socket.io';
 
+import { Token } from '../schemas';
 import { TokenService } from '../services';
+import { User } from '@/users/schemas';
+
+/**
+ * Local type extending Socket to include the authenticated user data
+ */
+interface AuthenticatedSocket extends Socket {
+  user?: {
+    token: Token;
+    profile: User;
+  };
+}
 
 /**
  * Authenticate incoming WS connections, and attach the user to `socket.user`
@@ -22,7 +33,7 @@ export class WsAuthMiddleware {
   constructor(private readonly tokenService: TokenService) {}
 
   async authenticate(
-    socket: Socket,
+    socket: AuthenticatedSocket,
     next: (err?: ExtendedError) => void,
   ): Promise<void> {
     try {

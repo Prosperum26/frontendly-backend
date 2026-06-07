@@ -18,6 +18,7 @@ export class MockUserBuilder {
       isDeleted: false,
       isSuspended: false,
       lastName: 'Doe',
+      level: 1,
       name: 'John Doe',
       role: 'user',
       skills: [],
@@ -25,6 +26,7 @@ export class MockUserBuilder {
       stage_progress: {},
       stats: {},
       username: 'johndoe',
+      xp: 0,
     };
   }
 

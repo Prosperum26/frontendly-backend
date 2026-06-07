@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private transporter!: nodemailer.Transporter;
+  private transporter?: nodemailer.Transporter;
 
   private readonly logger: Logger = new Logger(EmailService.name);
 
@@ -28,6 +28,13 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
+    if (!this.transporter) {
+      this.logger.warn(
+        `Password reset email skipped for ${to}: MAIL_HOST is not configured.`,
+      );
+      return;
+    }
+
     const resetUrl = `${this.configService.get<string>(
       'FRONTEND_URL',
     )}/reset-password?token=${token}`;

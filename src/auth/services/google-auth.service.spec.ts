@@ -59,7 +59,7 @@ describe('GoogleAuthService', () => {
         given_name: mockUser.firstName,
         email: mockUser.email,
         picture: mockUser.avatarUrl,
-        sub: mockUser.googleId,
+        sub: mockUser.googleId ?? '1234567890',
       });
       userService.createOrUpdateUser.mockResolvedValueOnce({
         alreadyExists: false,
