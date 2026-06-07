@@ -45,6 +45,7 @@
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/websockets": "^11.0.11",
     "@socket.io/admin-ui": "^0.5.1",
+    "@types/mongoose": "^5.11.97",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

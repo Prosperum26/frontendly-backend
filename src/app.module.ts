@@ -8,7 +8,6 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from './auth/guards';
 import { ApiEnvGuard } from './common/api-env/guards';
 import {
   authConfigObj,
@@ -45,7 +44,7 @@ import { UserModule } from './users/user.module';
       useValue: new ValidationPipe({ transform: true, whitelist: true }),
     },
     { provide: APP_GUARD, useClass: ApiEnvGuard },
-    { provide: APP_GUARD, useClass: AuthGuard },
+    // { provide: APP_GUARD, useClass: AuthGuard },
     {
       // Enable global response serialization
       provide: APP_INTERCEPTOR,
