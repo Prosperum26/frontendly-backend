@@ -29,9 +29,7 @@
     "prepare": "husky",
     "infra": "docker compose -f docker/local/infra.yml up",
     "infra:integration": "docker compose -f docker/integration/infra.yml up",
-    "seed:learning": "ts-node src/learning-path/seedFiles/seedData.ts",
-    "seed:editor": "ts-node src/editor/seedFiles/seedData.ts",
-    "seed": "yarn seed:learning && yarn seed:editor"
+    "seed": "ts-node scripts/seed.ts"
   },
   "dependencies": {
     "@golevelup/ts-jest": "^0.6.2",

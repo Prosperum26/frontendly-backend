@@ -72,7 +72,9 @@ describe('GoogleAuthService', () => {
       });
 
       await googleAuthService.authenticate(idToken, response);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(userService.createOrUpdateUser).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(userService.createOrUpdateUser).toHaveBeenCalledWith({
         email: mockUser.email,
         firstName: mockUser.firstName,
@@ -80,8 +82,11 @@ describe('GoogleAuthService', () => {
         picture: mockUser.avatarUrl,
         googleId: mockUser.googleId,
       });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(tokenService.create).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(tokenService.signAccessToken).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(tokenService.createSession).toHaveBeenCalledTimes(1);
     });
 
