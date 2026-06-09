@@ -1,11 +1,17 @@
-/* eslint-disable no-console */
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Body,
+  Post,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
 import { Exercise } from '../db_schemas/exercise_schema';
+import { SubmitCodeDto } from '../dtos/submit_code.dto';
+import { SubmitResponse } from '../dtos/submitCodeResponse';
 import { EditorService } from '../editor_service/editor.service';
-import { ConfigureAuth } from '@/auth/decorators';
-
-@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({
   path: 'exercises',
   version: '1',
@@ -13,16 +19,36 @@ import { ConfigureAuth } from '@/auth/decorators';
 export class EditorController {
   constructor(private readonly editorService: EditorService) {}
 
-  @Get(':exerciseId')
+  @Get(':exerciseId/:userId')
   async getExercise(
     @Param('exerciseId') exerciseId: string,
+    @Param('userId') userId: string,
   ): Promise<Exercise> {
     try {
-      const exercise = await this.editorService.getExerciseById(exerciseId);
+      const exercise = await this.editorService.getExercise(exerciseId, userId);
       return exercise;
     } catch (error) {
       console.log('Error:', error);
       throw new NotFoundException('Not found excercise');
+    }
+  }
+
+  @Post(':exerciseId/:userId/submit')
+  async submitCode(
+    @Param('exerciseId') exerciseId: string,
+    @Param('userId') userId: string,
+    @Body() submitCode: SubmitCodeDto,
+  ): Promise<SubmitResponse> {
+    try {
+      return await this.editorService.submitCode(
+        userId,
+        exerciseId,
+        submitCode.editorContent,
+      );
+    } catch (error: any) {
+      throw new InternalServerErrorException(
+        error.message || 'Error in evaluating code!',
+      );
     }
   }
 }
