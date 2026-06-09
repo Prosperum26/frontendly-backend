@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -16,6 +17,8 @@ import { RequirementEvaluator } from '../evaluators/requirements/requirements.ev
 
 @Injectable()
 export class EditorService {
+  private readonly logger = new Logger(EditorService.name);
+
   constructor(
     @InjectModel('Exercise')
     private readonly exerciseModel: Model<ExerciseDocument>,
@@ -198,7 +201,9 @@ export class EditorService {
         visual_results: visualResults,
       };
     } catch (error: any) {
-      console.error(`[SubmitCode Error] Bài tập ${exerciseId}:`, error.message);
+      this.logger.error(
+        `[SubmitCode Error] Bài tập ${exerciseId}: ${error.message}`,
+      );
       if (error instanceof NotFoundException) {
         throw error;
       }

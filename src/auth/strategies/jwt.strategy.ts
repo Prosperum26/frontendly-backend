@@ -28,7 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản');
 
     const userDoc = <Record<string, unknown>>(<unknown>user);
-    const { password: _password, ...result } = userDoc;
+    const result = { ...userDoc };
+    delete result.password;
 
     return {
       ...result,

@@ -3,10 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { ExerciseSchema } from '../db_schemas/exercise_schema';
 import { SubmissionSchema } from '../db_schemas/submission_schema';
-import { UserSchema } from '../db_schemas/userFake_schema';
 import { EditorController } from '../editor_controllers/editor.controller';
 import { CheckLint } from '../editor_service/checkLint.service';
 import { EditorService } from '../editor_service/editor.service';
+import { VisualRegressionService } from '../editor_service/visual_regression.service';
 import { CheckLintExternalCss } from '../evaluators/lint/externalCSS.evaluator';
 import { CheckLintExternalJs } from '../evaluators/lint/externalJS.evaluator';
 import { CheckLintHtml } from '../evaluators/lint/html.evaluators';
@@ -20,7 +20,6 @@ import { PuppeteerEvaluator } from '../evaluators/visual regression/puppeteer_ru
     MongooseModule.forFeature([
       { name: 'Exercise', schema: ExerciseSchema },
       { name: 'Submission', schema: SubmissionSchema },
-      { name: 'User', schema: UserSchema },
     ]),
   ],
   controllers: [EditorController],
@@ -34,7 +33,7 @@ import { PuppeteerEvaluator } from '../evaluators/visual regression/puppeteer_ru
     CheckLintInternalJs,
     RequirementEvaluator,
     PuppeteerEvaluator,
-    CheckLint,
+    VisualRegressionService,
   ],
 })
 export class EditorModule {}

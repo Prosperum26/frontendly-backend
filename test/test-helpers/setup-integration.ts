@@ -4,12 +4,14 @@
  * replaced with Docker containers, while unmanaged dependencies (e.g external
  * services) are replaced with mocks.
  */
+/* eslint-disable import/order */
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
 // Has to happen before any other imports
 config({ path: resolve(__dirname, '../../.env.integration'), override: true });
 
+import { Server } from 'net';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -18,8 +20,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { clearDatabase } from './db';
 import { configApp } from '@/app';
 import { AppModule } from '@/app.module';
-
-import { Server } from 'net';
 
 // Unmanaged dependencies
 let oauth2Client: DeepMocked<OAuth2Client>;

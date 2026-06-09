@@ -6,17 +6,23 @@ import {
   Body,
   Post,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 
 import { Exercise } from '../db_schemas/exercise_schema';
 import { SubmitCodeDto } from '../dtos/submit_code.dto';
 import { SubmitResponse } from '../dtos/submitCodeResponse';
 import { EditorService } from '../editor_service/editor.service';
+import { ConfigureAuth } from '@/auth/decorators';
+
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({
   path: 'exercises',
   version: '1',
 })
 export class EditorController {
+  private readonly logger = new Logger(EditorController.name);
+
   constructor(private readonly editorService: EditorService) {}
 
   @Get(':exerciseId/:userId')
@@ -28,7 +34,7 @@ export class EditorController {
       const exercise = await this.editorService.getExercise(exerciseId, userId);
       return exercise;
     } catch (error) {
-      console.log('Error:', error);
+      this.logger.error(`Error fetching exercise ${exerciseId}:`, error);
       throw new NotFoundException('Not found excercise');
     }
   }

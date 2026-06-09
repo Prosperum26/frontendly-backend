@@ -19,16 +19,10 @@ import { Badge } from '../schemas/badge.schema';
 import { UserService } from '../services';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 
-interface UserProfilePayload {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  name: string;
-  userTitle: string;
-  avatarUrl: string;
-}
-
-@Controller('users')
+@Controller({
+  path: 'users',
+  version: '1',
+})
 export class UserController {
   constructor(
     private readonly userService: UserService,
