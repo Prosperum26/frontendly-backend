@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
-import * as path from 'path';
 import mongoose, { Schema } from 'mongoose';
+import * as path from 'path';
 
 import {
   MILESTONES,
@@ -11,7 +11,7 @@ import {
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const MONGO_URI = process.env.DB_URI ?? 'mongodb://localhost:27017/frontendly';
+const MONGO_URI = process.env.DB_URI!;
 
 // ── Lightweight schemas (no NestJS decorators needed) ────────────────────────
 

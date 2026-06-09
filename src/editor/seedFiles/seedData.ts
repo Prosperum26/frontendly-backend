@@ -10,12 +10,12 @@ import { UserSchema } from '../db_schemas/userFake_schema';
 
 dotenv.config();
 
-const MONGO_URI = process.env.DB_URI || 'mongodb://localhost:27017/frontnendly';
+const MONGO_URI = process.env.DB_URI!;
 
 async function runSeed(): Promise<void> {
   try {
     // 1. Kết nối DB
-    await mongoose.connect(MONGO_URI, { dbName: 'frontnendly' });
+    await mongoose.connect(MONGO_URI);
 
     const UserModel = mongoose.model('User', UserSchema);
     const PracticeModel = mongoose.model('Exercise', ExerciseSchema);

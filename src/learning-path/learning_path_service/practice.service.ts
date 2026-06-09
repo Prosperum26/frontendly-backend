@@ -27,10 +27,7 @@ export class PracticeService {
     private readonly userUtilsService: UserUtilsService,
   ) {}
 
-  async unlockPractice(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async unlockPractice(stageId: string, userId: string): Promise<unknown> {
     // Skip saving progress for guest users
     if (this.userUtilsService.isGuestUser(userId)) {
       this.logger.debug(`Guest user ${userId} - skipping practice unlock save`);
@@ -75,10 +72,7 @@ export class PracticeService {
     );
   }
 
-  async getPractices(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async getPractices(stageId: string, userId: string): Promise<unknown> {
     const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
     if (dbProgress) {
       const stageEntry = dbProgress.unlockedStages.find(
@@ -119,7 +113,7 @@ export class PracticeService {
     submittedCode: { html: string; js: string },
     stageId: string,
     milestoneId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     status: string;
     feedback: string;

@@ -33,7 +33,7 @@ export class StageService {
 
   async completeStage(
     stageId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     stageId: string;
     streakIncremented: boolean;

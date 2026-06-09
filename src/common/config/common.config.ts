@@ -14,14 +14,10 @@ type CommonConfigType = z.infer<typeof commonConfigSchema>;
 
 export const commonConfigObj = registerAs('common', () => {
   const config: CommonConfigType = {
-    nodeEnv: <NodeEnv>(process.env.NODE_ENV || 'local'),
-    port: parseInt(process.env.PORT || '3000', 10),
-    dbUri: process.env.DB_URI || 'mongodb://localhost:27017/frontendly',
-    corsOrigins: (
-      process.env.CORS_ORIGINS ||
-      // eslint-disable-next-line sonarjs/no-clear-text-protocols
-      'http://localhost:5173,http://localhost:3000'
-    ).split(','),
+    nodeEnv: <NodeEnv>process.env.NODE_ENV,
+    port: parseInt(process.env.PORT!, 10),
+    dbUri: process.env.DB_URI!,
+    corsOrigins: process.env.CORS_ORIGINS!.split(','),
   };
   commonConfigSchema.parse(config);
   return config;

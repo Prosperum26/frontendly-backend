@@ -3,10 +3,7 @@ import { z } from 'zod';
 
 const observabilityConfigSchema = z.object({
   mem: z.object({
-    heapThresholdBytes: z.preprocess(
-      value => value || 150 * 1024 * 1024,
-      z.coerce.number().positive(),
-    ),
+    heapThresholdBytes: z.coerce.number().positive(),
   }),
 });
 

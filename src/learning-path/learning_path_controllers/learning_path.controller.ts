@@ -24,7 +24,7 @@ function extractUserId(req: Request): string {
   const user = <{ profile?: { _id?: { toString(): string } } } | undefined>(
     req.user
   );
-  return user?.profile?._id?.toString() ?? 'dummy-user-001';
+  return user?.profile?._id?.toString() || '';
 }
 
 @ConfigureAuth({ blockIfUnauthenticated: false })

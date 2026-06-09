@@ -21,7 +21,7 @@ export class VideoService {
     stageId: string,
     watchPercentage: number,
     seekPercentage: number = 0,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     const clampedPct = Math.min(100, Math.max(0, watchPercentage));
     const clampedSeekPct = Math.min(100, Math.max(0, seekPercentage));
@@ -155,8 +155,8 @@ export class VideoService {
   async updateIntroVideoProgress(
     watchPercentage: number,
     seekPercentage: number = 0,
-    userId: string = 'dummy-user-001',
-    skillId: string = 'frontend',
+    userId: string,
+    skillId: string,
   ): Promise<unknown> {
     const clampedPct = Math.min(100, Math.max(0, watchPercentage));
     const clampedSeekPct = Math.min(100, Math.max(0, seekPercentage));

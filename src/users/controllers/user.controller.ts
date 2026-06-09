@@ -90,6 +90,6 @@ export class UserController {
     const user = req.user as
       | { profile?: { _id?: { toString(): string } } }
       | undefined;
-    return user?.profile?._id?.toString() ?? 'dummy-user-001';
+    return user?.profile?._id?.toString() || '';
   }
 }
