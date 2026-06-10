@@ -14,6 +14,9 @@ export class MyProfileResponse {
   lastName: string;
 
   @Expose()
+  name: string;
+
+  @Expose()
   avatarUrl: string;
 
   @Expose()
@@ -21,6 +24,12 @@ export class MyProfileResponse {
 
   @Expose()
   role: string;
+
+  @Expose()
+  xp: number;
+
+  @Expose()
+  level: number;
 
   @Expose()
   stats: {
@@ -63,13 +72,16 @@ export class MyProfileResponse {
     this.email = user.email;
     this.firstName = user.firstName ?? '';
     this.lastName = user.lastName ?? '';
+    this.name = user.name ?? '';
     this.avatarUrl = user.avatarUrl ?? '';
     this.username = user.username;
-    this.role = user.role;
-    this.stats = user.stats;
-    this.social_accounts = user.social_accounts;
-    this.skills = user.skills;
-    this.badges = <any>user.badges;
-    this.stage_progress = user.stage_progress;
+    this.role = user.role ?? 'user';
+    this.xp = user.xp ?? 0;
+    this.level = user.level ?? 1;
+    this.stats = user.stats ?? {};
+    this.social_accounts = user.social_accounts ?? [];
+    this.skills = user.skills ?? [];
+    this.badges = <any>(user.badges ?? []);
+    this.stage_progress = user.stage_progress ?? {};
   }
 }

@@ -15,7 +15,6 @@ import { MyProfileResponse } from '../dtos';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User } from '../schemas';
-import { Badge } from '../schemas/badge.schema';
 import { UserService } from '../services';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 
@@ -34,13 +33,7 @@ export class UserController {
   public async myProfile(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
   ): Promise<{ success: boolean; data: MyProfileResponse }> {
-    const user = await this.userModel
-      .findById(authUser.userId)
-      .populate<{ badges: Array<{ badgeId: Badge; earnedAt: Date }> }>({
-        path: 'badges.badgeId',
-        model: Badge.name,
-      })
-      .lean();
+    const user = await this.userModel.findById(authUser.userId).lean();
 
     if (!user) {
       throw new NotFoundException('User not found');

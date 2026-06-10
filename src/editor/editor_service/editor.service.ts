@@ -38,7 +38,64 @@ export class EditorService {
       .select('-_id')
       .lean();
     if (!exercise) {
-      throw new NotFoundException('Cannot find exercise');
+      // Create a fallback exercise if none exists
+      const stageId = exerciseId.startsWith('exercise_')
+        ? exerciseId.replace('exercise_', '')
+        : 's1';
+
+      const defaultExercise: Exercise = {
+        id: exerciseId,
+        module: `frontend:${stageId}`,
+        title: `Practice for ${stageId}`,
+        level: 'easy',
+        description:
+          'Complete this practice exercise to reinforce your learning.',
+        target_designs: [],
+        html_content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Start coding here!</p>
+</body>
+</html>`,
+        css_content: `body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    color: #333;
+}`,
+        js_content: `// Start writing your JavaScript here!
+console.log('Hello from practice!');`,
+        requirements: [
+          {
+            id: 'req-1',
+            text: 'Page must have an h1 element',
+            selector: 'h1',
+            type: 'exist',
+            expectedValue: '',
+          },
+        ],
+        navigation: { prev: null, next: null },
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      // Optionally save to database
+      try {
+        await this.exerciseModel.create(defaultExercise);
+      } catch (err) {
+        this.logger.error('Failed to save default exercise:', err);
+      }
+
+      return defaultExercise;
     }
     return exercise;
   }

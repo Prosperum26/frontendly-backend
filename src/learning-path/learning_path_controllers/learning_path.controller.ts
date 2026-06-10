@@ -59,6 +59,7 @@ export class RoadmapController {
   }
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'stages', version: '1' })
 export class StagesController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -173,6 +174,7 @@ export class StagesController {
   }
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'lp-exercises', version: '1' })
 export class LpExercisesController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -194,6 +196,7 @@ export class LpExercisesController {
   }
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'learning-content', version: '1' })
 export class LearningContentController {
   constructor(private readonly learningPathService: LearningPathService) {}

@@ -41,7 +41,7 @@ export class PracticeService {
           s => s.stageId === stageId,
         );
 
-        const xpAwarded = 0;
+        const xpEarned = 0;
         // If theory was completed but practice not yet unlocked, we might want to return the theory XP here
         // if the frontend expects it. But based on current logic, theory XP is awarded in completeTheory.
         // Let's just return success.
@@ -67,7 +67,7 @@ export class PracticeService {
             },
           );
         }
-        return { stageId, isPracticeUnlocked: true, xpAwarded };
+        return { stageId, isPracticeUnlocked: true, xpAwarded: xpEarned };
       }
     } catch {
       // fall through
