@@ -14,6 +14,7 @@ import { SubmissionDocument } from '../db_schemas/submission_schema';
 import { SubmitResponse } from '../dtos/submitCodeResponse';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
+import { LearningPathService } from '@/learning-path/learning_path_service/learning_path.service';
 
 @Injectable()
 export class EditorService {
@@ -27,6 +28,7 @@ export class EditorService {
     private readonly codeLint: CheckLint,
     private readonly reqCheck: RequirementEvaluator,
     private readonly visualRegressionService: VisualRegressionService,
+    private readonly learningPathService: LearningPathService,
   ) {}
 
   // Lấy bài tập
@@ -192,6 +194,22 @@ export class EditorService {
         requirementResult: requirementResults,
         visual_results: visualResults,
       });
+
+      // Update Learning Path progress if completed
+      if (isCompleted && userId !== 'guest') {
+        try {
+          // exerciseId format: "exercise_s1"
+          const stageId = exerciseId.startsWith('exercise_')
+            ? exerciseId.replace('exercise_', '')
+            : exerciseId;
+
+          await this.learningPathService.completeStage(stageId, userId);
+        } catch (err) {
+          this.logger.error(
+            `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
+          );
+        }
+      }
 
       return {
         isCompleted,

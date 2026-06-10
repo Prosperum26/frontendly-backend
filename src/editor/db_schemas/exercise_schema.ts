@@ -50,6 +50,9 @@ export class Exercise {
   @Prop({ required: true })
   title!: string;
 
+  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' })
+  level!: 'easy' | 'medium' | 'hard';
+
   @Prop({ required: true })
   description!: string;
 

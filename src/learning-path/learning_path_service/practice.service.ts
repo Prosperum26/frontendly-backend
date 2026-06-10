@@ -40,6 +40,12 @@ export class PracticeService {
         const stageEntry = existing.unlockedStages.find(
           s => s.stageId === stageId,
         );
+
+        const xpAwarded = 0;
+        // If theory was completed but practice not yet unlocked, we might want to return the theory XP here
+        // if the frontend expects it. But based on current logic, theory XP is awarded in completeTheory.
+        // Let's just return success.
+
         if (stageEntry) {
           await this.userProgressModel.updateOne(
             { userId, 'unlockedStages.stageId': stageId },
@@ -61,7 +67,7 @@ export class PracticeService {
             },
           );
         }
-        return { stageId, isPracticeUnlocked: true };
+        return { stageId, isPracticeUnlocked: true, xpAwarded };
       }
     } catch {
       // fall through

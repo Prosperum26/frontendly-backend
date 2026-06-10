@@ -173,11 +173,11 @@ export class StagesController {
   }
 }
 
-@Controller({ path: 'exercises', version: '1' })
-export class ExercisesController {
+@Controller({ path: 'lp-exercises', version: '1' })
+export class LpExercisesController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
-  // POST /api/v1/exercises/:exerciseId/submit
+  // POST /api/v1/lp-exercises/:exerciseId/submit
   @Post(':exerciseId/submit')
   async submitCode(
     @Param('exerciseId') exerciseId: string,

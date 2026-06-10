@@ -12,6 +12,7 @@ import {
 import { MilestoneSchema } from '../src/learning-path/db_schemas/milestone_schema';
 import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
 import { UserSchema } from '../src/users/schemas/user.schema';
+import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -30,6 +31,7 @@ const Theory = mongoose.model('Theory', TheorySchema);
 const Exercise = mongoose.model('Exercise', ExerciseSchema);
 const Submission = mongoose.model('Submission', SubmissionSchema);
 const User = mongoose.model('User', UserSchema);
+const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -159,6 +161,7 @@ const generateEditorExercises = (): any[] => {
       id: `exercise_${stageId}`,
       module: `Milestone ${Math.ceil(i / 4)}`,
       title: `Thực hành Coding Workspace ${stageId}`,
+      level: i <= 4 ? 'easy' : i <= 8 ? 'medium' : 'hard',
       description: `Đây là bài tập lớn cuối stage ${stageId}. Hãy sử dụng trình soạn thảo code để hoàn thành thử thách này.`,
       target_designs: [
         {
@@ -206,32 +209,75 @@ async function seed(): Promise<void> {
       Exercise.deleteMany({}),
       Submission.deleteMany({}),
       User.deleteMany({}),
+      ActivityLog.deleteMany({}),
     ]);
     console.log('✅ Cleanup complete.\n');
 
-    // 2. Seed Roadmap
+    // 2. Seed Test User
+    console.log('🌱 Seeding Test User...');
+    const testUser = await User.create({
+      email: 'test@frontendly.com',
+      username: 'testuser',
+      name: 'Test User',
+      avatarUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+      level: 5,
+      xp: 2500,
+      skills: [
+        { name: 'HTML', level: 8, earnedAt: new Date() },
+        { name: 'CSS', level: 6, earnedAt: new Date() },
+        { name: 'JS', level: 4, earnedAt: new Date() },
+      ],
+      stats: {
+        totalLearningTime: 1200,
+        coursesCompleted: 2,
+        streakDays: 7,
+        lastActiveAt: new Date(),
+      }
+    });
+    console.log(`✅ Created test user: ${testUser.email}`);
+
+    // 3. Seed Activity Logs for test user
+    console.log('🌱 Seeding Activity Logs...');
+    const logs = [];
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      if (Math.random() > 0.3) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        logs.push({
+          userId: testUser._id.toString(),
+          type: 'lesson_completed',
+          description: `Completed lesson on ${date.toDateString()}`,
+          timestamp: date,
+        });
+      }
+    }
+    await ActivityLog.insertMany(logs);
+    console.log(`✅ Inserted ${logs.length} activity logs.`);
+
+    // 4. Seed Roadmap
     console.log('🌱 Seeding Roadmaps...');
     await Roadmap.insertMany(ROADMAP_DATA);
     console.log(`✅ Upserted ${ROADMAP_DATA.length} roadmaps.`);
 
-    // 3. Seed Milestones
+    // 5. Seed Milestones
     console.log('🌱 Seeding Milestones...');
     await Milestone.insertMany(MILESTONES_DATA);
     console.log(`✅ Upserted ${MILESTONES_DATA.length} milestones.`);
 
-    // 4. Seed Theories
+    // 6. Seed Theories
     console.log('🌱 Seeding Theories...');
     const theories = generateTheories();
     await Theory.insertMany(theories);
     console.log(`✅ Upserted ${theories.length} theories.`);
 
-    // 5. Seed LpExercises
+    // 7. Seed LpExercises
     console.log('🌱 Seeding LpExercises...');
     const lpExercises = generateLpExercises();
     await LpExercise.insertMany(lpExercises);
     console.log(`✅ Upserted ${lpExercises.length} learning path exercises.`);
 
-    // 6. Seed Editor Exercises
+    // 8. Seed Editor Exercises
     console.log('🌱 Seeding Editor Exercises...');
     const editorExercises = generateEditorExercises();
     await Exercise.insertMany(editorExercises);

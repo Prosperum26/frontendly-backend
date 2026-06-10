@@ -33,7 +33,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get user profile' })
   public async myProfile(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
-  ): Promise<MyProfileResponse> {
+  ): Promise<{ success: boolean; data: MyProfileResponse }> {
     const user = await this.userModel
       .findById(authUser.userId)
       .populate<{ badges: Array<{ badgeId: Badge; earnedAt: Date }> }>({
@@ -46,7 +46,10 @@ export class UserController {
       throw new NotFoundException('User not found');
     }
 
-    return new MyProfileResponse(<User>(<unknown>user));
+    return {
+      success: true,
+      data: new MyProfileResponse(<User>(<unknown>user)),
+    };
   }
 
   @Patch('me')
@@ -54,9 +57,17 @@ export class UserController {
   public async updateProfile(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @Body() body: UpdateProfileDto,
-  ): Promise<{ message: string; user: User }> {
+  ): Promise<{ success: boolean; message: string; data: User }> {
     const profile = <Record<string, string>>(<unknown>authUser.profile);
-    return this.userService.updateProfile(String(profile._id), body);
+    const result = await this.userService.updateProfile(
+      String(profile._id),
+      body,
+    );
+    return {
+      success: true,
+      message: result.message,
+      data: result.user,
+    };
   }
 
   @Patch('me/password')
@@ -74,7 +85,8 @@ export class UserController {
   @ApiOperation({ summary: 'Get XP / level / streak progress for the sidebar' })
   public async getProgress(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
-    return this.userService.getProgress(userId);
+    const data = await this.userService.getProgress(userId);
+    return { success: true, data };
   }
 
   @Get('badges')
@@ -82,7 +94,26 @@ export class UserController {
   @ApiOperation({ summary: 'Get earned badges for the sidebar' })
   public async getBadges(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
-    return this.userService.getBadges(userId);
+    const data = await this.userService.getBadges(userId);
+    return { success: true, data };
+  }
+
+  @Get('activity')
+  @ConfigureAuth({ blockIfUnauthenticated: false })
+  @ApiOperation({ summary: 'Get user activity logs' })
+  public async getActivity(@Req() req: Request): Promise<unknown> {
+    const userId = this.extractUserId(req);
+    const data = await this.userService.getActivity(userId);
+    return { success: true, data };
+  }
+
+  @Get('activity/stats')
+  @ConfigureAuth({ blockIfUnauthenticated: false })
+  @ApiOperation({ summary: 'Get user activity stats for heatmap' })
+  public async getActivityStats(@Req() req: Request): Promise<unknown> {
+    const userId = this.extractUserId(req);
+    const data = await this.userService.getActivityStats(userId);
+    return { success: true, data };
   }
 
   private extractUserId(req: Request): string {

@@ -2,8 +2,10 @@ import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UserController } from './controllers';
+import { LeaderboardController } from './controllers/leaderboard.controller';
 import { UserGateway } from './gateways';
 import { User, UserSchema } from './schemas';
+import { ActivityLog, ActivityLogSchema } from './schemas/activity-log.schema';
 import { Badge, BadgeSchema } from './schemas/badge.schema';
 import {
   StageProgress,
@@ -18,6 +20,7 @@ import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
+      { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: Badge.name, schema: BadgeSchema },
       { name: StageProgress.name, schema: StageProgressSchema },
       { name: 'UserLearningProgress', schema: UserLearningProgressSchema },
@@ -25,7 +28,7 @@ import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
     ]),
     forwardRef(() => AuthModule),
   ],
-  controllers: [UserController],
+  controllers: [UserController, LeaderboardController],
   providers: [UserService, UserGateway],
   exports: [UserService],
 })

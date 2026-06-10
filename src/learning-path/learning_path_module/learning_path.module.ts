@@ -11,7 +11,7 @@ import { TheorySchema } from '../db_schemas/theory_schema';
 import {
   RoadmapController,
   StagesController,
-  ExercisesController,
+  LpExercisesController,
   LearningContentController,
 } from '../learning_path_controllers/learning_path.controller';
 import {
@@ -42,7 +42,7 @@ import { VideoService } from '../learning_path_service/video.service';
   controllers: [
     RoadmapController,
     StagesController,
-    ExercisesController,
+    LpExercisesController,
     LearningContentController,
   ],
   providers: [
