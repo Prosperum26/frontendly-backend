@@ -11,8 +11,8 @@ import {
 } from '../src/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneSchema } from '../src/learning-path/db_schemas/milestone_schema';
 import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
-import { UserSchema } from '../src/users/schemas/user.schema';
 import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
+import { UserSchema } from '../src/users/schemas/user.schema';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -157,20 +157,61 @@ const generateEditorExercises = (): any[] => {
   const exercises: any[] = [];
   for (let i = 1; i <= 12; i++) {
     const stageId = `s${i}`;
-    exercises.push({
-      id: `exercise_${stageId}`,
-      module: `Milestone ${Math.ceil(i / 4)}`,
-      title: `Thực hành Coding Workspace ${stageId}`,
-      level: i <= 4 ? 'easy' : i <= 8 ? 'medium' : 'hard',
-      description: `Đây là bài tập lớn cuối stage ${stageId}. Hãy sử dụng trình soạn thảo code để hoàn thành thử thách này.`,
-      target_designs: [
+    let level: 'easy' | 'medium' | 'hard';
+    if (i <= 4) {
+      level = 'easy';
+    } else if (i <= 8) {
+      level = 'medium';
+    } else {
+      level = 'hard';
+    }
+    const evaluationConfig = {
+      lint: true,
+      requirements: true,
+      visual: false,
+    };
+    let targetDesigns: Array<{
+      deviceType: string;
+      width: number;
+      height: number;
+      url: string;
+    }> = [];
+
+    // Bài từ s8 trở đi (hard) cần visual check
+    if (level === 'hard') {
+      evaluationConfig.visual = true;
+      targetDesigns = [
         {
           deviceType: 'desktop',
           width: 1280,
           height: 720,
           url: 'https://via.placeholder.com/1280x720',
         },
-      ],
+      ];
+    }
+
+    // Ví dụ bài s1 siêu đơn giản
+    if (stageId === 's1') {
+      evaluationConfig.requirements = true;
+      evaluationConfig.lint = true;
+      evaluationConfig.visual = false;
+    }
+
+    // Ví dụ bài tự do (s12 có thể tự do hơn)
+    if (stageId === 's12') {
+      evaluationConfig.lint = false;
+      evaluationConfig.requirements = false;
+      evaluationConfig.visual = false;
+    }
+
+    exercises.push({
+      id: `exercise_${stageId}`,
+      module: `Milestone ${Math.ceil(i / 4)}`,
+      title: `Thực hành Coding Workspace ${stageId}`,
+      level,
+      description: `Đây là bài tập lớn cuối stage ${stageId}. Hãy sử dụng trình soạn thảo code để hoàn thành thử thách này.`,
+      target_designs: targetDesigns,
+      evaluation_config: evaluationConfig,
       html_content: '<!-- Viết code HTML của bạn ở đây -->\n<h1></h1>',
       css_content: '/* Viết code CSS của bạn ở đây */\nh1 { color: blue; }',
       js_content: '// Viết code JS của bạn ở đây\nconsole.log("Start!");',
@@ -208,52 +249,68 @@ async function seed(): Promise<void> {
       Theory.deleteMany({}),
       Exercise.deleteMany({}),
       Submission.deleteMany({}),
-      User.deleteMany({}),
-      ActivityLog.deleteMany({}),
     ]);
     console.log('✅ Cleanup complete.\n');
 
     // 2. Seed Test User
     console.log('🌱 Seeding Test User...');
-    const testUser = await User.create({
-      email: 'test@frontendly.com',
-      username: 'testuser',
-      name: 'Test User',
-      avatarUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-      level: 5,
-      xp: 2500,
-      skills: [
-        { name: 'HTML', level: 8, earnedAt: new Date() },
-        { name: 'CSS', level: 6, earnedAt: new Date() },
-        { name: 'JS', level: 4, earnedAt: new Date() },
-      ],
-      stats: {
-        totalLearningTime: 1200,
-        coursesCompleted: 2,
-        streakDays: 7,
-        lastActiveAt: new Date(),
-      }
-    });
-    console.log(`✅ Created test user: ${testUser.email}`);
-
-    // 3. Seed Activity Logs for test user
-    console.log('🌱 Seeding Activity Logs...');
-    const logs = [];
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-      if (Math.random() > 0.3) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        logs.push({
-          userId: testUser._id.toString(),
-          type: 'lesson_completed',
-          description: `Completed lesson on ${date.toDateString()}`,
-          timestamp: date,
-        });
-      }
+    let testUser = await User.findOne({ email: 'test@frontendly.com' });
+    if (!testUser) {
+      testUser = await User.create({
+        email: 'test@frontendly.com',
+        username: 'testuser',
+        name: 'Test User',
+        avatarUrl:
+          'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+        level: 5,
+        xp: 2500,
+        skills: [
+          { name: 'HTML', level: 8, earnedAt: new Date() },
+          { name: 'CSS', level: 6, earnedAt: new Date() },
+          { name: 'JS', level: 4, earnedAt: new Date() },
+        ],
+        stats: {
+          totalLearningTime: 1200,
+          coursesCompleted: 2,
+          streakDays: 7,
+          lastActiveAt: new Date(),
+        },
+      });
+      console.log(`✅ Created test user: ${testUser.email}`);
+    } else {
+      console.log(`✅ Test user already exists: ${testUser.email}`);
     }
-    await ActivityLog.insertMany(logs);
-    console.log(`✅ Inserted ${logs.length} activity logs.`);
+
+    // 3. Seed Activity Logs for test user only if none exist
+    console.log('🌱 Seeding Activity Logs...');
+    const existingTestUserLogsCount = await ActivityLog.countDocuments({
+      userId: testUser._id.toString(),
+    });
+    if (existingTestUserLogsCount === 0) {
+      const logs = [];
+      const today = new Date();
+      for (let i = 0; i < 30; i++) {
+        // eslint-disable-next-line sonarjs/pseudo-random
+        if (Math.random() > 0.3) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          logs.push({
+            userId: testUser._id.toString(),
+            type: 'lesson_completed',
+            description: `Completed lesson on ${date.toDateString()}`,
+            timestamp: date,
+          });
+        }
+      }
+      if (logs.length > 0) {
+        await ActivityLog.insertMany(logs);
+        console.log(`✅ Inserted ${logs.length} activity logs.`);
+      }
+    } else {
+      console.log(
+        `✅ Activity logs already exist for test user (${existingTestUserLogsCount} entries).`,
+      );
+    }
 
     // 4. Seed Roadmap
     console.log('🌱 Seeding Roadmaps...');

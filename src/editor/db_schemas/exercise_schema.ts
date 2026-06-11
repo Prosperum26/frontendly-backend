@@ -39,6 +39,19 @@ export class TargetDesign {
 }
 const TargetDesignSchema = SchemaFactory.createForClass(TargetDesign);
 
+@Schema({ _id: false })
+export class EvaluationConfig {
+  @Prop({ type: Boolean, default: true })
+  lint!: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  requirements!: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  visual!: boolean;
+}
+const EvaluationConfigSchema = SchemaFactory.createForClass(EvaluationConfig);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
   @Prop({ type: String, required: true, unique: true })
@@ -56,8 +69,14 @@ export class Exercise {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ type: [TargetDesignSchema], default: ['desktop', 'tablet'] })
+  @Prop({ type: [TargetDesignSchema], default: [] })
   target_designs!: TargetDesign[];
+
+  @Prop({
+    type: EvaluationConfigSchema,
+    default: () => ({ lint: true, requirements: true, visual: false }),
+  })
+  evaluation_config!: EvaluationConfig;
 
   @Prop({ trim: true, default: '', maxlength: 100000 })
   html_content!: string;

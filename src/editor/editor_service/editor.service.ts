@@ -51,6 +51,7 @@ export class EditorService {
         description:
           'Complete this practice exercise to reinforce your learning.',
         target_designs: [],
+        evaluation_config: { lint: true, requirements: true, visual: false },
         html_content: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,15 +131,19 @@ console.log('Hello from practice!');`,
     if (!rawExercise) {
       throw new NotFoundException('Cannot find exercise!');
     }
+
+    // Tính toán navigation
+    const navigation = this.calculateExerciseNavigation(exerciseId);
+
     const lastSubmitExercise = await this.getLastSubmit(
       exerciseId,
       userId,
       rawExercise,
     );
     if (!lastSubmitExercise) {
-      return rawExercise;
+      return { ...rawExercise, navigation };
     } else {
-      return lastSubmitExercise;
+      return { ...lastSubmitExercise, navigation };
     }
   }
 
@@ -161,102 +166,132 @@ console.log('Hello from practice!');`,
       const exercise = await this.getExerciseById(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
-      const lintResult = await this.codeLint.checkLintUserCode(html, css, js);
-      this.logger.debug(`[SubmitCode] Lint check completed`);
+      // Lấy evaluation config, mặc định nếu không có
+      const evalConfig = exercise.evaluation_config || {
+        lint: true,
+        requirements: true,
+        visual: false,
+      };
 
-      const hasLintError =
-        (lintResult?.html_err?.length ?? 0) > 0 ||
-        (lintResult?.css_err?.length ?? 0) > 0 ||
-        (lintResult?.js_err?.length ?? 0) > 0;
+      // Bước 1: Lint check (nếu bật)
+      let lintResult = { html_err: [], css_err: [], js_err: [] };
+      let hasLintError = false;
+      if (evalConfig.lint) {
+        lintResult = await this.codeLint.checkLintUserCode(html, css, js);
+        this.logger.debug(`[SubmitCode] Lint check completed`);
+        hasLintError =
+          (lintResult?.html_err?.length ?? 0) > 0 ||
+          (lintResult?.css_err?.length ?? 0) > 0 ||
+          (lintResult?.js_err?.length ?? 0) > 0;
+      }
 
-      // Khởi tạo các biến chứa kết quả mặc định an toàn tuyệt đối
+      // Khởi tạo các biến chứa kết quả mặc định
       let requirementResults: any[] = Array.isArray(exercise.requirements)
         ? exercise.requirements.map(req => ({
             requirementId: req.id,
-            passed: false,
+            passed: true, // Mặc định pass nếu không kiểm tra
           }))
         : [];
+      let isRequirementsPassed = true;
 
-      let visualResults: VisualEvaluationDto[] = [];
-      let matchPercentage = 0.0;
-      let isCompleted = false;
-
-      if (hasLintError) {
-        this.logger.debug(
-          `[SubmitCode] Lint errors found, saving submission...`,
+      // Bước 2: Requirement check (nếu bật)
+      if (evalConfig.requirements) {
+        this.logger.debug(`[SubmitCode] Evaluating requirements...`);
+        requirementResults = this.reqCheck.evaluateCode(
+          html,
+          css,
+          js,
+          exercise.requirements || [],
         );
-        await this.saveSubmission(userId, exerciseId, editorContent, {
-          isCompleted: false,
-          match_percentage: 0,
-          lint_errors: lintResult,
-          requirementResult: requirementResults,
-          visual_results: [],
-        });
-        return {
-          isCompleted: false,
-          match_percentage: 0,
-          lint_errors: lintResult,
-          requirementResult: requirementResults,
-          visual_results: [],
-        };
+        const countReq = requirementResults.length;
+        const countPass = requirementResults.filter(
+          (req: any) => req.passed,
+        ).length;
+        isRequirementsPassed = countReq === 0 || countPass === countReq;
       }
 
-      this.logger.debug(`[SubmitCode] Evaluating requirements...`);
-      // Đã tháo 'await' ở đây, khớp hoàn toàn với file requirements.evaluators.ts
-      requirementResults = this.reqCheck.evaluateCode(
-        html,
-        css,
-        js,
-        exercise.requirements || [],
-      );
-
-      const countReq = requirementResults.length;
-      const countPass = requirementResults.filter(
-        (req: any) => req.passed,
-      ).length;
-      const reqCheck = countReq > 0 ? (countPass / countReq) * 100 : 100;
-      const isRequirementsPassed = reqCheck === 100;
-
-      // An toàn và tường minh tuyệt đối cho phần bài Khó
-      const isHardExercise =
-        exercise.target_designs && exercise.target_designs.length > 0;
-
-      if (isHardExercise) {
+      // Bước 3: Visual regression (nếu bật và có target_designs)
+      let visualResults: VisualEvaluationDto[] = [];
+      let isVisualPassed = true;
+      let visualScore = 100;
+      if (
+        evalConfig.visual &&
+        exercise.target_designs &&
+        exercise.target_designs.length > 0
+      ) {
         this.logger.debug(
-          `[SubmitCode] Hard exercise detected, evaluating visual...`,
+          `[SubmitCode] Visual check enabled, evaluating visual...`,
         );
-        if (isRequirementsPassed) {
+        if (isRequirementsPassed && !hasLintError) {
           visualResults = await this.visualRegressionService.evaluateVisual(
             html,
             css,
             js,
             exercise.target_designs,
           );
-
-          const isVisualPassed =
+          isVisualPassed =
             visualResults.length > 0 &&
             visualResults.every(result => result.passed);
-          isCompleted = isVisualPassed;
-
-          if (isCompleted) {
-            matchPercentage = 100.0;
-          } else {
+          if (visualResults.length > 0) {
             const totalVisualScore = visualResults.reduce(
               (sum, current) => sum + current.matchPercentage,
               0,
             );
-            matchPercentage =
-              visualResults.length > 0
-                ? totalVisualScore / visualResults.length
-                : 0;
+            visualScore = totalVisualScore / visualResults.length;
           }
         } else {
-          isCompleted = false;
-          matchPercentage = reqCheck;
+          isVisualPassed = false;
+          visualScore = 0;
         }
+      }
+
+      // Tính toán kết quả cuối cùng
+      let matchPercentage = 0;
+      let isCompleted = false;
+
+      // Tính toán tỉ lệ dựa trên các loại đánh giá được bật
+      const activeChecks: string[] = [];
+      if (evalConfig.lint) activeChecks.push('lint');
+      if (evalConfig.requirements) activeChecks.push('requirements');
+      if (evalConfig.visual) activeChecks.push('visual');
+
+      if (activeChecks.length === 0) {
+        // Không cần kiểm tra gì, luôn hoàn thành
+        isCompleted = true;
+        matchPercentage = 100;
       } else {
-        isCompleted = isRequirementsPassed;
-        matchPercentage = parseFloat(reqCheck.toFixed(2));
+        let totalScore = 0;
+        let checksCount = 0;
+
+        // Lint: nếu không có lỗi thì được 100%, còn lại 0%
+        if (evalConfig.lint) {
+          totalScore += hasLintError ? 0 : 100;
+          checksCount++;
+        }
+
+        // Requirements: tỉ lệ pass các requirement
+        if (evalConfig.requirements) {
+          const reqCount = requirementResults.length;
+          const reqPassCount = requirementResults.filter(
+            (req: any) => req.passed,
+          ).length;
+          const reqPercent =
+            reqCount > 0 ? (reqPassCount / reqCount) * 100 : 100;
+          totalScore += reqPercent;
+          checksCount++;
+        }
+
+        // Visual: tỉ lệ khớp của visual
+        if (evalConfig.visual) {
+          totalScore += visualScore;
+          checksCount++;
+        }
+
+        matchPercentage = totalScore / checksCount;
+        isCompleted =
+          (!evalConfig.lint || !hasLintError) &&
+          (!evalConfig.requirements || isRequirementsPassed) &&
+          (!evalConfig.visual || isVisualPassed);
       }
 
       const finalMatchPercentage = isNaN(matchPercentage)
@@ -311,6 +346,43 @@ console.log('Hello from practice!');`,
       }
       throw new InternalServerErrorException('Please try again later!');
     }
+  }
+
+  private calculateExerciseNavigation(exerciseId: string) {
+    // Extract stage number from exerciseId: "exercise_s1" → 1, "exercise_s12" →12
+    let stageNum = 1;
+    if (exerciseId.startsWith('exercise_s')) {
+      const numStr = exerciseId.replace('exercise_s', '');
+      stageNum = parseInt(numStr, 10);
+      if (isNaN(stageNum)) stageNum = 1;
+    }
+
+    // Determine milestone based on stage
+    const getMilestoneId = (sNum: number) => {
+      if (sNum <= 4) return 'm1';
+      if (sNum <= 8) return 'm2';
+      return 'm3';
+    };
+
+    const currentMilestoneId = getMilestoneId(stageNum);
+
+    // Determine next lesson/stage
+    let nextLessonNav = null;
+    if (stageNum < 12) {
+      const nextStageNum = stageNum + 1;
+      const nextMilestoneId = getMilestoneId(nextStageNum);
+      nextLessonNav = {
+        type: 'theory',
+        id: `s${nextStageNum}`,
+        milestoneId: nextMilestoneId,
+      };
+    }
+
+    return {
+      prev: null,
+      next: nextLessonNav,
+      currentMilestoneId,
+    };
   }
 
   // Hàm private yên vị dưới đáy class, chuẩn ESLint member-ordering
