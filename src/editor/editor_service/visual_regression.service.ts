@@ -5,7 +5,7 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
-import { PuppeteerEvaluator } from '../evaluators/visual regression/puppeteer_run.evaluator';
+import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
 
 @Injectable()
 export class VisualRegressionService {

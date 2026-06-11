@@ -14,7 +14,7 @@ import { CheckLintHtml } from '../evaluators/lint/html.evaluators';
 import { CheckLintInternalCss } from '../evaluators/lint/internalCSS.evaluator';
 import { CheckLintInternalJs } from '../evaluators/lint/internalJS.evaluator';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
-import { PuppeteerEvaluator } from '../evaluators/visual regression/puppeteer_run.evaluator';
+import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
 
 @Module({
   imports: [
