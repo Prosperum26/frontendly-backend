@@ -21,6 +21,10 @@ export class RequirementEvaluator {
       });
       const document = htmlDom.window.document;
 
+      // Xử lý bài tập HTML cơ bản (không có <html>, <head>, <body>)
+      const hasHtmlTag = html.toLowerCase().includes('<html');
+      const container = hasHtmlTag ? document : document.body;
+
       if (css && css.trim() != '') {
         let style = document.querySelector('style');
         if (!style) {
@@ -43,35 +47,34 @@ export class RequirementEvaluator {
         let isPassed = false;
         switch (req.type) {
           case 'exist':
-            const selectorExist = document.querySelector(req.selector);
-            if (selectorExist) {
-              isPassed = selectorExist != null;
-            } else isPassed = false;
+            const selectorExist = container.querySelector(req.selector);
+            isPassed = selectorExist != null;
             break;
 
           case 'count':
-            const selectorCount = document.querySelectorAll(req.selector);
+            const selectorCount = container.querySelectorAll(req.selector);
             if (selectorCount) {
               const number = selectorCount.length;
               const expectedCount = parseInt(req.expectedValue);
-              isPassed = number > 0 && number === expectedCount;
+              isPassed = number === expectedCount;
             } else isPassed = false;
             break;
 
           case 'content':
-            const selectorContent = document.querySelector(req.selector);
+            const selectorContent = container.querySelector(req.selector);
             if (selectorContent) {
               const expectedContent = req.expectedValue;
               if (expectedContent) {
-                const hasContent =
-                  selectorContent.textContent?.includes(expectedContent);
+                const hasContent = selectorContent.textContent
+                  ?.trim()
+                  .includes(expectedContent.trim());
                 if (hasContent) isPassed = true;
               }
             } else isPassed = false;
             break;
 
           case 'attribute':
-            const selectorAttribute = document.querySelector(req.selector);
+            const selectorAttribute = container.querySelector(req.selector);
             if (selectorAttribute) {
               isPassed = selectorAttribute.hasAttribute(req.expectedValue);
             } else isPassed = false;

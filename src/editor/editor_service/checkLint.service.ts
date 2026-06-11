@@ -23,7 +23,7 @@ export class CheckLint {
     javascript: string,
   ): Promise<LintEvaluation> {
     try {
-      const htmlCheck = await this.checkLintHtml.checkHtml(html);
+      const htmlCheck = this.checkLintHtml.checkHtml(html);
       const cssCheck = await this.checkLintExternalCss.checkCss(css);
       const jsCheck = await this.checkLintExternalJs.checkJs(javascript);
 

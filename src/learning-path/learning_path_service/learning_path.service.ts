@@ -223,6 +223,12 @@ export class LearningPathService {
     const progress = await this.progressSummaryService
       .getProgressSummary(userId, skillId)
       .catch(() => null);
+
+    // Nếu chưa có progress và là stage đầu tiên (không có prevStageId), cho phép truy cập
+    if (!progress && !prevStageId) {
+      return;
+    }
+
     if (!progress || typeof progress !== 'object') {
       throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó.');
     }

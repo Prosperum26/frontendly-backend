@@ -7,7 +7,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { XpService, ProgressService, UserUtilsService } from '.';
+import {
+  XpService,
+  ProgressService,
+  UserUtilsService,
+  StageContextService,
+} from '.';
 import {
   LpExerciseDocument,
   UserLearningProgressDocument,
@@ -25,6 +30,7 @@ export class PracticeService {
     private readonly xpService: XpService,
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
+    private readonly stageContextService: StageContextService,
   ) {}
 
   async unlockPractice(stageId: string, userId: string): Promise<unknown> {
@@ -35,47 +41,58 @@ export class PracticeService {
     }
 
     try {
-      const existing = await this.userProgressModel.findOne({ userId }).lean();
-      if (existing) {
-        const stageEntry = existing.unlockedStages.find(
-          s => s.stageId === stageId,
+      const { skillId } =
+        await this.stageContextService.findStageContext(stageId);
+      let dbProgress = await this.userProgressModel
+        .findOne({ userId, skillId })
+        .lean();
+
+      if (!dbProgress) {
+        // Tự động khởi tạo nếu chưa có tiến độ
+        dbProgress = await this.userProgressModel.create({
+          userId,
+          skillId,
+          currentXp: 0,
+          streakDays: 0,
+          lastStreakDate: null,
+          unlockedStages: [],
+        });
+      }
+
+      const stageEntry = dbProgress.unlockedStages.find(
+        s => s.stageId === stageId,
+      );
+
+      const xpEarned = 0;
+
+      if (stageEntry) {
+        await this.userProgressModel.updateOne(
+          { userId, skillId, 'unlockedStages.stageId': stageId },
+          { $set: { 'unlockedStages.$.isPracticeUnlocked': true } },
         );
-
-        const xpEarned = 0;
-        // If theory was completed but practice not yet unlocked, we might want to return the theory XP here
-        // if the frontend expects it. But based on current logic, theory XP is awarded in completeTheory.
-        // Let's just return success.
-
-        if (stageEntry) {
-          await this.userProgressModel.updateOne(
-            { userId, 'unlockedStages.stageId': stageId },
-            { $set: { 'unlockedStages.$.isPracticeUnlocked': true } },
-          );
-        } else {
-          await this.userProgressModel.updateOne(
-            { userId },
-            {
-              $push: {
-                unlockedStages: {
-                  stageId,
-                  isPracticeUnlocked: true,
-                  earnedStars: 0,
-                  videoWatchPercentage: 0,
-                  badgeEarned: false,
-                },
+      } else {
+        await this.userProgressModel.updateOne(
+          { userId, skillId },
+          {
+            $push: {
+              unlockedStages: {
+                stageId,
+                isPracticeUnlocked: true,
+                earnedStars: 0,
+                videoWatchPercentage: 0,
+                badgeEarned: false,
               },
             },
-          );
-        }
-        return { stageId, isPracticeUnlocked: true, xpAwarded: xpEarned };
+          },
+        );
       }
-    } catch {
-      // fall through
+      return { stageId, isPracticeUnlocked: true, xpAwarded: xpEarned };
+    } catch (error) {
+      this.logger.error(`Error in unlockPractice: ${error}`);
+      throw new ForbiddenException(
+        'Không thể mở khóa bài tập. Vui lòng thử lại sau.',
+      );
     }
-
-    throw new ForbiddenException(
-      'User progress not found. Please complete the theory section.',
-    );
   }
 
   async getPractices(stageId: string, userId: string): Promise<unknown> {

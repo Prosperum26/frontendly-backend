@@ -149,10 +149,20 @@ console.log('Hello from practice!');`,
     editorContent: any,
   ): Promise<SubmitResponse> {
     try {
-      const { html, css, js } = editorContent;
+      this.logger.debug(
+        `[SubmitCode] Start: userId=${userId}, exerciseId=${exerciseId}`,
+      );
+
+      if (!editorContent) {
+        throw new Error('Missing editorContent in request body');
+      }
+
+      const { html = '', css = '', js = '' } = editorContent;
       const exercise = await this.getExerciseById(exerciseId);
+      this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
       const lintResult = await this.codeLint.checkLintUserCode(html, css, js);
+      this.logger.debug(`[SubmitCode] Lint check completed`);
 
       const hasLintError =
         (lintResult?.html_err?.length ?? 0) > 0 ||
@@ -172,6 +182,9 @@ console.log('Hello from practice!');`,
       let isCompleted = false;
 
       if (hasLintError) {
+        this.logger.debug(
+          `[SubmitCode] Lint errors found, saving submission...`,
+        );
         await this.saveSubmission(userId, exerciseId, editorContent, {
           isCompleted: false,
           match_percentage: 0,
@@ -188,12 +201,13 @@ console.log('Hello from practice!');`,
         };
       }
 
+      this.logger.debug(`[SubmitCode] Evaluating requirements...`);
       // Đã tháo 'await' ở đây, khớp hoàn toàn với file requirements.evaluators.ts
       requirementResults = this.reqCheck.evaluateCode(
         html,
         css,
         js,
-        exercise.requirements,
+        exercise.requirements || [],
       );
 
       const countReq = requirementResults.length;
@@ -208,6 +222,9 @@ console.log('Hello from practice!');`,
         exercise.target_designs && exercise.target_designs.length > 0;
 
       if (isHardExercise) {
+        this.logger.debug(
+          `[SubmitCode] Hard exercise detected, evaluating visual...`,
+        );
         if (isRequirementsPassed) {
           visualResults = await this.visualRegressionService.evaluateVisual(
             html,
@@ -242,8 +259,13 @@ console.log('Hello from practice!');`,
         matchPercentage = parseFloat(reqCheck.toFixed(2));
       }
 
-      const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
+      const finalMatchPercentage = isNaN(matchPercentage)
+        ? 0
+        : parseFloat(matchPercentage.toFixed(2));
 
+      this.logger.debug(
+        `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
+      );
       await this.saveSubmission(userId, exerciseId, editorContent, {
         isCompleted,
         match_percentage: finalMatchPercentage,
@@ -254,6 +276,7 @@ console.log('Hello from practice!');`,
 
       // Update Learning Path progress if completed
       if (isCompleted && userId !== 'guest') {
+        this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
         try {
           // exerciseId format: "exercise_s1"
           const stageId = exerciseId.startsWith('exercise_')
@@ -266,6 +289,10 @@ console.log('Hello from practice!');`,
             `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
           );
         }
+      } else if (isCompleted && userId === 'guest') {
+        this.logger.debug(
+          `Guest user completed exercise ${exerciseId} - skipping progress update`,
+        );
       }
 
       return {
@@ -299,23 +326,39 @@ console.log('Hello from practice!');`,
       visual_results: any[];
     },
   ): Promise<SubmissionDocument> {
-    const totalSubmissions = await this.submissionModel.countDocuments();
+    const timestamp = Date.now();
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const randomStr = Math.random().toString(36).substring(2, 7);
 
     const newSubmit = new this.submissionModel({
-      id: `sub_${totalSubmissions + 1}`,
+      id: `sub_${timestamp}_${randomStr}`,
       userId,
       exerciseId,
-      html_content: editorContent.html,
-      css_content: editorContent.css,
-      js_content: editorContent.js,
+      html_content: editorContent.html || '',
+      css_content: editorContent.css || '',
+      js_content: editorContent.js || '',
       isCompleted: resultData.isCompleted,
       match_percentage: resultData.match_percentage,
-      lint_errors: resultData.lint_errors,
-      requirementResult: resultData.requirementResult,
-      visual_results: resultData.visual_results,
+      lint_errors: resultData.lint_errors || {
+        html_err: [],
+        css_err: [],
+        js_err: [],
+      },
+      requirementResult: resultData.requirementResult || [],
+      visual_results: (resultData.visual_results || []).map(vr => ({
+        deviceType: vr.deviceType || 'unknown',
+        passed: !!vr.passed,
+        matchPercentage: vr.matchPercentage ?? 0,
+        diffImageUrl: vr.diffImageUrl || null,
+      })),
     });
 
-    await newSubmit.save();
+    try {
+      await newSubmit.save();
+    } catch (dbError) {
+      this.logger.error(`Database Error saving submission: ${dbError.message}`);
+      throw dbError;
+    }
     return newSubmit;
   }
 }
