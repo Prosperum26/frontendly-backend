@@ -24,7 +24,11 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Backend cho Frontendly - một nền tảng học frontend gamified, được xây dựng bằng NestJS và TypeScript.
+
+## Tổng hợp Kiểm tra và Phát triển dự án
+
+Xem chi tiết [tại đây](../PROJECT_ASSESSMENT_AND_PLAN.md) để biết đánh giá toàn diện và lộ trình phát triển tiếp theo.
 
 ## Project setup
 
