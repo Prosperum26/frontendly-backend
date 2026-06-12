@@ -4,9 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model, UpdateQuery } from 'mongoose';
 
+import { GamificationService } from './gamification.service';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
-import { User } from '../schemas';
+import { User, getXpForLevel } from '../schemas';
 import { ActivityLog } from '../schemas/activity-log.schema';
 import {
   CreateOrUpdateUserResult,
@@ -15,8 +16,6 @@ import {
 } from '../types';
 import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
-
-const XP_PER_LEVEL = 500;
 
 @Injectable()
 export class UserService {
@@ -29,6 +28,7 @@ export class UserService {
     private userProgressModel: Model<UserLearningProgressDocument>,
     @InjectModel('Milestone')
     private milestoneModel: Model<MilestoneDocument>,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   public async createOrUpdateUser(
@@ -124,23 +124,24 @@ export class UserService {
     xpToNextLevel: number;
     progressPercent: number;
     streak: number;
+    maxStreak: number;
     rank: string;
   }> {
     try {
-      const dbProgress = await this.userProgressModel
-        .findOne({ userId })
-        .lean();
-
-      if (dbProgress) {
-        const totalXp = dbProgress.currentXp;
-        const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
-        const xpInLevel = totalXp % XP_PER_LEVEL;
+      const user = await this.userModel.findById(userId).lean();
+      if (user) {
+        const xpForCurrentLevel = getXpForLevel(user.level);
+        const xpForNextLevel = getXpForLevel(user.level + 1);
+        const xpInLevel = user.xp - xpForCurrentLevel;
+        const xpNeeded = xpForNextLevel - xpForCurrentLevel;
         return {
-          level,
+          level: user.level,
           xp: xpInLevel,
-          xpToNextLevel: XP_PER_LEVEL,
-          progressPercent: Math.round((xpInLevel / XP_PER_LEVEL) * 100),
-          streak: dbProgress.streakDays,
+          xpToNextLevel: xpNeeded,
+          progressPercent:
+            xpNeeded > 0 ? Math.round((xpInLevel / xpNeeded) * 100) : 100,
+          streak: user.stats.streakDays || 0,
+          maxStreak: user.stats.maxStreakDays || 0,
           rank: '-',
         };
       }
@@ -151,62 +152,51 @@ export class UserService {
     return {
       level: 1,
       xp: 0,
-      xpToNextLevel: XP_PER_LEVEL,
+      xpToNextLevel: 100,
       progressPercent: 0,
       streak: 0,
+      maxStreak: 0,
       rank: '-',
     };
   }
 
   async getBadges(userId: string): Promise<{
-    badges: Array<{
+    earned: Array<{
       id: string;
       name: string;
       icon: string;
-      isUnlocked: boolean;
+      description: string;
+      earnedAt: Date;
+    }>;
+    unearned: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      description: string;
     }>;
   }> {
     try {
-      const dbProgress = await this.userProgressModel
-        .findOne({ userId })
-        .lean();
-
-      if (dbProgress && dbProgress.badges.length > 0) {
-        const earnedIds = <string[]>dbProgress.badges;
-
-        const milestones = await this.milestoneModel
-          .find({ 'stages.id': { $in: earnedIds } })
-          .lean();
-
-        const stageInfo = new Map<string, { title: string; icon: string }>();
-        for (const m of milestones) {
-          for (const s of m.stages) {
-            if (earnedIds.includes(<string>s.id)) {
-              stageInfo.set(<string>s.id, {
-                title: s.title,
-                icon:
-                  (<{ icon?: string }>s).icon ||
-                  (<{ icon?: string }>m).icon ||
-                  '',
-              });
-            }
-          }
-        }
-
-        return {
-          badges: earnedIds.map(id => ({
-            id,
-            name: stageInfo.get(id)?.title ?? id,
-            icon: stageInfo.get(id)?.icon ?? '',
-            isUnlocked: true,
-          })),
-        };
-      }
+      const { earned, unearned } =
+        await this.gamificationService.getUserBadges(userId);
+      return {
+        earned: earned.map(badge => ({
+          id: badge._id.toString(),
+          name: badge.name,
+          icon: badge.icon,
+          description: badge.description,
+          earnedAt: badge.earnedAt,
+        })),
+        unearned: unearned.map(badge => ({
+          id: badge._id.toString(),
+          name: badge.name,
+          icon: badge.icon,
+          description: badge.description,
+        })),
+      };
     } catch (err) {
       this.logger.warn(`getBadges DB error for ${userId}: ${String(err)}`);
+      return { earned: [], unearned: [] };
     }
-
-    return { badges: [] };
   }
 
   async getActivity(userId: string): Promise<ActivityLog[]> {

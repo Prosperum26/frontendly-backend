@@ -12,6 +12,7 @@ import {
 import { MilestoneSchema } from '../src/learning-path/db_schemas/milestone_schema';
 import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
 import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
+import { BadgeSchema } from '../src/users/schemas/badge.schema';
 import { UserSchema } from '../src/users/schemas/user.schema';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -32,8 +33,47 @@ const Exercise = mongoose.model('Exercise', ExerciseSchema);
 const Submission = mongoose.model('Submission', SubmissionSchema);
 const User = mongoose.model('User', UserSchema);
 const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
+const Badge = mongoose.model('Badge', BadgeSchema);
 
 // ── Data ────────────────────────────────────────────────────────────────────
+
+const BADGES_DATA = [
+  {
+    name: 'First Step',
+    icon: '🚀',
+    description: 'Complete your first exercise',
+    category: 'beginner',
+    unlockCondition: { type: 'stages_completed', value: 1 },
+  },
+  {
+    name: 'Streak Starter',
+    icon: '🔥',
+    description: 'Maintain a 7-day streak',
+    category: 'streak',
+    unlockCondition: { type: 'streak_days', value: 7 },
+  },
+  {
+    name: 'Learning Path Explorer',
+    icon: '📚',
+    description: 'Complete 5 exercises',
+    category: 'learning',
+    unlockCondition: { type: 'stages_completed', value: 5 },
+  },
+  {
+    name: 'XP Hunter',
+    icon: '⭐',
+    description: 'Earn 1000 XP',
+    category: 'xp',
+    unlockCondition: { type: 'xp_amount', value: 1000 },
+  },
+  {
+    name: 'Streak Champion',
+    icon: '🏆',
+    description: 'Maintain a 30-day streak',
+    category: 'streak',
+    unlockCondition: { type: 'streak_days', value: 30 },
+  },
+];
 
 const MILESTONES_DATA = [
   {
@@ -249,10 +289,16 @@ async function seed(): Promise<void> {
       Theory.deleteMany({}),
       Exercise.deleteMany({}),
       Submission.deleteMany({}),
+      Badge.deleteMany({}),
     ]);
     console.log('✅ Cleanup complete.\n');
 
-    // 2. Seed Test User
+    // 2. Seed Badges
+    console.log('🌱 Seeding Badges...');
+    await Badge.insertMany(BADGES_DATA);
+    console.log(`✅ Upserted ${BADGES_DATA.length} badges.\n`);
+
+    // 3. Seed Test User
     console.log('🌱 Seeding Test User...');
     let testUser = await User.findOne({ email: 'test@frontendly.com' });
     if (!testUser) {
@@ -281,7 +327,7 @@ async function seed(): Promise<void> {
       console.log(`✅ Test user already exists: ${testUser.email}`);
     }
 
-    // 3. Seed Activity Logs for test user only if none exist
+    // 4. Seed Activity Logs for test user only if none exist
     console.log('🌱 Seeding Activity Logs...');
     const existingTestUserLogsCount = await ActivityLog.countDocuments({
       userId: testUser._id.toString(),
@@ -312,29 +358,29 @@ async function seed(): Promise<void> {
       );
     }
 
-    // 4. Seed Roadmap
+    // 5. Seed Roadmap
     console.log('🌱 Seeding Roadmaps...');
     await Roadmap.insertMany(ROADMAP_DATA);
     console.log(`✅ Upserted ${ROADMAP_DATA.length} roadmaps.`);
 
-    // 5. Seed Milestones
+    // 6. Seed Milestones
     console.log('🌱 Seeding Milestones...');
     await Milestone.insertMany(MILESTONES_DATA);
     console.log(`✅ Upserted ${MILESTONES_DATA.length} milestones.`);
 
-    // 6. Seed Theories
+    // 7. Seed Theories
     console.log('🌱 Seeding Theories...');
     const theories = generateTheories();
     await Theory.insertMany(theories);
     console.log(`✅ Upserted ${theories.length} theories.`);
 
-    // 7. Seed LpExercises
+    // 8. Seed LpExercises
     console.log('🌱 Seeding LpExercises...');
     const lpExercises = generateLpExercises();
     await LpExercise.insertMany(lpExercises);
     console.log(`✅ Upserted ${lpExercises.length} learning path exercises.`);
 
-    // 8. Seed Editor Exercises
+    // 9. Seed Editor Exercises
     console.log('🌱 Seeding Editor Exercises...');
     const editorExercises = generateEditorExercises();
     await Exercise.insertMany(editorExercises);

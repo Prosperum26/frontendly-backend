@@ -15,6 +15,10 @@ import { SubmitResponse } from '../dtos/submitCodeResponse';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
 import { LearningPathService } from '@/learning-path/learning_path_service/learning_path.service';
+import {
+  GamificationService,
+  ActivityType,
+} from '@/users/services/gamification.service';
 
 @Injectable()
 export class EditorService {
@@ -29,6 +33,7 @@ export class EditorService {
     private readonly reqCheck: RequirementEvaluator,
     private readonly visualRegressionService: VisualRegressionService,
     private readonly learningPathService: LearningPathService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   // Lấy bài tập
@@ -309,7 +314,7 @@ console.log('Hello from practice!');`,
         visual_results: visualResults,
       });
 
-      // Update Learning Path progress if completed
+      // Update Learning Path progress and gamification if completed
       if (isCompleted && userId !== 'guest') {
         this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
         try {
@@ -319,6 +324,12 @@ console.log('Hello from practice!');`,
             : exerciseId;
 
           await this.learningPathService.completeStage(stageId, userId);
+          await this.gamificationService.addXp(
+            userId,
+            ActivityType.STAGE_COMPLETED,
+            exerciseId,
+          );
+          await this.gamificationService.updateStreak(userId);
         } catch (err) {
           this.logger.error(
             `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,

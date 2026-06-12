@@ -12,6 +12,7 @@ import {
   StageProgressSchema,
 } from './schemas/stage-progress.schema';
 import { UserService } from './services';
+import { GamificationService } from './services/gamification.service';
 import { AuthModule } from '@/auth/auth.module';
 import { UserLearningProgressSchema } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
@@ -29,7 +30,7 @@ import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
     forwardRef(() => AuthModule),
   ],
   controllers: [UserController, LeaderboardController],
-  providers: [UserService, UserGateway],
-  exports: [UserService],
+  providers: [UserService, UserGateway, GamificationService],
+  exports: [UserService, GamificationService],
 })
 export class UserModule {}

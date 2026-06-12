@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Body,
   Patch,
   NotFoundException,
@@ -16,6 +17,7 @@ import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User } from '../schemas';
 import { UserService } from '../services';
+import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 
 @Controller({
@@ -25,6 +27,7 @@ import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    private readonly gamificationService: GamificationService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
@@ -105,7 +108,16 @@ export class UserController {
   @ApiOperation({ summary: 'Get user activity stats for heatmap' })
   public async getActivityStats(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
-    const data = await this.userService.getActivityStats(userId);
+    const data = await this.gamificationService.getActivityHeatmap(userId);
+    return { success: true, data };
+  }
+
+  @Post('streak')
+  @ConfigureAuth({ blockIfUnauthenticated: false })
+  @ApiOperation({ summary: 'Update user streak for today' })
+  public async updateStreak(@Req() req: Request): Promise<unknown> {
+    const userId = this.extractUserId(req);
+    const data = await this.gamificationService.updateStreak(userId);
     return { success: true, data };
   }
 

@@ -1,6 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
+// Calculate XP required per level: Fibonacci-like sequence
+export function getXpForLevel(level: number): number {
+  if (level <= 1) return 0;
+  const fib = [0, 100]; // Level 1 is 0, level 2 is 100 XP, each next level adds previous
+  for (let i = 3; i <= level; i++) {
+    fib.push(fib[i - 1] + fib[i - 2] * 2);
+  }
+  return fib[level];
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, unique: true })
@@ -56,6 +66,7 @@ export class User {
     totalLearningTime?: number;
     coursesCompleted?: number;
     streakDays?: number;
+    maxStreakDays?: number;
     lastActiveAt?: Date;
   };
 
@@ -102,6 +113,9 @@ export class User {
     totalProgress?: number;
     lastAccessedAt?: Date;
   };
+
+  @Prop({ type: Object, default: () => ({}) })
+  activity_heatmap: Record<string, number>; // key: YYYY-MM-DD, value: number of activities
 
   _id: Types.ObjectId;
 }
