@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type SubmissionDocument = HydratedDocument<Submission>;
 
@@ -46,8 +46,8 @@ export class VisualTestResult {
   @Prop({ required: true })
   passed!: boolean;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
-  matchPercentage!: mongoose.Types.Decimal128;
+  @Prop({ required: true, type: Number })
+  matchPercentage!: number;
 
   @Prop({ type: String, default: null })
   diffImageUrl!: string | null;
@@ -59,17 +59,17 @@ export class Submission {
   @Prop({ type: String, required: true, unique: true })
   id!: string;
 
-  @Prop({ required: true, ref: 'User' })
+  @Prop({ required: true })
   userId!: string;
 
-  @Prop({ required: true, ref: 'Exercise' })
+  @Prop({ required: true })
   exerciseId!: string;
 
   @Prop({ required: true })
   isCompleted!: boolean;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
-  match_percentage!: mongoose.Types.Decimal128;
+  @Prop({ required: true, type: Number })
+  match_percentage!: number;
 
   @Prop({ type: [EvaluationResultSchema], default: [] })
   requirementResult!: EvaluationRequirementResult[];

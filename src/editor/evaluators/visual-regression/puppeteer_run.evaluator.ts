@@ -1,8 +1,14 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import puppeteer, { Browser } from 'puppeteer';
 
 @Injectable()
 export class PuppeteerEvaluator implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PuppeteerEvaluator.name);
   private browser: Browser | null = null;
 
   async onModuleInit() {
@@ -16,14 +22,14 @@ export class PuppeteerEvaluator implements OnModuleInit, OnModuleDestroy {
         '--disable-gpu',
       ],
     });
-    console.log('Puppeteer browser launched');
+    this.logger.log('Puppeteer browser launched');
   }
 
   async onModuleDestroy() {
     // Stop trình duyệt khi server tắt
     if (this.browser) {
       await this.browser.close();
-      console.log('Puppeteer browser closed');
+      this.logger.log('Puppeteer browser closed');
     }
   }
 

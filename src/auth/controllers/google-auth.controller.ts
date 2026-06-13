@@ -1,5 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import type { Response } from 'express';
 
 import { ConfigureAuth } from '../decorators';
 import { GoogleLoginRequestDto, GoogleLoginResponseDto } from '../dtos';
@@ -15,10 +23,10 @@ export class GoogleAuthController {
   @ApiOperation({ summary: 'Login using Google' })
   public async login(
     @Body() dto: GoogleLoginRequestDto,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginResponseDto> {
-    const { accessToken } = await this.googleAuthService.authenticate(
-      dto.idToken,
-    );
-    return new GoogleLoginResponseDto(accessToken);
+    const { accessToken, refreshToken, user } =
+      await this.googleAuthService.authenticate(dto.idToken, res);
+    return new GoogleLoginResponseDto(accessToken, user, refreshToken);
   }
 }
