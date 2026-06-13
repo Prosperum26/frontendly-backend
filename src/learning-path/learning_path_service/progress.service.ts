@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { XpService } from './xp.service';
-import { UserLearningProgressDocument } from '../db_schemas/learning_path_schemas';
+import {
+  UserLearningProgress,
+  UserLearningProgressDocument,
+} from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 
 @Injectable()
@@ -87,7 +90,7 @@ export class ProgressService {
   async getUserProgress(
     userId: string,
     skillId: string,
-  ): Promise<UserLearningProgressDocument | null> {
+  ): Promise<UserLearningProgress | null> {
     try {
       const dbProgress = await this.userProgressModel
         .findOne({ userId, skillId })

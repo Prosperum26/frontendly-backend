@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { TokenService } from './token.service';
 import { MockTokenBuilder } from '../mocks';
 import { Token } from '../schemas';
+import { Session } from '../schemas/session.schema';
 import { authConfigObj } from '@/common/config';
 import { ConfigMock } from '@/common/config/mocks';
 import { MockUserBuilder } from '@/users/mocks';
@@ -26,6 +27,7 @@ describe('TokenService', () => {
   beforeAll(async () => {
     tokenModel = createMock<Model<Token>>();
     const userService = createMock<Model<User>>();
+    const sessionModel = createMock<Model<Session>>();
     const mod = await Test.createTestingModule({
       providers: [
         TokenService,
@@ -37,6 +39,10 @@ describe('TokenService', () => {
         {
           provide: getModelToken(User.name),
           useValue: userService,
+        },
+        {
+          provide: getModelToken(Session.name),
+          useValue: sessionModel,
         },
         {
           provide: authConfigObj.KEY,

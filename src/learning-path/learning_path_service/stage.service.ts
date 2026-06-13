@@ -33,7 +33,7 @@ export class StageService {
 
   async completeStage(
     stageId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     stageId: string;
     streakIncremented: boolean;
@@ -138,9 +138,14 @@ export class StageService {
       if (!dbRoadmap) return;
 
       const milestoneIds = <string[]>dbRoadmap.milestoneIds;
+      interface MilestoneOrderLean {
+        id: string;
+        stages: Array<{ id: string }>;
+      }
+
       const milestones = await this.milestoneModel
         .find({ id: { $in: milestoneIds } })
-        .lean();
+        .lean<MilestoneOrderLean[]>();
 
       milestones.sort(
         (a, b) => milestoneIds.indexOf(a.id) - milestoneIds.indexOf(b.id),

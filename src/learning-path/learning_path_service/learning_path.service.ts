@@ -29,40 +29,31 @@ export class LearningPathService {
     skillId: string,
     page: number = 1,
     limit: number = 5,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     return this.roadmapService.getRoadmap(skillId, page, limit, userId);
   }
 
-  async getTheory(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async getTheory(stageId: string, userId: string): Promise<unknown> {
     await this.assertStageAccessible(stageId, userId);
     await this.stageService.completeTheory(stageId, userId);
     return this.theoryService.getTheory(stageId);
   }
 
-  async unlockPractice(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async unlockPractice(stageId: string, userId: string): Promise<unknown> {
     // Automatically complete theory and award points immediately when user navigates to practice
     await this.stageService.completeTheory(stageId, userId);
     return this.practiceService.unlockPractice(stageId, userId);
   }
 
-  async getPractices(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async getPractices(stageId: string, userId: string): Promise<unknown> {
     return this.practiceService.getPractices(stageId, userId);
   }
 
   async submitCode(
     exerciseId: string,
     submittedCode: { html: string; js: string },
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     status: string;
     feedback: string;
@@ -113,7 +104,7 @@ export class LearningPathService {
     stageId: string,
     watchPercentage: number,
     seekPercentage: number = 0,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     return this.videoService.updateVideoProgress(
       stageId,
@@ -126,8 +117,8 @@ export class LearningPathService {
   async updateIntroVideoProgress(
     watchPercentage: number,
     seekPercentage: number = 0,
-    userId: string = 'dummy-user-001',
-    skillId: string = 'frontend',
+    userId: string,
+    skillId: string,
   ): Promise<unknown> {
     return this.videoService.updateIntroVideoProgress(
       watchPercentage,
@@ -139,8 +130,8 @@ export class LearningPathService {
 
   async syncPlacementTest(
     skipToMilestoneId: string,
-    userId: string = 'dummy-user-001',
-    skillId: string = 'frontend',
+    userId: string,
+    skillId: string,
   ): Promise<unknown> {
     return this.placementService.syncPlacementTest(
       skipToMilestoneId,
@@ -151,7 +142,7 @@ export class LearningPathService {
 
   async completeStage(
     stageId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     stageId: string;
     streakIncremented: boolean;
@@ -165,7 +156,7 @@ export class LearningPathService {
 
   async getMilestoneStatus(
     milestoneId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     // Get user progress for this milestone
     const userProgress =
@@ -202,10 +193,7 @@ export class LearningPathService {
     return this.roadmapService.getAvailableSkills();
   }
 
-  async getFullStageContent(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async getFullStageContent(stageId: string, userId: string): Promise<unknown> {
     const [theory, practices] = await Promise.all([
       this.getTheory(stageId, userId),
       this.getPractices(stageId, userId).catch(() => null),
@@ -214,10 +202,7 @@ export class LearningPathService {
     return { stageId, theory, practices };
   }
 
-  async getProgressSummary(
-    userId: string = 'dummy-user-001',
-    skillId?: string,
-  ): Promise<unknown> {
+  async getProgressSummary(userId: string, skillId?: string): Promise<unknown> {
     return this.progressSummaryService.getProgressSummary(userId, skillId);
   }
 
@@ -238,6 +223,12 @@ export class LearningPathService {
     const progress = await this.progressSummaryService
       .getProgressSummary(userId, skillId)
       .catch(() => null);
+
+    // Nếu chưa có progress và là stage đầu tiên (không có prevStageId), cho phép truy cập
+    if (!progress && !prevStageId) {
+      return;
+    }
+
     if (!progress || typeof progress !== 'object') {
       throw new ForbiddenException('Bạn phải hoàn thành bài học trước đó.');
     }

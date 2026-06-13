@@ -25,8 +25,8 @@ export class PlacementService {
 
   async syncPlacementTest(
     skipToMilestoneId: string,
-    userId: string = 'dummy-user-001',
-    skillId: string = 'frontend',
+    userId: string,
+    skillId: string,
   ): Promise<unknown> {
     // Skip saving progress for guest users
     if (this.userUtilsService.isGuestUser(userId)) {

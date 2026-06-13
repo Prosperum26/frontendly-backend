@@ -25,7 +25,7 @@ export class RoadmapService {
     skillId: string,
     page: number = 1,
     limit: number = 5,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
     if (dbRoadmap) {

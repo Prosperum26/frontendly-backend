@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Controller, Get, Inject, VERSION_NEUTRAL } from '@nestjs/common';
 import {
   HealthCheck,
