@@ -1,4 +1,3 @@
-import * as dayjs from 'dayjs';
 import { Types } from 'mongoose';
 
 import { Token } from '../schemas';
@@ -13,7 +12,7 @@ export class MockTokenBuilder {
       _id: new Types.ObjectId(),
       userId: user._id,
       isActive: true,
-      expiredAt: dayjs().add(1, 'year').toDate(),
+      expiredAt: MockTokenBuilder.getFutureDate(),
     };
   }
 
@@ -23,25 +22,33 @@ export class MockTokenBuilder {
     };
   }
 
+  private static getFutureDate(): Date {
+    return new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  }
+
+  private static getPastDate(): Date {
+    return new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+  }
+
   public build(): Token {
     return this.token;
   }
 
   public makeValid(): MockTokenBuilder {
     this.token.isActive = true;
-    this.token.expiredAt = dayjs().add(1, 'year').toDate();
+    this.token.expiredAt = MockTokenBuilder.getFutureDate();
     return this;
   }
 
   public makeInactive(): MockTokenBuilder {
     this.token.isActive = false;
-    this.token.expiredAt = dayjs().add(1, 'year').toDate();
+    this.token.expiredAt = MockTokenBuilder.getFutureDate();
     return this;
   }
 
   public makeExpired(): MockTokenBuilder {
     this.token.isActive = true;
-    this.token.expiredAt = dayjs().subtract(1, 'year').toDate();
+    this.token.expiredAt = MockTokenBuilder.getPastDate();
     return this;
   }
 }

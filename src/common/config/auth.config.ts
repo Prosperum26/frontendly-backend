@@ -9,18 +9,14 @@ const authConfigSchema = z.object({
   jwtSecret: z.string().nonempty(),
 });
 
-type AuthConfigType = z.infer<typeof authConfigSchema>;
-
 export const authConfigObj = registerAs('auth', () => {
-  const config: AuthConfigType = {
+  return authConfigSchema.parse({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
     jwtSecret: process.env.JWT_SECRET,
-  };
-  authConfigSchema.parse(config);
-  return config;
+  });
 });
 
 export type AuthConfig = ConfigType<typeof authConfigObj>;

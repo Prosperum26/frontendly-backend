@@ -2,7 +2,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { testApp, testModule } from '@test-helpers/setup-integration';
 import { signAccessToken } from '@test-helpers/token';
 import { Model } from 'mongoose';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import { MockTokenBuilder } from '@/auth/mocks';
 import { Token } from '@/auth/schemas';
