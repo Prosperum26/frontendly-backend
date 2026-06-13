@@ -76,12 +76,4 @@ export class StageContextService {
 
     throw new Error(`Stage not found: ${stageId}`);
   }
-
-  /**
-   * Find skill ID from milestone ID
-   */
-  private findSkillIdFromMilestone(): string {
-    // Default to frontend if not found
-    return 'frontend';
-  }
 }

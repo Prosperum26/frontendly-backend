@@ -25,7 +25,7 @@ export class RoadmapService {
     skillId: string,
     page: number = 1,
     limit: number = 5,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<unknown> {
     const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
     if (dbRoadmap) {
@@ -64,7 +64,8 @@ export class RoadmapService {
           const prog = unlockedMap.get(stage.id);
           const earnedStars = prog?.earnedStars ?? 0;
           const theoryCompleted = prog?.theoryCompleted ?? false;
-          const stageProgressPercentage = (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
+          const stageProgressPercentage =
+            (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
           return {
             id: stage.id,
             title: stage.title,

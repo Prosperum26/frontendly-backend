@@ -9,7 +9,6 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Request } from 'express';
 
 import {
@@ -19,14 +18,16 @@ import {
   VideoProgressDto,
 } from './learning_path.dto';
 import { LearningPathService } from '../learning_path_service/learning_path.service';
+import { ConfigureAuth } from '@/auth/decorators';
 
 function extractUserId(req: Request): string {
   const user = <{ profile?: { _id?: { toString(): string } } } | undefined>(
     req.user
   );
-  return user?.profile?._id?.toString() ?? 'dummy-user-001';
+  return user?.profile?._id?.toString() || '';
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'roadmaps', version: '1' })
 export class RoadmapController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -58,6 +59,7 @@ export class RoadmapController {
   }
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'stages', version: '1' })
 export class StagesController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -172,11 +174,12 @@ export class StagesController {
   }
 }
 
-@Controller({ path: 'exercises', version: '1' })
-export class ExercisesController {
+@ConfigureAuth({ blockIfUnauthenticated: false })
+@Controller({ path: 'lp-exercises', version: '1' })
+export class LpExercisesController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
-  // POST /api/v1/exercises/:exerciseId/submit
+  // POST /api/v1/lp-exercises/:exerciseId/submit
   @Post(':exerciseId/submit')
   async submitCode(
     @Param('exerciseId') exerciseId: string,
@@ -193,6 +196,7 @@ export class ExercisesController {
   }
 }
 
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'learning-content', version: '1' })
 export class LearningContentController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -223,11 +227,17 @@ export class LearningContentController {
     }
   }
 
-  // GET /api/v1/learning-content/progress/summary
+  // GET /api/v1/learning-content/progress/summary?skillId=frontend
   @Get('progress/summary')
-  async getProgressSummary(@Req() req: Request): Promise<unknown> {
+  async getProgressSummary(
+    @Req() req: Request,
+    @Query('skillId') skillId?: string,
+  ): Promise<unknown> {
     const userId = extractUserId(req);
-    const data = await this.learningPathService.getProgressSummary(userId);
+    const data = await this.learningPathService.getProgressSummary(
+      userId,
+      skillId,
+    );
     return { success: true, message: 'Lấy tiến độ học tập thành công', data };
   }
 

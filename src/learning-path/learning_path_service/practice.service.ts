@@ -1,13 +1,22 @@
-import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { XpService, ProgressService, UserUtilsService } from '.';
+import {
+  XpService,
+  ProgressService,
+  UserUtilsService,
+  StageContextService,
+} from '.';
 import {
   LpExerciseDocument,
   UserLearningProgressDocument,
 } from '../db_schemas/learning_path_schemas';
-import { PRACTICES } from '../seedFiles/learning-data';
 
 @Injectable()
 export class PracticeService {
@@ -21,12 +30,10 @@ export class PracticeService {
     private readonly xpService: XpService,
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
+    private readonly stageContextService: StageContextService,
   ) {}
 
-  async unlockPractice(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async unlockPractice(stageId: string, userId: string): Promise<unknown> {
     // Skip saving progress for guest users
     if (this.userUtilsService.isGuestUser(userId)) {
       this.logger.debug(`Guest user ${userId} - skipping practice unlock save`);
@@ -34,47 +41,61 @@ export class PracticeService {
     }
 
     try {
-      const existing = await this.userProgressModel.findOne({ userId }).lean();
-      if (existing) {
-        const stageEntry = existing.unlockedStages.find(
-          s => s.stageId === stageId,
+      const { skillId } =
+        await this.stageContextService.findStageContext(stageId);
+      let dbProgress = await this.userProgressModel
+        .findOne({ userId, skillId })
+        .lean();
+
+      if (!dbProgress) {
+        // Tự động khởi tạo nếu chưa có tiến độ
+        dbProgress = await this.userProgressModel.create({
+          userId,
+          skillId,
+          currentXp: 0,
+          streakDays: 0,
+          lastStreakDate: null,
+          unlockedStages: [],
+        });
+      }
+
+      const stageEntry = dbProgress.unlockedStages.find(
+        s => s.stageId === stageId,
+      );
+
+      const xpEarned = 0;
+
+      if (stageEntry) {
+        await this.userProgressModel.updateOne(
+          { userId, skillId, 'unlockedStages.stageId': stageId },
+          { $set: { 'unlockedStages.$.isPracticeUnlocked': true } },
         );
-        if (stageEntry) {
-          await this.userProgressModel.updateOne(
-            { userId, 'unlockedStages.stageId': stageId },
-            { $set: { 'unlockedStages.$.isPracticeUnlocked': true } },
-          );
-        } else {
-          await this.userProgressModel.updateOne(
-            { userId },
-            {
-              $push: {
-                unlockedStages: {
-                  stageId,
-                  isPracticeUnlocked: true,
-                  earnedStars: 0,
-                  videoWatchPercentage: 0,
-                  badgeEarned: false,
-                },
+      } else {
+        await this.userProgressModel.updateOne(
+          { userId, skillId },
+          {
+            $push: {
+              unlockedStages: {
+                stageId,
+                isPracticeUnlocked: true,
+                earnedStars: 0,
+                videoWatchPercentage: 0,
+                badgeEarned: false,
               },
             },
-          );
-        }
-        return { stageId, isPracticeUnlocked: true };
+          },
+        );
       }
-    } catch {
-      // fall through
+      return { stageId, isPracticeUnlocked: true, xpAwarded: xpEarned };
+    } catch (error) {
+      this.logger.error(`Error in unlockPractice: ${error}`);
+      throw new ForbiddenException(
+        'Không thể mở khóa bài tập. Vui lòng thử lại sau.',
+      );
     }
-
-    throw new ForbiddenException(
-      'User progress not found. Please complete the theory section.',
-    );
   }
 
-  async getPractices(
-    stageId: string,
-    userId: string = 'dummy-user-001',
-  ): Promise<unknown> {
+  async getPractices(stageId: string, userId: string): Promise<unknown> {
     const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
     if (dbProgress) {
       const stageEntry = dbProgress.unlockedStages.find(
@@ -99,14 +120,15 @@ export class PracticeService {
           })),
         };
       }
+
+      throw new NotFoundException(
+        `Không tìm thấy bài tập cho stage: ${stageId}`,
+      );
     } else {
       throw new ForbiddenException(
         'User progress not found. Please complete the theory section.',
       );
     }
-
-    const practices = PRACTICES[stageId];
-    return practices;
   }
 
   async submitCode(
@@ -114,7 +136,7 @@ export class PracticeService {
     submittedCode: { html: string; js: string },
     stageId: string,
     milestoneId: string,
-    userId: string = 'dummy-user-001',
+    userId: string,
   ): Promise<{
     status: string;
     feedback: string;

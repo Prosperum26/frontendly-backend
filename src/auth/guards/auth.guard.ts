@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Request } from 'express';
 import { merge } from 'lodash';
 import { Types } from 'mongoose';
@@ -63,6 +62,9 @@ export class AuthGuard implements CanActivate {
 
       // Attach the user to the request object
       req.user = {
+        userId: user._id.toString(),
+        username: user.username,
+        role: user.role,
         token,
         profile: user,
       };
@@ -81,9 +83,9 @@ export class AuthGuard implements CanActivate {
       blockIfUnauthenticated: true,
       skipAuth: false,
     };
-    const opt = this.reflector.get<AuthOption>(
+    const opt = this.reflector.getAllAndOverride<AuthOption>(
       CustomDecoratorKey.AUTH_OPTION,
-      ctx.getHandler(),
+      [ctx.getHandler(), ctx.getClass()],
     );
     return merge(defaultOpt, opt);
   }
