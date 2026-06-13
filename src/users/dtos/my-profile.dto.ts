@@ -1,7 +1,5 @@
 import { Expose } from 'class-transformer';
 
-import { User } from '@/users/schemas';
-
 export class MyProfileResponse {
   @Expose()
   email: string;
@@ -15,10 +13,18 @@ export class MyProfileResponse {
   @Expose()
   avatarUrl: string;
 
-  constructor(user: User) {
+  @Expose()
+  name: string;
+
+  @Expose()
+  bio: string;
+
+  constructor(user: any) {
     this.email = user.email;
     this.firstName = user.firstName;
     this.lastName = user.lastName;
     this.avatarUrl = user.avatarUrl;
+    this.name = user.name;
+    this.bio = user.bio;
   }
 }

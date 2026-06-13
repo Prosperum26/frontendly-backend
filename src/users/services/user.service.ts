@@ -1,5 +1,10 @@
 /* eslint-disable new-cap */
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as bcrypt from 'bcrypt';
@@ -18,12 +23,15 @@ import {
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+  ) {}
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
     await createUserSchema.parseAsync(options);
+
     const { email, googleId, firstName, lastName, picture } = options;
     const update: UpdateQuery<User> = {
       googleId,
@@ -31,6 +39,7 @@ export class UserService {
       lastName,
       avatarUrl: picture,
     };
+
     const res = await this.userModel.findOneAndUpdate({ email }, update, {
       new: true,
       upsert: true,
@@ -38,6 +47,7 @@ export class UserService {
       includeResultMetadata: true,
       lean: true,
     });
+
     return {
       alreadyExists: res.lastErrorObject?.updatedExisting || false,
       user: res.value!,
@@ -49,16 +59,21 @@ export class UserService {
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: User }> {
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
+      .findByIdAndUpdate(
+        userId,
+        { $set: body },
+        { new: true, lean: true }, // new: true ensures we get the updated document
+      )
       .select('-password');
 
     if (!updatedUser) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      // Changed to NotFoundException as it's standard for 404 resource not found
+      throw new NotFoundException('User not found');
     }
 
     return {
-      message: 'Cập nhật thông tin thành công',
-      user: <User>(<unknown>updatedUser),
+      message: 'Profile updated successfully',
+      user: <User>(<unknown>updatedUser), // ✅ Dùng ngoặc nhọn theo chuẩn của máy bạn
     };
   }
 
@@ -66,32 +81,36 @@ export class UserService {
     userId: string,
     body: ChangePasswordDto,
   ): Promise<{ message: string }> {
+    // We explicitly tell TS that this lean object might contain a password
     const user = await this.userModel
       .findById(userId)
       .select('+password')
-      .lean();
+      .lean<{ password?: string }>();
 
     if (!user) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      throw new NotFoundException('User not found');
     }
 
-    const userDoc = <Record<string, string>>(<unknown>user);
+    // Safety check: If user registered via Google, they might not have a password
+    if (!user.password) {
+      throw new BadRequestException(
+        'This account does not have a password set. Please log in using your external provider (e.g., Google).',
+      );
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const isMatch = await bcrypt.compare(
-      <string>body.oldPassword,
-      <string>userDoc.password,
-    );
+    // Removed the ugly eslint-disable comments by using proper types
+    const isMatch = await bcrypt.compare(body.oldPassword, user.password);
+
     if (!isMatch) {
-      throw new BadRequestException('Mật khẩu cũ không chính xác');
+      throw new BadRequestException('Incorrect old password');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    const hashedNewPassword = await bcrypt.hash(<string>body.newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(body.newPassword, 10);
+
     await this.userModel.findByIdAndUpdate(userId, {
       password: hashedNewPassword,
     });
 
-    return { message: 'Đổi mật khẩu thành công' };
+    return { message: 'Password changed successfully' };
   }
 }

@@ -28,10 +28,12 @@ import { UserModule } from '@/users/user.module';
       }),
     }),
   ],
-  controllers: [GoogleAuthController, AuthController],
+  controllers: [AuthController, GoogleAuthController],
   providers: [
-    TokenService,
+    AuthService,
     GoogleAuthService,
+    TokenService,
+    WsAuthMiddleware,
     {
       provide: OAuth2Client,
       inject: [authConfigObj.KEY],
@@ -41,9 +43,7 @@ import { UserModule } from '@/users/user.module';
           clientSecret: authConfig.google.clientSecret,
         }),
     },
-    WsAuthMiddleware,
-    AuthService,
   ],
-  exports: [TokenService, WsAuthMiddleware, JwtModule],
+  exports: [AuthService, JwtModule, TokenService, WsAuthMiddleware],
 })
 export class AuthModule {}

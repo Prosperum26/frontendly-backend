@@ -1,30 +1,26 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { IsOptional, IsString, Length } from 'class-validator';
 
-@Schema({ timestamps: true })
-export class User {
-  @Prop({ required: true, unique: true })
-  email!: string;
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @Length(3, 30)
+  name?: string;
 
-  @Prop()
-  googleId!: string;
+  @IsOptional()
+  @IsString()
+  bio?: string;
 
-  @Prop()
-  firstName!: string;
+  // Nếu file cũ của bạn có firstName, lastName hay avatarUrl,
+  // bạn cứ giữ nguyên chúng ở dưới này nhé, chỉ cần thêm name và bio lên trên là được.
+  @IsOptional()
+  @IsString()
+  firstName?: string;
 
-  @Prop()
-  lastName!: string;
+  @IsOptional()
+  @IsString()
+  lastName?: string;
 
-  @Prop()
-  avatarUrl!: string;
-
-  @Prop()
-  name!: string;
-
-  @Prop()
-  password?: string;
-
-  _id!: Types.ObjectId;
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
 }
-
-export const UserSchema = SchemaFactory.createForClass(User);

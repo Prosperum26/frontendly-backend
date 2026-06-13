@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
 import { MyProfileResponse } from '../dtos';
