@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { LearningPathModule } from '../../learning-path/learning_path_module/learning_path.module';
+import { UserModule } from '../../users/user.module';
 import { ExerciseSchema } from '../db_schemas/exercise_schema';
 import { SubmissionSchema } from '../db_schemas/submission_schema';
 import { EditorController } from '../editor_controllers/editor.controller';
@@ -23,6 +24,7 @@ import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_ru
       { name: 'Submission', schema: SubmissionSchema },
     ]),
     LearningPathModule,
+    UserModule,
   ],
   controllers: [EditorController],
   providers: [
