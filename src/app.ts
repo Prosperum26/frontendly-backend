@@ -3,7 +3,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 
+import { CommonConfig, commonConfigObj } from './common/config';
+
 export function configApp(app: INestApplication): INestApplication {
+  const { corsOrigins } = <CommonConfig>app.get(commonConfigObj.KEY);
+
   app.use(
     compression({
       threshold: 0,
@@ -20,7 +24,7 @@ export function configApp(app: INestApplication): INestApplication {
   );
   app.enableCors({
     credentials: true,
-    origin: true,
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
@@ -30,10 +34,10 @@ export function configApp(app: INestApplication): INestApplication {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   const config = new DocumentBuilder()
-    .setTitle('Fessior template')
-    .setDescription('Fessior template API description')
+    .setTitle('Frontendly API')
+    .setDescription('Frontendly backend service API documentation')
     .setVersion('1.0')
-    .addTag('Fessior template')
+    .addTag('Frontendly')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

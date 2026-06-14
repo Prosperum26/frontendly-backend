@@ -4,18 +4,23 @@ import {
   Body,
   Get,
   Req,
-  UseGuards,
   SetMetadata,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
-import { AuthGuard } from './guards/auth.guard';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { CustomDecoratorKey } from '@/common/constants';
 
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -29,27 +34,53 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() body: LoginDto,
-  ): Promise<{ message: string; token: string }> {
-    return this.authService.login(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    user: any;
+  }> {
+    const result = await this.authService.login(body, res);
+    return result;
   }
 
   @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
   @Post('refresh')
   async refresh(
     @Body() body: RefreshTokenDto,
-  ): Promise<{ message: string; token: string }> {
-    return this.authService.refreshToken(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
+    const result = await this.authService.refreshToken(body, res);
+    return result;
   }
 
-  @UseGuards(AuthGuard)
+  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() body: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    const result = await this.authService.forgotPassword(body);
+    return result;
+  }
+
+  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @Post('reset-password')
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const result = await this.authService.resetPassword(body);
+    return result;
+  }
+
   @Get('me')
   getProfile(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @Req() req: any,
   ): { message: string; user: Record<string, unknown> | undefined } {
     return {
-      message: 'Lấy thông tin cá nhân thành công',
-      user: req.user?.profile,
+      message: 'Profile retrieved successfully',
+      user: req.user,
     };
   }
 }

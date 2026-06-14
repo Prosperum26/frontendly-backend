@@ -1,6 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 import { ConfigureAuth } from '../decorators';
 import { TokenService } from '../services';
@@ -17,10 +24,8 @@ export class RefreshTokenController {
     @Body() body: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { accessToken, refreshToken } = await this.tokenService.refreshAccessToken(
-      body.refreshToken,
-      res,
-    );
+    const { accessToken, refreshToken } =
+      await this.tokenService.refreshAccessToken(body.refreshToken, res);
     return { accessToken, refreshToken };
   }
 }

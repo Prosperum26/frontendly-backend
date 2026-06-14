@@ -1,35 +1,99 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type SubmissionDocument = HydratedDocument<Submission>;
 
-@Schema({ timestamps: { createdAt: 'saved_At' } })
-export class Submission {
-  @Prop({ type: String, required: true, unique: true })
-  id: string;
-
-  @Prop({ required: true, ref: 'User' }) // chiếu qua user => chỉ là userFake để chạy local
-  userId: string;
-
-  @Prop({ required: true, ref: 'Exercise' }) // chiếu qua exercise
-  exerciseId: string;
+@Schema({ _id: false })
+export class LintErrorDetail {
+  @Prop({ required: true })
+  line!: number;
 
   @Prop({ required: true })
-  isCompleted: boolean;
+  message!: string;
+}
+const LintErrorDetailSchema = SchemaFactory.createForClass(LintErrorDetail);
 
-  @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
-  match_percentage: mongoose.Types.Decimal128;
+@Schema({ _id: false })
+export class LintErrorGroup {
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  html_err!: LintErrorDetail[];
 
-  @Prop({ trim: true, length: 100000, default: '' })
-  html_content: string;
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  css_err!: LintErrorDetail[];
 
-  @Prop({ trim: true, length: 100000, default: '' })
-  css_content: string;
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  js_err!: LintErrorDetail[];
+}
+const LintErrorGroupSchema = SchemaFactory.createForClass(LintErrorGroup);
 
-  @Prop({ trim: true, length: 100000, default: '' })
-  js_content: string;
+@Schema({ _id: false })
+export class EvaluationRequirementResult {
+  @Prop({ required: true })
+  requirementId!: string;
 
-  createdAt: Date;
+  @Prop({ required: true })
+  passed!: boolean;
+}
+const EvaluationResultSchema = SchemaFactory.createForClass(
+  EvaluationRequirementResult,
+);
+
+@Schema({ _id: false })
+export class VisualTestResult {
+  @Prop({ required: true })
+  deviceType!: string;
+
+  @Prop({ required: true })
+  passed!: boolean;
+
+  @Prop({ required: true, type: Number })
+  matchPercentage!: number;
+
+  @Prop({ type: String, default: null })
+  diffImageUrl!: string | null;
+}
+const VisualTestResultSchema = SchemaFactory.createForClass(VisualTestResult);
+
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+export class Submission {
+  @Prop({ type: String, required: true, unique: true })
+  id!: string;
+
+  @Prop({ required: true })
+  userId!: string;
+
+  @Prop({ required: true })
+  exerciseId!: string;
+
+  @Prop({ required: true })
+  isCompleted!: boolean;
+
+  @Prop({ required: true, type: Number })
+  match_percentage!: number;
+
+  @Prop({ type: [EvaluationResultSchema], default: [] })
+  requirementResult!: EvaluationRequirementResult[];
+
+  @Prop({
+    type: LintErrorGroupSchema,
+    default: { html_err: [], css_err: [], js_err: [] },
+  })
+  lint_errors!: LintErrorGroup;
+
+  @Prop({ type: [VisualTestResultSchema], default: [] })
+  visual_results!: VisualTestResult[];
+
+  @Prop({ trim: true, maxlength: 100000, default: '' })
+  html_content!: string;
+
+  @Prop({ trim: true, maxlength: 100000, default: '' })
+  css_content!: string;
+
+  @Prop({ trim: true, maxlength: 100000, default: '' })
+  js_content!: string;
+
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const SubmissionSchema = SchemaFactory.createForClass(Submission);

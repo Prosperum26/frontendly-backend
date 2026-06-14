@@ -6,7 +6,10 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class RefreshQueueService {
-  private readonly refreshLocks = new Map<string, Promise<any>>();
+  private readonly refreshLocks: Map<string, Promise<any>> = new Map<
+    string,
+    Promise<any>
+  >();
 
   /**
    * Execute a refresh operation with mutex lock per user.
@@ -20,15 +23,14 @@ export class RefreshQueueService {
 
     if (existingLock) {
       // Wait for the existing operation to complete
-      return existingLock;
+      return <Promise<T>>existingLock;
     }
 
     // Create a new lock
-    const lock = operation()
-      .finally(() => {
-        // Remove the lock after operation completes
-        this.refreshLocks.delete(userId);
-      });
+    const lock = <Promise<T>>operation().finally(() => {
+      // Remove the lock after operation completes
+      this.refreshLocks.delete(userId);
+    });
 
     this.refreshLocks.set(userId, lock);
     return lock;

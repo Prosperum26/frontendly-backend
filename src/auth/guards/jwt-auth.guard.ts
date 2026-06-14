@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
-import { Request } from 'express';
 import { merge } from 'lodash';
 import { Model, Types } from 'mongoose';
 
@@ -24,12 +23,13 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly tokenService: TokenService,
     private reflector: Reflector,
-    @InjectModel(StageProgress.name) private readonly stageProgressModel: Model<StageProgress>,
-  ) { }
+    @InjectModel(StageProgress.name)
+    private readonly stageProgressModel: Model<StageProgress>,
+  ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const opt = this.getAuthOption(ctx);
-    const req: Request = ctx.switchToHttp().getRequest();
+    const req = ctx.switchToHttp().getRequest();
     try {
       if (opt.skipAuth) return true;
 
@@ -44,7 +44,7 @@ export class JwtAuthGuard implements CanActivate {
       try {
         const decoded = await this.tokenService.decodeAccessToken(rawToken);
         tokenId = decoded.tokenId;
-      } catch (err) {
+      } catch {
         throw new UnauthorizedException('Token has expired or is invalid');
       }
 
@@ -56,12 +56,11 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       const user = await this.tokenService.findUserByToken(token._id);
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
 
       if (user.isBanned) {
-        throw new ForbiddenException('User is banned from accessing this resource');
+        throw new ForbiddenException(
+          'User is banned from accessing this resource',
+        );
       }
 
       if (user.isSuspended) {
@@ -73,9 +72,11 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       // Verify stage progress to prevent bypassing roadmap
-      const stageProgress = await this.stageProgressModel.findOne({
-        user_id: user._id,
-      }).lean();
+      const stageProgress = await this.stageProgressModel
+        .findOne({
+          user_id: user._id,
+        })
+        .lean();
 
       if (stageProgress) {
         // Attach stage progress to user object for downstream use
@@ -83,7 +84,7 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       // Attach the user to the request object with full information
-      req.user = {
+      (<any>req).user = {
         userId: user._id.toString(),
         username: user.username,
         role: user.role,
@@ -113,9 +114,11 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private getAuthToken(ctx: ExecutionContext): string | undefined {
-    const req: Request = ctx.switchToHttp().getRequest();
-    const auth = req.headers.authorization || '';
-    const [type, token] = auth.split(' ');
+    const req = ctx.switchToHttp().getRequest();
+    const auth: string = <string>(req.headers?.authorization || '');
+    const parts = auth.split(' ');
+    const type = parts[0];
+    const token = parts[1];
     if (type !== 'Bearer' || !token) return undefined;
     return token;
   }

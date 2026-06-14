@@ -2,28 +2,102 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 export type ExerciseDocument = HydratedDocument<Exercise>;
+@Schema({ _id: false })
+export class ExerciseRequirement {
+  @Prop({ required: true })
+  id!: string;
+
+  @Prop({ required: true })
+  text!: string;
+
+  @Prop({ required: true })
+  selector!: string;
+
+  @Prop({ required: true, enum: ['exist', 'count', 'content', 'attribute'] })
+  type!: string;
+
+  @Prop({ required: false })
+  expectedValue?: string;
+}
+
+const ExerciseRequirementSchema =
+  SchemaFactory.createForClass(ExerciseRequirement);
+
+@Schema({ _id: false })
+export class TargetDesign {
+  @Prop({ required: true })
+  deviceType!: string;
+
+  @Prop({ required: true })
+  width!: number;
+
+  @Prop({ required: true })
+  height!: number;
+
+  @Prop({ required: true })
+  url!: string;
+}
+const TargetDesignSchema = SchemaFactory.createForClass(TargetDesign);
+
+@Schema({ _id: false })
+export class EvaluationConfig {
+  @Prop({ type: Boolean, default: true })
+  lint!: boolean;
+
+  @Prop({ type: Boolean, default: true })
+  requirements!: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  visual!: boolean;
+}
+const EvaluationConfigSchema = SchemaFactory.createForClass(EvaluationConfig);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
   @Prop({ type: String, required: true, unique: true })
-  id: string;
+  id!: string;
 
   @Prop({ required: true })
-  module: string;
+  module!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
+
+  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' })
+  level!: 'easy' | 'medium' | 'hard';
 
   @Prop({ required: true })
-  description: string;
+  description!: string;
 
-  @Prop({ required: true })
-  target_design_url: string;
+  @Prop({ type: [TargetDesignSchema], default: [] })
+  target_designs!: TargetDesign[];
 
-  @Prop({ type: [{ id: String, text: String, _id: false }], default: [] })
-  requirements: { id: string; text: string }[];
+  @Prop({
+    type: EvaluationConfigSchema,
+    default: () => ({ lint: true, requirements: true, visual: false }),
+  })
+  evaluation_config!: EvaluationConfig;
 
-  created_at: Date;
-  updated_at: Date;
+  @Prop({ trim: true, default: '', maxlength: 100000 })
+  html_content!: string;
+
+  @Prop({ trim: true, default: '', maxlength: 100000 })
+  css_content!: string;
+
+  @Prop({ trim: true, default: '', maxlength: 100000 })
+  js_content!: string;
+
+  @Prop({ type: [ExerciseRequirementSchema], default: [] })
+  requirements!: ExerciseRequirement[];
+
+  @Prop({ type: Object, default: null })
+  navigation!: {
+    prev: { type: string; id: string; slug?: string } | null;
+    next: { type: string; id: string; slug?: string } | null;
+  };
+
+  created_at!: Date;
+  updated_at!: Date;
 }
 
 export const ExerciseSchema = SchemaFactory.createForClass(Exercise);

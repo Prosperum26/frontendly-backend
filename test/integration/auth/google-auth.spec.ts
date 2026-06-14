@@ -3,7 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { testApp, testModule } from '@test-helpers/setup-integration';
 import { LoginTicket, OAuth2Client } from 'google-auth-library';
 import { Model } from 'mongoose';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import { MockUserBuilder } from '@/users/mocks';
 import { User } from '@/users/schemas';
@@ -32,7 +32,7 @@ describe('Testing Google auth APIs', () => {
         given_name: mockUser.firstName,
         email: mockUser.email,
         picture: mockUser.avatarUrl,
-        sub: mockUser.googleId,
+        sub: mockUser.googleId ?? '',
       });
 
       const res = await request(testApp.getHttpServer())

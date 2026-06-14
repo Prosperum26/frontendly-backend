@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import * as crypto from 'crypto';
-import { Response } from 'express';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import type { Response } from 'express';
+import { Model, Types } from 'mongoose';
 
 import { Token } from '../schemas';
 import { Session } from '../schemas/session.schema';
@@ -25,13 +25,14 @@ export class TokenService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) { }
+  ) {}
 
   public async signAccessToken(token: Token): Promise<string> {
     const jwt: DecodedJwt = {
       tokenId: token._id.toString(),
     };
     return this.jwtService.signAsync(jwt, {
+      expiresIn: '30m',
       secret: this.authConfig.jwtSecret,
     });
   }
@@ -46,6 +47,11 @@ export class TokenService {
     return this.tokenModel.create({ userId });
   }
 
+  /**
+   * Returns the token document if it exists and is valid. Otherwise, returns
+   * `null`. Validity is defined as having `isActive` set to `true`, and current
+   * date is less than `expiredAt`.
+   */
   public async findUserByToken(tokenId: Types.ObjectId): Promise<User> {
     const token = await this.tokenModel
       .findById(tokenId)
@@ -63,12 +69,11 @@ export class TokenService {
       );
     }
     return token.userId;
-  } /**
-   * Returns the token document if it exists and is valid. Otherwise, returns
-   * `null`. Validity is defined as having `isActive` set to `true`, and current
-   * date is less than `expiredAt`.
-   */
+  }
 
+  /**
+   * Validate a token document
+   */
   public async findAndValidateToken(
     tokenId: Types.ObjectId,
   ): Promise<Token | null> {
@@ -77,20 +82,6 @@ export class TokenService {
     if (!token) return null;
     if (!token.isActive || now >= token.expiredAt) return null;
     return token;
-  }
-
-  /**
-   * Hash a refresh token using SHA-256 for secure storage
-   */
-  private hashRefreshToken(token: string): string {
-    return crypto.createHash('sha256').update(token).digest('hex');
-  }
-
-  /**
-   * Generate a secure random refresh token
-   */
-  private generateRefreshToken(): string {
-    return crypto.randomBytes(32).toString('hex');
   }
 
   /**
@@ -163,7 +154,10 @@ export class TokenService {
   /**
    * Revoke session (logout)
    */
-  public async revokeSession(refreshToken: string, res: Response): Promise<void> {
+  public async revokeSession(
+    refreshToken: string,
+    res: Response,
+  ): Promise<void> {
     const refreshTokenHash = this.hashRefreshToken(refreshToken);
     await this.sessionModel.deleteOne({ refresh_token_hash: refreshTokenHash });
 
@@ -176,5 +170,19 @@ export class TokenService {
    */
   public async revokeAllUserSessions(userId: Types.ObjectId): Promise<void> {
     await this.sessionModel.deleteMany({ user_id: userId });
+  }
+
+  /**
+   * Hash a refresh token using SHA-256 for secure storage
+   */
+  private hashRefreshToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  /**
+   * Generate a secure random refresh token
+   */
+  private generateRefreshToken(): string {
+    return crypto.randomBytes(32).toString('hex');
   }
 }
