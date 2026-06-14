@@ -3,23 +3,16 @@ import { z } from 'zod';
 
 const observabilityConfigSchema = z.object({
   mem: z.object({
-    heapThresholdBytes: z.number().positive(),
+    heapThresholdBytes: z.coerce.number().positive(),
   }),
 });
 
-type ObservabilityConfigType = z.infer<typeof observabilityConfigSchema>;
-
 export const observabilityConfigObj = registerAs('o11y', () => {
-  const config: ObservabilityConfigType = {
+  return observabilityConfigSchema.parse({
     mem: {
-      heapThresholdBytes:
-        parseInt(process.env.O11Y_HEAP_THRESHOLD_BYTES, 10) ||
-        // Let's use a default threshold of 150MB
-        150 * 1024 * 1024,
+      heapThresholdBytes: process.env.O11Y_HEAP_THRESHOLD_BYTES,
     },
-  };
-  observabilityConfigSchema.parse(config);
-  return config;
+  });
 });
 
 export type ObservabilityConfig = ConfigType<typeof observabilityConfigObj>;

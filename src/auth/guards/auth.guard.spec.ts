@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -49,7 +48,7 @@ describe('AuthGuard', () => {
   });
 
   it('Should skip authentication if `skipAuth` is set to true', async () => {
-    reflector.get.mockReturnValue(<AuthOption>{
+    reflector.getAllAndOverride.mockReturnValue(<AuthOption>{
       skipAuth: true,
     });
     const res = await authGuard.canActivate(ctx);
@@ -62,12 +61,15 @@ describe('AuthGuard', () => {
     tokenService.decodeAccessToken.mockResolvedValueOnce(decodedJwt);
     tokenService.findAndValidateToken.mockResolvedValueOnce(validToken);
     tokenService.findUserByToken.mockResolvedValueOnce(mockUser);
-    reflector.get.mockReturnValue(<AuthOption>{});
+    reflector.getAllAndOverride.mockReturnValue(<AuthOption>{});
 
     const res = await authGuard.canActivate(ctx);
 
     expect(res).toBe(true);
     expect(req.user).toEqual({
+      userId: mockUser._id.toString(),
+      username: mockUser.username,
+      role: mockUser.role,
       token: validToken,
       profile: mockUser,
     });
@@ -76,7 +78,7 @@ describe('AuthGuard', () => {
   describe('Handling authentication failure', () => {
     it('Should throw an error if no token is provided', async () => {
       req.headers.authorization = '';
-      reflector.get.mockReturnValue(<AuthOption>{});
+      reflector.getAllAndOverride.mockReturnValue(<AuthOption>{});
       await expect(authGuard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -86,7 +88,7 @@ describe('AuthGuard', () => {
       req.headers.authorization = 'Bearer 123';
       tokenService.decodeAccessToken.mockResolvedValueOnce(decodedJwt);
       tokenService.findAndValidateToken.mockResolvedValueOnce(null);
-      reflector.get.mockReturnValue(<AuthOption>{});
+      reflector.getAllAndOverride.mockReturnValue(<AuthOption>{});
       await expect(authGuard.canActivate(ctx)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -94,7 +96,7 @@ describe('AuthGuard', () => {
 
     it('Should still allow request if auth fails but `blockIfUnauthenticated` is false', async () => {
       req.headers.authorization = '';
-      reflector.get.mockReturnValue(<AuthOption>{
+      reflector.getAllAndOverride.mockReturnValue(<AuthOption>{
         blockIfUnauthenticated: false,
       });
       const res = await authGuard.canActivate(ctx);

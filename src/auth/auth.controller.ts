@@ -9,12 +9,16 @@ import {
   Patch, // Thêm Patch để hỗ trợ API cập nhật
   Req,
   SetMetadata,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { CustomDecoratorKey } from '@/common/constants';
 import { UpdateProfileDto } from '@/users/dtos/update-profile.dto'; // Import DTO cấu hình dữ liệu Profile
 
@@ -22,7 +26,10 @@ import { UpdateProfileDto } from '@/users/dtos/update-profile.dto'; // Import DT
 export const Public = (): CustomDecorator =>
   SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true });
 
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -39,8 +46,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() body: LoginDto,
-  ): Promise<{ message: string; token: string }> {
-    const result = await this.authService.login(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    user: any;
+  }> {
+    const result = await this.authService.login(body, res);
     return result;
   }
 
@@ -49,13 +62,30 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() body: RefreshTokenDto,
-  ): Promise<{ message: string; token: string }> {
-    const result = await this.authService.refreshToken(body);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
+    const result = await this.authService.refreshToken(body, res);
     return result;
   }
 
-  // KHÔNG dùng @Public() ở đây, vì API này BẮT BUỘC phải có token
-  // Đã bỏ 'async' và thêm type ': { message: string; data: any }' để chuẩn ESLint
+  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() body: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    const result = await this.authService.forgotPassword(body);
+    return result;
+  }
+
+  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @Post('reset-password')
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    const result = await this.authService.resetPassword(body);
+    return result;
+  }
+
   @Get('me')
   @HttpCode(HttpStatus.OK)
   async getMe(@Req() req: any): Promise<{ message: string; data: any }> {
@@ -66,22 +96,8 @@ export class AuthController {
     // Sửa đoạn gọi trong hàm getMe
     const freshUser = await (<any>this.authService).getFreshUser(userId);
     return {
-      message: 'Lấy thông tin thành công',
-      data: freshUser, // Trả về data thật từ DB thay vì req.user
+      message: 'Profile retrieved successfully',
+      user: req.user,
     };
-  }
-
-  // Mở cổng API Cập nhật Profile (Yêu cầu phải có Token)
-  @Patch('profile')
-  @HttpCode(HttpStatus.OK)
-  async updateProfile(
-    @Req() req: any,
-    @Body() body: UpdateProfileDto,
-  ): Promise<{ message: string; user: any }> {
-    // Lấy ID của user hiện tại từ token (Guard đã gắn vào req.user)
-    // Sửa dòng khai báo userId thành như thế này:
-    const userId = <string>(req.user?._id || req.user?.id); // Đẩy xuống Service xử lý lưu vào Database
-    const result = await this.authService.updateProfile(userId, body);
-    return result;
   }
 }

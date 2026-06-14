@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { GoogleAuthResult } from '../types';
@@ -17,7 +18,10 @@ export class GoogleAuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  public async authenticate(idToken: string): Promise<GoogleAuthResult> {
+  public async authenticate(
+    idToken: string,
+    res: Response,
+  ): Promise<GoogleAuthResult> {
     const ticket = await this.oauth2Client.verifyIdToken({
       idToken,
       audience: this.authConfig.google.clientId,
@@ -43,9 +47,26 @@ export class GoogleAuthService {
     // Generate token for this authentication attempt
     const token = await this.tokenService.create(user._id);
     const accessToken = await this.tokenService.signAccessToken(token);
+
+    // Create session with refresh token and set HttpOnly cookie
+    const userAgent = res.req.headers['user-agent'] || 'unknown';
+    const { refreshToken, expiresAt } = await this.tokenService.createSession(
+      user._id,
+      userAgent,
+    );
+
+    // Set refresh token in HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: expiresAt,
+    });
+
     return {
       user,
       accessToken,
+      refreshToken,
     };
   }
 }
