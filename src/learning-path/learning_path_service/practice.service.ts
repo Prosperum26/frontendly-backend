@@ -31,7 +31,7 @@ export class PracticeService {
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
     private readonly stageContextService: StageContextService,
-  ) {}
+  ) { }
 
   async unlockPractice(stageId: string, userId: string): Promise<unknown> {
     // Skip saving progress for guest users
@@ -49,7 +49,7 @@ export class PracticeService {
 
       if (!dbProgress) {
         // Tự động khởi tạo nếu chưa có tiến độ
-        dbProgress = await this.userProgressModel.create({
+        const newProgress = await this.userProgressModel.create({
           userId,
           skillId,
           currentXp: 0,
@@ -57,6 +57,11 @@ export class PracticeService {
           lastStreakDate: null,
           unlockedStages: [],
         });
+        dbProgress = newProgress.toObject() as any;
+      }
+
+      if (!dbProgress) {
+        throw new Error('Failed to create user progress');
       }
 
       const stageEntry = dbProgress.unlockedStages.find(

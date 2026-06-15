@@ -28,7 +28,7 @@ export class UserService {
     @InjectModel('Milestone')
     private milestoneModel: Model<MilestoneDocument>,
     private readonly gamificationService: GamificationService,
-  ) {}
+  ) { }
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
@@ -38,6 +38,11 @@ export class UserService {
 
     const { email, googleId, firstName, lastName, picture } = options;
 
+    // Check if user already exists with this email or googleId
+    const existingUser = await this.userModel.findOne({
+      $or: [{ email }, { googleId }],
+    }).lean();
+
     // Prepare update data
     const updateData: UpdateQuery<User> = {
       googleId,
@@ -45,22 +50,44 @@ export class UserService {
       lastName,
       avatarUrl: picture,
     };
-    const res = await this.userModel.findOneAndUpdate({ email }, update, {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: false,
-      includeResultMetadata: true,
-      lean: true,
-    });
 
-    const userDoc = res.value!;
+    let userDoc;
+    let isNewUser = false;
+
+    if (existingUser) {
+      // Update existing user
+      userDoc = await this.userModel
+        .findByIdAndUpdate(existingUser._id, updateData, {
+          new: true,
+          lean: true,
+        })
+        .lean();
+      this.logger.log(
+        `Updated existing user: ${email} (ID: ${existingUser._id})`,
+      );
+    } else {
+      // Create new user - use create instead of upsert to avoid race conditions
+      const createdUser = await this.userModel.create({
+        email,
+        googleId,
+        firstName,
+        lastName,
+        avatarUrl: picture,
+        name: `${firstName || ''} ${lastName || ''}`.trim() || email,
+        username: email.split('@')[0],
+      });
+      userDoc = createdUser.toObject();
+      isNewUser = true;
+      this.logger.log(`Created new user: ${email} (ID: ${userDoc._id})`);
+    }
+
     const formattedUser = {
       ...userDoc,
-      id: userDoc._id.toString(),
+      id: userDoc!._id.toString(),
     };
 
     return {
-      alreadyExists: res.lastErrorObject?.updatedExisting || false,
+      alreadyExists: !isNewUser,
       user: <any>formattedUser,
     };
   }
@@ -70,7 +97,7 @@ export class UserService {
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { $set: dto }, { new: true, lean: true })
+      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
       .select('-password');
 
     if (!updatedUser) {
@@ -105,6 +132,9 @@ export class UserService {
     }
 
     // Verify old password
+    if (!user.password) {
+      throw new BadRequestException('Người dùng chưa đặt mật khẩu');
+    }
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isPasswordValid) {
       throw new BadRequestException('Mật khẩu cũ không chính xác');
@@ -277,12 +307,18 @@ export class UserService {
 
     return topUsers.map((p, index) => {
       const user = userMap.get(p.userId);
+      // Calculate level from XP using the same logic as getXpForLevel
+      let level = 1;
+      let xpForCurrentLevel = 0;
+      while (getXpForLevel(level + 1) <= p.currentXp) {
+        level++;
+      }
       return {
         id: p.userId,
         rank: skip + index + 1,
         username: user?.name || user?.firstName || 'Unknown',
         avatar: user?.avatarUrl,
-        level: Math.floor(p.currentXp / XP_PER_LEVEL) + 1,
+        level,
         xp: p.currentXp,
       };
     });

@@ -27,6 +27,7 @@ export class MockUserBuilder {
       stats: {},
       username: 'johndoe',
       xp: 0,
+      activity_heatmap: {},
     };
   }
 

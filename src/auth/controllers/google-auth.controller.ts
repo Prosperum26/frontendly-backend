@@ -15,7 +15,7 @@ import { GoogleAuthService } from '../services';
 
 @Controller('auth/google')
 export class GoogleAuthController {
-  constructor(private readonly googleAuthService: GoogleAuthService) {}
+  constructor(private readonly googleAuthService: GoogleAuthService) { }
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -25,8 +25,21 @@ export class GoogleAuthController {
     @Body() dto: GoogleLoginRequestDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginResponseDto> {
-    const { accessToken, refreshToken, user } =
+    const { accessToken, refreshToken, user, isNewUser } =
       await this.googleAuthService.authenticate(dto.idToken, res);
-    return new GoogleLoginResponseDto(accessToken, user, refreshToken);
+
+    // Handle redirect if provided - redirect with tokens as query params
+    if (dto.redirectUrl) {
+      const redirectUrl = new URL(dto.redirectUrl);
+      redirectUrl.searchParams.set('accessToken', accessToken);
+      if (refreshToken) {
+        redirectUrl.searchParams.set('refreshToken', refreshToken);
+      }
+      redirectUrl.searchParams.set('isNewUser', isNewUser.toString());
+      res.redirect(redirectUrl.toString());
+      return null as any;
+    }
+
+    return new GoogleLoginResponseDto(accessToken, user, refreshToken, isNewUser);
   }
 }
