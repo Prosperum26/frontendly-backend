@@ -7,7 +7,9 @@ import {
   NotFoundException,
   Req,
 } from '@nestjs/common';
+import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Model } from 'mongoose';
@@ -19,7 +21,6 @@ import { User } from '../schemas';
 import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
-
 @Controller({
   path: 'users',
   version: '1',
@@ -120,7 +121,24 @@ export class UserController {
     const data = await this.gamificationService.updateStreak(userId);
     return { success: true, data };
   }
-
+  @Post('me/avatar')
+  @ApiOperation({ summary: 'Upload avatar' })
+  @UseInterceptors(FileInterceptor('file')) // 'file' là key gửi từ Frontend
+  public async uploadAvatar(
+    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
+    const profile = <Record<string, string>>(<unknown>authUser.profile);
+    const result = await this.userService.uploadAvatar(
+      String(profile._id),
+      file,
+    );
+    return {
+      success: true,
+      message: result.message,
+      avatarUrl: result.avatarUrl,
+    };
+  }
   private extractUserId(req: Request): string {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const user = req.user as

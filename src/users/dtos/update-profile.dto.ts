@@ -1,26 +1,9 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import { IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class UpdateProfileDto {
-  @IsOptional()
-  @IsString()
-  @Length(3, 30)
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  bio?: string;
-
-  // Nếu file cũ của bạn có firstName, lastName hay avatarUrl,
-  // bạn cứ giữ nguyên chúng ở dưới này nhé, chỉ cần thêm name và bio lên trên là được.
-  @IsOptional()
-  @IsString()
-  firstName?: string;
-
-  @IsOptional()
-  @IsString()
-  lastName?: string;
-
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
+  @IsOptional() @IsString() fullName?: string;
+  @IsOptional() @IsString() avatar?: string; // (Sẽ nhận URL sau khi upload)
+  @IsOptional() @IsString() phoneNumber?: string;
+  @IsOptional() @IsDateString() dateOfBirth?: string;
+  @IsOptional() @IsString() bio?: string;
 }

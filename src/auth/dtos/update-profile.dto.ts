@@ -1,12 +1,8 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import { IsString, IsOptional, IsDateString } from 'class-validator';
 
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  @Length(3, 30) // Bắt buộc tên nếu sửa phải từ 3 đến 30 ký tự
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  bio?: string;
+export class UpdateProfileDto {
+  @IsOptional() @IsString() fullName?: string;
+  @IsOptional() @IsString() phoneNumber?: string;
+  @IsOptional() @IsDateString() dateOfBirth?: string;
+  @IsOptional() @IsString() bio?: string;
 }

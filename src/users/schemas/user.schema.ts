@@ -29,7 +29,7 @@ export class User {
   avatarUrl?: string;
 
   @Prop()
-  username: string;
+  username!: string;
 
   @Prop()
   name!: string;
@@ -38,16 +38,16 @@ export class User {
   password?: string;
 
   @Prop({ default: 'user' })
-  role: string;
+  role!: string;
 
   @Prop({ default: false })
-  isBanned: boolean;
+  isBanned!: boolean;
 
   @Prop({ default: false })
-  isSuspended: boolean;
+  isSuspended!: boolean;
 
   @Prop({ default: false })
-  isDeleted: boolean;
+  isDeleted!: boolean;
 
   @Prop()
   resetPasswordToken?: string;
@@ -56,13 +56,13 @@ export class User {
   resetPasswordExpires?: Date;
 
   @Prop({ default: 1 })
-  level: number;
+  level!: number;
 
   @Prop({ default: 0 })
-  xp: number;
+  xp!: number;
 
   @Prop({ type: Object, default: () => ({}) })
-  stats: {
+  stats!: {
     totalLearningTime?: number;
     coursesCompleted?: number;
     streakDays?: number;
@@ -71,7 +71,7 @@ export class User {
   };
 
   @Prop({ type: Object, default: () => ({}) })
-  credentials: {
+  credentials!: {
     passwordHash?: string;
     lastPasswordChange?: Date;
   };
@@ -80,7 +80,7 @@ export class User {
     type: [{ provider: String, providerId: String, linkedAt: Date }],
     default: () => [],
   })
-  social_accounts: Array<{
+  social_accounts!: Array<{
     provider: string;
     providerId: string;
     linkedAt: Date;
@@ -90,7 +90,7 @@ export class User {
     type: [{ name: String, level: Number, earnedAt: Date }],
     default: () => [],
   })
-  skills: Array<{
+  skills!: Array<{
     name: string;
     level: number;
     earnedAt: Date;
@@ -100,13 +100,13 @@ export class User {
     type: [{ badgeId: Types.ObjectId, earnedAt: Date }],
     default: () => [],
   })
-  badges: Array<{
+  badges!: Array<{
     badgeId: Types.ObjectId;
     earnedAt: Date;
   }>;
 
   @Prop({ type: Object, default: () => ({}) })
-  stage_progress: {
+  stage_progress!: {
     currentStage?: number;
     maxUnlockedStage?: number;
     completedStages?: number[];
@@ -115,9 +115,22 @@ export class User {
   };
 
   @Prop({ type: Object, default: () => ({}) })
-  activity_heatmap: Record<string, number>; // key: YYYY-MM-DD, value: number of activities
+  activity_heatmap!: Record<string, number>; // key: YYYY-MM-DD, value: number of activities
 
-  _id: Types.ObjectId;
+  // --- THÊM MỚI CHO TASK PROFILE API ---
+  @Prop()
+  fullName?: string;
+
+  @Prop()
+  phoneNumber?: string;
+
+  @Prop()
+  dateOfBirth?: Date;
+
+  @Prop()
+  bio?: string;
+
+  _id!: Types.ObjectId;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,4 +1,4 @@
-/* eslint-disable new-cap */
+const XP_PER_LEVEL = 100; // Định nghĩa để hết lỗi Cannot find name
 import {
   Injectable,
   Logger,
@@ -7,9 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
+import { Express } from 'express';
 import { Model, UpdateQuery } from 'mongoose';
 
 import { GamificationService } from './gamification.service';
+import { CloudinaryService } from '../../cloudinary.service';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User, getXpForLevel } from '../schemas';
@@ -21,7 +23,7 @@ import {
 } from '../types';
 import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
-
+import 'multer';
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger(UserService.name);
@@ -34,6 +36,7 @@ export class UserService {
     @InjectModel('Milestone')
     private milestoneModel: Model<MilestoneDocument>,
     private readonly gamificationService: GamificationService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   public async createOrUpdateUser(
@@ -42,17 +45,30 @@ export class UserService {
     await createUserSchema.parseAsync(options);
 
     const { email, googleId, firstName, lastName, picture } = options;
+
+    // Generate a default avatar using the user's name (e.g., "John Doe" -> "JD")
+    const safeFirstName = firstName || 'User';
+    const safeLastName = lastName || '';
+    const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${safeFirstName}+${safeLastName}&background=e2e8f0&color=475569`;
+
     const update: UpdateQuery<User> = {
-      googleId,
-      firstName,
-      lastName,
-      avatarUrl: picture,
+      $set: {
+        googleId,
+        firstName,
+        lastName,
+        // Only update the avatar if a new picture is explicitly provided (e.g., Google sync)
+        ...(picture && { avatarUrl: picture }),
+      },
+      $setOnInsert: {
+        // If this is a brand NEW registration, assign the picture or the default avatar
+        avatarUrl: picture || defaultAvatarUrl,
+      },
     };
 
     const res = await this.userModel.findOneAndUpdate({ email }, update, {
       new: true,
       upsert: true,
-      setDefaultsOnInsert: false,
+      setDefaultsOnInsert: true, // Ensured this is true to trigger schema defaults
       includeResultMetadata: true,
       lean: true,
     });
@@ -79,8 +95,9 @@ export class UserService {
         { $set: body },
         { new: true, lean: true }, // new: true ensures we get the updated document
       )
-      .select('-password');
-
+      .select(
+        'email firstName lastName fullName avatarUrl phoneNumber dateOfBirth bio',
+      );
     if (!updatedUser) {
       // Changed to NotFoundException as it's standard for 404 resource not found
       throw new NotFoundException('User not found');
@@ -311,5 +328,30 @@ export class UserService {
     });
 
     return count + 1;
+  }
+  // 👇 THÊM HÀM NÀY VÀO ĐỂ XỬ LÝ UPLOAD AVATAR
+
+  public async uploadAvatar(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<{ message: string; avatarUrl: string }> {
+    if (!file) {
+      throw new BadRequestException('Image file not found');
+    }
+
+    // Thực hiện upload thật lên Cloudinary
+    const uploadResult = await this.cloudinaryService.uploadImage(file);
+    const realAvatarUrl = uploadResult.secure_url;
+
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: { avatarUrl: realAvatarUrl } },
+      { new: true },
+    );
+
+    return {
+      message: 'Avatar updated successfully',
+      avatarUrl: realAvatarUrl,
+    };
   }
 }

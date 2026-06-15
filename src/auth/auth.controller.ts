@@ -5,8 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Post,
-  Patch, // Thêm Patch để hỗ trợ API cập nhật
+  Post, // Thêm Patch để hỗ trợ API cập nhật
   Req,
   SetMetadata,
   Res,
@@ -20,7 +19,7 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { CustomDecoratorKey } from '@/common/constants';
-import { UpdateProfileDto } from '@/users/dtos/update-profile.dto'; // Import DTO cấu hình dữ liệu Profile
+// Import DTO cấu hình dữ liệu Profile
 
 // Sửa lại chìa khóa: Gắn đúng từ khóa AUTH_OPTION và truyền { skipAuth: true }
 export const Public = (): CustomDecorator =>
@@ -94,10 +93,10 @@ export class AuthController {
 
     // Yêu cầu AuthService chọc xuống DB lấy User mới nhất
     // Sửa đoạn gọi trong hàm getMe
-    const freshUser = await (<any>this.authService).getFreshUser(userId);
+    await (<any>this.authService).getFreshUser(userId);
     return {
       message: 'Profile retrieved successfully',
-      user: req.user,
+      data: req.user,
     };
   }
 }
