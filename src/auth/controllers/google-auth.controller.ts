@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   Res,
 } from '@nestjs/common';
@@ -12,10 +13,14 @@ import type { Response } from 'express';
 import { ConfigureAuth } from '../decorators';
 import { GoogleLoginRequestDto, GoogleLoginResponseDto } from '../dtos';
 import { GoogleAuthService } from '../services';
+import { AuthConfig, authConfigObj } from '@/common/config';
 
 @Controller('auth/google')
 export class GoogleAuthController {
-  constructor(private readonly googleAuthService: GoogleAuthService) { }
+  constructor(
+    private readonly googleAuthService: GoogleAuthService,
+    @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -27,18 +32,6 @@ export class GoogleAuthController {
   ): Promise<GoogleLoginResponseDto> {
     const { accessToken, refreshToken, user, isNewUser } =
       await this.googleAuthService.authenticate(dto.idToken, res);
-
-    // Handle redirect if provided - redirect with tokens as query params
-    if (dto.redirectUrl) {
-      const redirectUrl = new URL(dto.redirectUrl);
-      redirectUrl.searchParams.set('accessToken', accessToken);
-      if (refreshToken) {
-        redirectUrl.searchParams.set('refreshToken', refreshToken);
-      }
-      redirectUrl.searchParams.set('isNewUser', isNewUser.toString());
-      res.redirect(redirectUrl.toString());
-      return null as any;
-    }
 
     return new GoogleLoginResponseDto(accessToken, user, refreshToken, isNewUser);
   }

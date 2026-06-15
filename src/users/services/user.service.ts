@@ -66,19 +66,45 @@ export class UserService {
         `Updated existing user: ${email} (ID: ${existingUser._id})`,
       );
     } else {
-      // Create new user - use create instead of upsert to avoid race conditions
-      const createdUser = await this.userModel.create({
-        email,
-        googleId,
-        firstName,
-        lastName,
-        avatarUrl: picture,
-        name: `${firstName || ''} ${lastName || ''}`.trim() || email,
-        username: email.split('@')[0],
-      });
-      userDoc = createdUser.toObject();
-      isNewUser = true;
-      this.logger.log(`Created new user: ${email} (ID: ${userDoc._id})`);
+      try {
+        // Create new user using findOneAndUpdate with upsert to prevent race conditions
+        userDoc = await this.userModel
+          .findOneAndUpdate(
+            { email },
+            {
+              email,
+              googleId,
+              firstName,
+              lastName,
+              avatarUrl: picture,
+              name: `${firstName || ''} ${lastName || ''}`.trim() || email,
+              username: email.split('@')[0],
+            },
+            {
+              upsert: true,
+              new: true,
+              lean: true,
+              setDefaultsOnInsert: true,
+            },
+          )
+          .lean();
+
+        // Check if this was actually a new user by comparing createdAt timestamps
+        isNewUser = !existingUser;
+        this.logger.log(
+          `${isNewUser ? 'Created new user' : 'Updated existing user'}: ${email} (ID: ${userDoc?._id})`,
+        );
+      } catch (error: any) {
+        // Handle duplicate key errors
+        if (error.code === 11000) {
+          this.logger.warn(`Duplicate user detected for email: ${email}, retrying...`);
+          // Retry by fetching the existing user
+          userDoc = await this.userModel.findOne({ email }).lean();
+          isNewUser = false;
+        } else {
+          throw error;
+        }
+      }
     }
 
     const formattedUser = {
