@@ -89,6 +89,20 @@ export class UserService {
     userId: string,
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
+    if (body.username) {
+      const existingUser = await this.userModel
+        .findOne({
+          username: body.username,
+          _id: { $ne: userId }, // Bỏ qua chính user hiện tại
+        })
+        .lean();
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'Username already exists, please choose another one.',
+        );
+      }
+    }
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
         userId,

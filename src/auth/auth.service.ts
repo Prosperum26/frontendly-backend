@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -30,12 +31,19 @@ export class AuthService {
     try {
       const { email, password, name } = body;
       const exist = await this.userModel.findOne({ email });
-      if (exist) throw new BadRequestException('Email đã tồn tại');
+      if (exist) throw new BadRequestException('Email already exists');
 
       const hashedPassword = await bcrypt.hash(<string>password, 10);
 
-      // Tạo username mặc định từ email nếu không có
-      const username = email.split('@')[0] + crypto.randomInt(100, 999);
+      // Smart username generation
+      const baseUsername = email.split('@')[0];
+      let username = baseUsername;
+      let counter = 1;
+
+      while (await this.userModel.findOne({ username })) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      }
 
       await this.userModel.create({
         name,
@@ -44,11 +52,11 @@ export class AuthService {
         password: hashedPassword,
       });
 
-      return { message: 'Đăng ký thành công' };
+      return { message: 'Registration successful' };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new BadRequestException(
-        `Đã xảy ra lỗi trong quá trình đăng ký: ${(<Error>error).message}`,
+        `An error occurred during registration: ${(<Error>error).message}`,
       );
     }
   }
@@ -117,7 +125,7 @@ export class AuthService {
   async forgotPassword(body: ForgotPasswordDto): Promise<{ message: string }> {
     const user = await this.userModel.findOne({ email: body.email });
     if (!user) {
-      return { message: 'Nếu email tồn tại, link reset sẽ được gửi.' };
+      return { message: 'If the email exists, a reset link will be sent.' };
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -127,7 +135,7 @@ export class AuthService {
 
     await this.emailService.sendPasswordResetEmail(user.email, resetToken);
 
-    return { message: 'Link reset mật khẩu đã được gửi qua email.' };
+    return { message: 'Password reset link has been sent via email.' };
   }
 
   async resetPassword(body: ResetPasswordDto): Promise<{ message: string }> {
@@ -137,7 +145,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
+      throw new BadRequestException('Invalid or expired token');
     }
 
     const hashedPassword = await bcrypt.hash(body.newPassword, 10);
@@ -146,7 +154,16 @@ export class AuthService {
     user.resetPasswordExpires = undefined;
     await user.save();
 
-    return { message: 'Đổi mật khẩu thành công.' };
+    return { message: 'Password reset successful.' };
+  }
+
+  // FIX: Using this.userModel directly instead of this.userService
+  public async getFreshUser(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   private getDeviceInfo(res: Response): string {

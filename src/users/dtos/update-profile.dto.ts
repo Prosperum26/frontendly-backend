@@ -6,4 +6,7 @@ export class UpdateProfileDto {
   @IsOptional() @IsString() phoneNumber?: string;
   @IsOptional() @IsDateString() dateOfBirth?: string;
   @IsOptional() @IsString() bio?: string;
+  @IsOptional()
+  @IsString()
+  username?: string;
 }
