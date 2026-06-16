@@ -96,6 +96,38 @@ export class UnlockedStage {
 
 const UnlockedStageSchema = SchemaFactory.createForClass(UnlockedStage);
 
+@Schema({ _id: false })
+export class CompletedMilestone {
+  @Prop({ required: true })
+  milestoneId!: string;
+
+  @Prop({ required: true })
+  completedAt!: Date;
+
+  @Prop({ default: '' })
+  badgeId!: string;
+}
+
+const CompletedMilestoneSchema =
+  SchemaFactory.createForClass(CompletedMilestone);
+
+@Schema({ _id: false })
+export class EarnedBadge {
+  @Prop({ required: true })
+  badgeId!: string;
+
+  @Prop({ required: true })
+  name!: string;
+
+  @Prop({ default: '' })
+  icon!: string;
+
+  @Prop({ required: true })
+  earnedAt!: Date;
+}
+
+const EarnedBadgeSchema = SchemaFactory.createForClass(EarnedBadge);
+
 export type UserLearningProgressDocument =
   HydratedDocument<UserLearningProgress>;
 
@@ -116,8 +148,14 @@ export class UserLearningProgress {
   @Prop({ type: String, default: null })
   lastStreakDate!: string | null;
 
-  @Prop({ type: [String], default: [] })
-  badges!: string[];
+  @Prop({ type: [EarnedBadgeSchema], default: [] })
+  earnedBadges!: EarnedBadge[];
+
+  @Prop({ type: [CompletedMilestoneSchema], default: [] })
+  completedMilestones!: CompletedMilestone[];
+
+  @Prop({ default: 0 })
+  totalCompletedStages!: number;
 
   @Prop({ type: String, default: null })
   lastActiveStageId!: string | null;

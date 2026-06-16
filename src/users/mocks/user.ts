@@ -6,7 +6,7 @@ export class MockUserBuilder {
   private user: User;
 
   constructor() {
-    this.user = {
+    this.user = <User>(<unknown>{
       _id: new Types.ObjectId(),
       avatarUrl: 'https://www.example.com/avatar.jpg',
       badges: [],
@@ -27,7 +27,7 @@ export class MockUserBuilder {
       stats: {},
       username: 'johndoe',
       xp: 0,
-    };
+    });
   }
 
   public build(): User {

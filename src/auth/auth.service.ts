@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
@@ -16,17 +17,23 @@ import { RegisterDto } from './dtos/register.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { TokenService } from './services/token.service';
 import { EmailService } from '@/common/email/email.service';
+import { GuestSyncService } from '@/learning-path/learning_path_service/guest-sync.service';
 import { User } from '@/users/schemas';
 
 @Injectable()
 export class AuthService {
+  private readonly logger: Logger = new Logger(AuthService.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private tokenService: TokenService,
     private emailService: EmailService,
+    private guestSyncService: GuestSyncService,
   ) {}
 
-  async register(body: RegisterDto): Promise<{ message: string }> {
+  async register(
+    body: RegisterDto,
+  ): Promise<{ message: string; guestSyncedStages?: number }> {
     try {
       const { email, password, name } = body;
       const exist = await this.userModel.findOne({ email });
@@ -37,14 +44,31 @@ export class AuthService {
       // Tạo username mặc định từ email nếu không có
       const username = email.split('@')[0] + crypto.randomInt(100, 999);
 
-      await this.userModel.create({
+      const newUser = await this.userModel.create({
         name,
         email,
         username,
         password: hashedPassword,
       });
 
-      return { message: 'Đăng ký thành công' };
+      // Sync guest progress if provided
+      let guestSyncedStages: number | undefined;
+      if (body.guestProgress && body.guestProgress.length > 0) {
+        const userId = (<Types.ObjectId>newUser._id).toString();
+        const syncResult = await this.guestSyncService.syncGuestProgress(
+          userId,
+          body.guestProgress,
+        );
+        guestSyncedStages = syncResult.syncedStages;
+        this.logger.log(
+          `Guest sync on register: ${syncResult.syncedStages} stage(s) synced for user ${userId}`,
+        );
+      }
+
+      return {
+        message: 'Đăng ký thành công',
+        ...(guestSyncedStages !== undefined && { guestSyncedStages }),
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new BadRequestException(
@@ -60,7 +84,8 @@ export class AuthService {
     message: string;
     accessToken: string;
     refreshToken: string;
-    user: any;
+    user: Record<string, unknown>;
+    guestSyncedStages?: number;
   }> {
     const { email, password } = body;
 
@@ -69,7 +94,7 @@ export class AuthService {
       .select('+password')
       .lean();
 
-    const userDoc = <Record<string, any>>(<unknown>user);
+    const userDoc = <Record<string, unknown>>(<unknown>user);
 
     if (
       !user ||
@@ -89,6 +114,20 @@ export class AuthService {
 
     this.setRefreshCookie(res, refreshToken, expiresAt);
 
+    // Sync guest progress if provided
+    let guestSyncedStages: number | undefined;
+    if (body.guestProgress && body.guestProgress.length > 0) {
+      const userId = (<Types.ObjectId>userDoc._id).toString();
+      const syncResult = await this.guestSyncService.syncGuestProgress(
+        userId,
+        body.guestProgress,
+      );
+      guestSyncedStages = syncResult.syncedStages;
+      this.logger.log(
+        `Guest sync on login: ${syncResult.syncedStages} stage(s) synced for user ${userId}`,
+      );
+    }
+
     // Remove password and add id
     const userWithoutPassword = { ...userDoc };
     delete userWithoutPassword.password;
@@ -102,6 +141,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       user: formattedUser,
+      ...(guestSyncedStages !== undefined && { guestSyncedStages }),
     };
   }
 

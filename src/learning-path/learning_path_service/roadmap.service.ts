@@ -58,6 +58,19 @@ export class RoadmapService {
         ]),
       );
 
+      const earnedBadgeMap = new Map(
+        (dbProgress?.earnedBadges ?? []).map(b => [
+          b.badgeId,
+          { name: b.name, icon: b.icon },
+        ]),
+      );
+      const completedMilestoneBadgeMap = new Map(
+        (dbProgress?.completedMilestones ?? []).map(cm => [
+          cm.milestoneId,
+          cm.badgeId,
+        ]),
+      );
+
       let prevMilestoneCompleted = false;
       const milestonesWithProgress = dbMilestones.map((milestone, index) => {
         const stagesWithProgress = milestone.stages.map(stage => {
@@ -86,8 +99,15 @@ export class RoadmapService {
           computedStatus = 'locked';
         }
 
-        // Update previous milestone completion flag for next iteration
         prevMilestoneCompleted = computedStatus === 'completed';
+
+        const milestoneBadgeId = completedMilestoneBadgeMap.get(
+          <string>milestone.id,
+        );
+        const badge =
+          computedStatus === 'completed' && milestoneBadgeId
+            ? (earnedBadgeMap.get(milestoneBadgeId) ?? undefined)
+            : undefined;
 
         return {
           id: milestone.id,
@@ -95,6 +115,7 @@ export class RoadmapService {
           icon: milestone.icon,
           status: computedStatus,
           stages: stagesWithProgress,
+          ...(badge && { badge }),
         };
       });
 

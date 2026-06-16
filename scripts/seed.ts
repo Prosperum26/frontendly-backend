@@ -73,6 +73,79 @@ const BADGES_DATA = [
     category: 'streak',
     unlockCondition: { type: 'streak_days', value: 30 },
   },
+  {
+    name: 'HTML Master',
+    icon: '🎯',
+    description: 'Complete Milestone 1: HTML Fundamentals',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'm1',
+    },
+  },
+  {
+    name: 'CSS Architect',
+    icon: '🎨',
+    description: 'Complete Milestone 2: CSS Styling',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'm2',
+    },
+  },
+  {
+    name: 'JS Warrior',
+    icon: '⚡',
+    description: 'Complete Milestone 3: JavaScript Interactivity',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'm3',
+    },
+  },
+  {
+    name: 'Course Graduate',
+    icon: '🎓',
+    description: 'Complete all 3 milestones',
+    category: 'special',
+    unlockCondition: { type: 'milestone_completed', value: 3 },
+  },
+  {
+    name: 'React Pioneer',
+    icon: '🌱',
+    description: 'Complete Milestone 1: React Foundations',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'rm1',
+    },
+  },
+  {
+    name: 'Component Architect',
+    icon: '🧩',
+    description: 'Complete Milestone 2: React Components & Props',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'rm2',
+    },
+  },
+  {
+    name: 'Hooks Wizard',
+    icon: '🪝',
+    description: 'Complete Milestone 3: React Hooks & Advanced Patterns',
+    category: 'learning',
+    unlockCondition: {
+      type: 'milestone_completed',
+      value: 1,
+      milestoneId: 'rm3',
+    },
+  },
 ];
 
 const MILESTONES_DATA = [
@@ -139,11 +212,95 @@ const MILESTONES_DATA = [
   },
 ];
 
+const REACT_MILESTONES_DATA = [
+  {
+    id: 'rm1',
+    title: 'React Foundations',
+    icon: 'react',
+    status: 'in_progress',
+    stages: [
+      {
+        id: 'rs1',
+        title: 'Introduction to React',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'rs2',
+        title: 'Rendering HTML with React',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      { id: 'rs3', title: 'JSX Syntax', isCompleted: false, earnedStars: 0 },
+      {
+        id: 'rs4',
+        title: 'Expressions in JSX',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+    ],
+  },
+  {
+    id: 'rm2',
+    title: 'Components & Props',
+    icon: 'components',
+    status: 'locked',
+    stages: [
+      {
+        id: 'rs5',
+        title: 'Functional Components',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'rs6',
+        title: 'Props & Data Flow',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'rs7',
+        title: 'State with useState',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      {
+        id: 'rs8',
+        title: 'Event Handling in React',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+    ],
+  },
+  {
+    id: 'rm3',
+    title: 'Hooks & Advanced Patterns',
+    icon: 'hooks',
+    status: 'locked',
+    stages: [
+      {
+        id: 'rs9',
+        title: 'useEffect Hook',
+        isCompleted: false,
+        earnedStars: 0,
+      },
+      { id: 'rs10', title: 'Lists & Keys', isCompleted: false, earnedStars: 0 },
+      { id: 'rs11', title: 'useContext', isCompleted: false, earnedStars: 0 },
+      { id: 'rs12', title: 'Custom Hooks', isCompleted: false, earnedStars: 0 },
+    ],
+  },
+];
+
 const ROADMAP_DATA = [
   {
     skillId: 'frontend',
     skillTitle: 'Frontend Developer Path',
     milestoneIds: ['m1', 'm2', 'm3'],
+  },
+  {
+    skillId: 'react',
+    skillTitle: 'React.js Developer Path',
+    milestoneIds: ['rm1', 'rm2', 'rm3'],
   },
 ];
 
@@ -272,6 +429,108 @@ const generateEditorExercises = (): any[] => {
   return exercises;
 };
 
+const REACT_STAGES: Array<{ id: string; title: string }> = [
+  { id: 'rs1', title: 'Introduction to React' },
+  { id: 'rs2', title: 'Rendering HTML with React' },
+  { id: 'rs3', title: 'JSX Syntax' },
+  { id: 'rs4', title: 'Expressions in JSX' },
+  { id: 'rs5', title: 'Functional Components' },
+  { id: 'rs6', title: 'Props & Data Flow' },
+  { id: 'rs7', title: 'State with useState' },
+  { id: 'rs8', title: 'Event Handling in React' },
+  { id: 'rs9', title: 'useEffect Hook' },
+  { id: 'rs10', title: 'Lists & Keys' },
+  { id: 'rs11', title: 'useContext' },
+  { id: 'rs12', title: 'Custom Hooks' },
+];
+
+const generateReactTheories = (): any[] =>
+  REACT_STAGES.map(stage => ({
+    stageId: stage.id,
+    title: stage.title,
+    contentHtml: `<h1>${stage.title}</h1><p>Welcome to <strong>${stage.title}</strong>. This lesson covers essential React concepts to build modern frontends.</p>`,
+    proTips: `Tip: Experiment with ${stage.title} in a CodeSandbox to learn by doing!`,
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    referenceLinks: [
+      { title: 'React Official Docs', url: 'https://react.dev', type: 'doc' },
+    ],
+  }));
+
+const generateReactLpExercises = (): any[] => {
+  const exercises: any[] = [];
+  REACT_STAGES.forEach(stage => {
+    ['easy', 'medium', 'hard'].forEach((level, diffIdx) => {
+      exercises.push({
+        id: `lp_ex_${stage.id}_${diffIdx + 1}`,
+        stageId: stage.id,
+        level,
+        title: `${level.charAt(0).toUpperCase()}${level.slice(1)} exercise for ${stage.title}`,
+        instruction: `Complete this ${level} exercise to practice ${stage.title}.`,
+        boilerplateCode: {
+          html: diffIdx === 0 ? '<div id="root"></div>' : '',
+          js: diffIdx === 1 ? `// ${stage.title}\nconsole.log("React!");` : '',
+        },
+      });
+    });
+  });
+  return exercises;
+};
+
+const generateReactEditorExercises = (): any[] =>
+  REACT_STAGES.map((stage, idx) => {
+    const i = idx + 1;
+    let level: 'easy' | 'medium' | 'hard';
+    if (i <= 4) {
+      level = 'easy';
+    } else if (i <= 8) {
+      level = 'medium';
+    } else {
+      level = 'hard';
+    }
+
+    const evaluationConfig = {
+      lint: true,
+      requirements: true,
+      visual: level === 'hard',
+    };
+    const targetDesigns =
+      level === 'hard'
+        ? [
+            {
+              deviceType: 'desktop',
+              width: 1280,
+              height: 720,
+              url: 'https://via.placeholder.com/1280x720',
+            },
+          ]
+        : [];
+
+    return {
+      id: `exercise_${stage.id}`,
+      module: `Milestone ${Math.ceil(i / 4)}`,
+      title: `React Practice: ${stage.title}`,
+      level,
+      description: `Build a React component demonstrating ${stage.title}.`,
+      target_designs: targetDesigns,
+      evaluation_config: evaluationConfig,
+      html_content: '<div id="root"></div>',
+      css_content: `/* Styles for ${stage.title} */\nbody { font-family: sans-serif; }`,
+      js_content: `// ${stage.title}\nconst root = document.getElementById('root');\nroot.innerHTML = '<h1>Hello React!</h1>';`,
+      requirements: [
+        {
+          id: `req_${stage.id}_1`,
+          text: 'Must have a root element',
+          selector: '#root',
+          type: 'exist',
+        },
+      ],
+      navigation: {
+        prev: i > 1 ? { type: 'practice', id: `exercise_rs${i - 1}` } : null,
+        next: i < 12 ? { type: 'practice', id: `exercise_rs${i + 1}` } : null,
+      },
+    };
+  });
+
 // ── Runner ────────────────────────────────────────────────────────────────────
 
 async function seed(): Promise<void> {
@@ -363,26 +622,33 @@ async function seed(): Promise<void> {
     await Roadmap.insertMany(ROADMAP_DATA);
     console.log(`✅ Upserted ${ROADMAP_DATA.length} roadmaps.`);
 
-    // 6. Seed Milestones
+    // 6. Seed Milestones (frontend + react)
     console.log('🌱 Seeding Milestones...');
-    await Milestone.insertMany(MILESTONES_DATA);
-    console.log(`✅ Upserted ${MILESTONES_DATA.length} milestones.`);
+    const allMilestones = [...MILESTONES_DATA, ...REACT_MILESTONES_DATA];
+    await Milestone.insertMany(allMilestones);
+    console.log(`✅ Upserted ${allMilestones.length} milestones.`);
 
-    // 7. Seed Theories
+    // 7. Seed Theories (frontend + react)
     console.log('🌱 Seeding Theories...');
-    const theories = generateTheories();
+    const theories = [...generateTheories(), ...generateReactTheories()];
     await Theory.insertMany(theories);
     console.log(`✅ Upserted ${theories.length} theories.`);
 
-    // 8. Seed LpExercises
+    // 8. Seed LpExercises (frontend + react)
     console.log('🌱 Seeding LpExercises...');
-    const lpExercises = generateLpExercises();
+    const lpExercises = [
+      ...generateLpExercises(),
+      ...generateReactLpExercises(),
+    ];
     await LpExercise.insertMany(lpExercises);
     console.log(`✅ Upserted ${lpExercises.length} learning path exercises.`);
 
-    // 9. Seed Editor Exercises
+    // 9. Seed Editor Exercises (frontend + react)
     console.log('🌱 Seeding Editor Exercises...');
-    const editorExercises = generateEditorExercises();
+    const editorExercises = [
+      ...generateEditorExercises(),
+      ...generateReactEditorExercises(),
+    ];
     await Exercise.insertMany(editorExercises);
     console.log(
       `✅ Upserted ${editorExercises.length} coding workspace exercises.`,

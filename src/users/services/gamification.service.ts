@@ -184,10 +184,10 @@ export class GamificationService {
       );
       if (earnedEntry) {
         const badgeObj = badge.toObject();
-        earned.push({
+        earned.push(<Badge & { earnedAt: Date }>(<unknown>{
           ...badgeObj,
           earnedAt: earnedEntry.earnedAt,
-        });
+        }));
       } else {
         unearned.push(badge.toObject());
       }

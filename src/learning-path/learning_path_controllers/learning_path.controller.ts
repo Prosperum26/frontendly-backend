@@ -27,12 +27,12 @@ function extractUserId(req: Request): string {
   return user?.profile?._id?.toString() || '';
 }
 
-@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'roadmaps', version: '1' })
 export class RoadmapController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
   // GET /api/v1/roadmaps/:skillId?page=1&limit=5
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get(':skillId')
   async getRoadmap(
     @Param('skillId') skillId: string,
@@ -59,12 +59,12 @@ export class RoadmapController {
   }
 }
 
-@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'stages', version: '1' })
 export class StagesController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
   // GET /api/v1/stages/:stageId/theory
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get(':stageId/theory')
   async getTheory(
     @Param('stageId') stageId: string,
@@ -115,6 +115,7 @@ export class StagesController {
   }
 
   // GET /api/v1/stages/:stageId/practices
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get(':stageId/practices')
   async getPractices(
     @Param('stageId') stageId: string,
@@ -156,6 +157,7 @@ export class StagesController {
   }
 
   // GET /api/v1/milestones/:milestoneId/status
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get('milestone/:milestoneId/status')
   async getMilestoneStatus(
     @Param('milestoneId') milestoneId: string,
@@ -174,7 +176,6 @@ export class StagesController {
   }
 }
 
-@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'lp-exercises', version: '1' })
 export class LpExercisesController {
   constructor(private readonly learningPathService: LearningPathService) {}
@@ -196,12 +197,12 @@ export class LpExercisesController {
   }
 }
 
-@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({ path: 'learning-content', version: '1' })
 export class LearningContentController {
   constructor(private readonly learningPathService: LearningPathService) {}
 
   // GET /api/v1/learning-content/skills
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get('skills')
   async getAvailableSkills(): Promise<unknown> {
     const data = await this.learningPathService.getAvailableSkills();
@@ -209,6 +210,7 @@ export class LearningContentController {
   }
 
   // GET /api/v1/learning-content/stages/:stageId/full
+  @ConfigureAuth({ blockIfUnauthenticated: false })
   @Get('stages/:stageId/full')
   async getFullStageContent(
     @Param('stageId') stageId: string,
@@ -252,7 +254,7 @@ export class LearningContentController {
     const data = await this.learningPathService.syncPlacementTest(
       body.skipToMilestoneId,
       userId,
-      body.skillId ?? 'frontend',
+      body.skillId ?? 'react',
     );
     return {
       success: true,

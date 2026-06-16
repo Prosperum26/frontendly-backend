@@ -10,6 +10,7 @@ export class UserUtilsService {
    */
   isGuestUser(userId: string): boolean {
     return (
+      !userId ||
       userId.startsWith('guest-') ||
       userId.startsWith('dummy-user') ||
       userId === 'anonymous'

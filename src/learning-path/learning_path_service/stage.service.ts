@@ -8,11 +8,13 @@ import {
   UserUtilsService,
   XpService,
 } from '.';
+import { BadgeService } from './badge.service';
 import {
   UserLearningProgressDocument,
   RoadmapDocument,
 } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
+import { User } from '@/users/schemas/user.schema';
 
 @Injectable()
 export class StageService {
@@ -25,10 +27,13 @@ export class StageService {
     private readonly roadmapModel: Model<RoadmapDocument>,
     @InjectModel('UserLearningProgress')
     private readonly userProgressModel: Model<UserLearningProgressDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     private readonly stageContextService: StageContextService,
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
     private readonly xpService: XpService,
+    private readonly badgeService: BadgeService,
   ) {}
 
   async completeStage(
@@ -76,6 +81,7 @@ export class StageService {
       const currentStars = stageEntry?.earnedStars ?? 0;
       const newStars = Math.max(currentStars, 3);
       const isStageComplete = newStars >= 3;
+      const wasAlreadyStageComplete = currentStars >= 3;
       const alreadyBadged = !!stageEntry?.badgeEarned;
 
       const streakIncremented = this.progressService.shouldIncrementStreak(
@@ -87,6 +93,7 @@ export class StageService {
 
       const awardBadge = isStageComplete && !alreadyBadged;
       const xpEarned = isStageComplete ? this.xpService.getXpReward('hard') : 0;
+      const justCompletedStage = isStageComplete && !wasAlreadyStageComplete;
 
       const topLevelSet = this.buildTopLevelSet(
         stageId,
@@ -100,6 +107,7 @@ export class StageService {
         xpEarned,
         awardBadge,
         topLevelSet,
+        incrementCompletedStages: justCompletedStage,
       });
 
       if (isStageComplete) {
@@ -109,6 +117,40 @@ export class StageService {
       const isMilestoneComplete = milestoneId
         ? await this.isMilestoneCompleted(milestoneId, userId, skillId)
         : false;
+
+      const isNewMilestoneCompletion =
+        !!milestoneId &&
+        isMilestoneComplete &&
+        !dbProgress.completedMilestones.some(
+          cm => cm.milestoneId === milestoneId,
+        );
+
+      if (isNewMilestoneCompletion && milestoneId) {
+        const milestoneBadgeId =
+          await this.badgeService.findMilestoneBadgeId(milestoneId);
+        await this.userProgressModel.updateOne(
+          { userId, skillId },
+          {
+            $push: {
+              completedMilestones: {
+                milestoneId,
+                completedAt: new Date(),
+                badgeId: milestoneBadgeId,
+              },
+            },
+          },
+        );
+      }
+
+      if (justCompletedStage || isNewMilestoneCompletion) {
+        const newlyEarnedBadges =
+          await this.badgeService.evaluateAndGrantBadges(userId, skillId);
+        await this.badgeService.syncBadgesToUserProfile(
+          userId,
+          newlyEarnedBadges,
+          this.userModel,
+        );
+      }
 
       return {
         stageId,
@@ -355,9 +397,20 @@ export class StageService {
       xpEarned: number;
       awardBadge: boolean;
       topLevelSet: Record<string, unknown>;
+      incrementCompletedStages: boolean;
     },
   ): Promise<void> {
-    const { newStars, xpEarned, awardBadge, topLevelSet } = params;
+    const {
+      newStars,
+      xpEarned,
+      awardBadge,
+      topLevelSet,
+      incrementCompletedStages,
+    } = params;
+
+    const inc: Record<string, number> = {};
+    if (xpEarned > 0) inc.currentXp = xpEarned;
+    if (incrementCompletedStages) inc.totalCompletedStages = 1;
 
     if (stageEntry) {
       await this.userProgressModel.updateOne(
@@ -370,8 +423,7 @@ export class StageService {
             'unlockedStages.$.hasSubmittedExercise': true,
             ...(awardBadge && { 'unlockedStages.$.badgeEarned': true }),
           },
-          ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
-          ...(awardBadge && { $push: { badges: stageId } }),
+          ...(Object.keys(inc).length > 0 && { $inc: inc }),
         },
       );
     } else {
@@ -379,7 +431,7 @@ export class StageService {
         { userId },
         {
           $set: { ...topLevelSet },
-          ...(xpEarned > 0 && { $inc: { currentXp: xpEarned } }),
+          ...(Object.keys(inc).length > 0 && { $inc: inc }),
           $push: {
             unlockedStages: {
               stageId,
@@ -389,7 +441,6 @@ export class StageService {
               videoWatchPercentage: 0,
               badgeEarned: awardBadge,
             },
-            ...(awardBadge && { badges: stageId }),
           },
         },
       );

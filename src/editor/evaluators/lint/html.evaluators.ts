@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// @ts-expect-error HTMLHint no types
 import * as htmlhint from 'htmlhint';
 
 @Injectable()

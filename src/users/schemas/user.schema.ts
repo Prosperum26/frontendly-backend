@@ -68,6 +68,10 @@ export class User {
     streakDays?: number;
     maxStreakDays?: number;
     lastActiveAt?: Date;
+    totalXp?: number;
+    completedMilestones?: number;
+    completedStages?: number;
+    courseProgressPercentage?: number;
   };
 
   @Prop({ type: Object, default: () => ({}) })

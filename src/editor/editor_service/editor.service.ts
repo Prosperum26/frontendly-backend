@@ -179,7 +179,7 @@ console.log('Hello from practice!');`,
       };
 
       // Bước 1: Lint check (nếu bật)
-      let lintResult = { html_err: [], css_err: [], js_err: [] };
+      let lintResult: any = { html_err: [], css_err: [], js_err: [] };
       let hasLintError = false;
       if (evalConfig.lint) {
         lintResult = await this.codeLint.checkLintUserCode(html, css, js);

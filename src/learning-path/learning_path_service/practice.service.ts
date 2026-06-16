@@ -43,7 +43,7 @@ export class PracticeService {
     try {
       const { skillId } =
         await this.stageContextService.findStageContext(stageId);
-      let dbProgress = await this.userProgressModel
+      let dbProgress: any = await this.userProgressModel
         .findOne({ userId, skillId })
         .lean();
 
@@ -59,8 +59,8 @@ export class PracticeService {
         });
       }
 
-      const stageEntry = dbProgress.unlockedStages.find(
-        s => s.stageId === stageId,
+      const stageEntry = dbProgress?.unlockedStages.find(
+        (s: any) => s.stageId === stageId,
       );
 
       const xpEarned = 0;
@@ -306,7 +306,6 @@ export class PracticeService {
             'unlockedStages.$.earnedStars': newStars,
             ...(badgeEarned && { 'unlockedStages.$.badgeEarned': true }),
           },
-          ...(badgeEarned && { $push: { badges: stageId } }),
         },
       };
     }
@@ -324,7 +323,6 @@ export class PracticeService {
             videoWatchPercentage: 0,
             badgeEarned: !!badgeEarned,
           },
-          ...(badgeEarned && { badges: stageId }),
         },
       },
     };

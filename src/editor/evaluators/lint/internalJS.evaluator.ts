@@ -20,10 +20,10 @@ export class CheckLintInternalJs {
     });
 
     if (!js || js.trim() === '') return [];
-    const eslint = new ESLint({
-      overrideConfigFile: null,
+    const eslint = new ESLint(<any>{
+      overrideConfigFile: <any>true,
       useEslintrc: false,
-      overrideConfig: {
+      overrideConfig: <any>{
         env: {
           browser: true,
           es2021: true,

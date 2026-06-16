@@ -97,6 +97,7 @@ export class ApiMilestoneDto {
   title!: string;
   status!: 'locked' | 'in_progress' | 'completed';
   stages!: ApiStageDto[];
+  badge?: { name: string; icon: string };
 }
 
 export class RoadmapResponseDto {

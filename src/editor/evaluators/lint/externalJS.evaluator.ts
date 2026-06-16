@@ -5,10 +5,10 @@ import { ESLint } from 'eslint';
 export class CheckLintExternalJs {
   async checkJs(js: string): Promise<{ line: number; message: string }[]> {
     if (!js || js.trim() === '') return [];
-    const eslint = new ESLint({
-      overrideConfigFile: null,
+    const eslint = new ESLint(<any>{
+      overrideConfigFile: <any>true,
       useEslintrc: false, // Tắt sử dụng file .eslintrc tự động
-      overrideConfig: {
+      overrideConfig: <any>{
         env: {
           browser: true,
           es2021: true,

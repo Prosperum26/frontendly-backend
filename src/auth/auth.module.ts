@@ -16,6 +16,7 @@ import { Session, SessionSchema } from './schemas/session.schema';
 import { GoogleAuthService, TokenService } from './services';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { EmailModule } from '@/common/email/email.module';
+import { LearningPathModule } from '@/learning-path/learning_path_module/learning_path.module';
 import { User, UserSchema } from '@/users/schemas';
 import {
   StageProgress,
@@ -27,6 +28,7 @@ import { UserModule } from '@/users/user.module';
   imports: [
     forwardRef(() => UserModule),
     EmailModule,
+    LearningPathModule,
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
       { name: Session.name, schema: SessionSchema },

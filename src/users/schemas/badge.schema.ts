@@ -14,11 +14,13 @@ export enum BadgeUnlockType {
   STREAK_DAYS = 'streak_days',
   STAGES_COMPLETED = 'stages_completed',
   SPECIAL_ACTION = 'special_action',
+  MILESTONE_COMPLETED = 'milestone_completed',
 }
 
 export interface BadgeUnlockCondition {
   type: BadgeUnlockType;
   value: number;
+  milestoneId?: string;
 }
 
 @Schema({ timestamps: true })

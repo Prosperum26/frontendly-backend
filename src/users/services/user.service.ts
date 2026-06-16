@@ -271,6 +271,7 @@ export class UserService {
 
     const userMap = new Map(users.map(u => [u._id.toString(), u]));
 
+    const XP_PER_LEVEL = 1000;
     return topUsers.map((p, index) => {
       const user = userMap.get(p.userId);
       return {
