@@ -122,23 +122,56 @@ export class UserService {
     userId: string,
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
-    const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
-      .select('-password');
+    try {
+      // Check if user exists
+      const user = await this.userModel.findById(userId).lean();
+      if (!user) {
+        throw new BadRequestException('Không tìm thấy người dùng');
+      }
 
-    if (!updatedUser) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      // Validate username uniqueness if username is being updated
+      if (body.username && body.username !== user.username) {
+        const existingUser = await this.userModel
+          .findOne({ username: body.username })
+          .lean();
+        if (existingUser) {
+          throw new BadRequestException('Username đã được sử dụng');
+        }
+      }
+
+      // Build update object with only provided fields
+      const updateData: Record<string, any> = {};
+      if (body.name !== undefined) updateData.name = body.name;
+      if (body.firstName !== undefined) updateData.firstName = body.firstName;
+      if (body.lastName !== undefined) updateData.lastName = body.lastName;
+      if (body.username !== undefined) updateData.username = body.username;
+      if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl;
+      if (body.role !== undefined) updateData.role = body.role;
+
+      // Update user
+      const updatedUser = await this.userModel
+        .findByIdAndUpdate(userId, { $set: updateData }, { new: true, lean: true })
+        .select('-password');
+
+      if (!updatedUser) {
+        throw new BadRequestException('Không tìm thấy người dùng');
+      }
+
+      const formattedUser = {
+        ...updatedUser,
+        id: updatedUser._id.toString(),
+      };
+
+      this.logger.log(`Profile updated for user: ${userId}`);
+      return {
+        message: 'Cập nhật thông tin thành công',
+        user: <any>formattedUser,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Profile update failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Cập nhật thông tin thất bại. Vui lòng thử lại.');
     }
-
-    const formattedUser = {
-      ...updatedUser,
-      id: updatedUser._id.toString(),
-    };
-
-    return {
-      message: 'Cập nhật thông tin thành công',
-      user: <any>formattedUser,
-    };
   }
 
   public async changePassword(
@@ -147,35 +180,46 @@ export class UserService {
   ): Promise<{ message: string }> {
     const { oldPassword, newPassword } = dto;
 
-    // Find user with password field
-    const user = await this.userModel
-      .findById(userId)
-      .select('+password')
-      .lean();
+    try {
+      // Validate that old and new passwords are different
+      if (oldPassword === newPassword) {
+        throw new BadRequestException('Mật khẩu mới phải khác mật khẩu cũ');
+      }
 
-    if (!user) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      // Find user with password field
+      const user = await this.userModel
+        .findById(userId)
+        .select('+password')
+        .lean();
+
+      if (!user) {
+        throw new BadRequestException('Không tìm thấy người dùng');
+      }
+
+      // Verify old password
+      if (!user.password) {
+        throw new BadRequestException('Người dùng chưa đặt mật khẩu');
+      }
+      const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+      if (!isPasswordValid) {
+        throw new BadRequestException('Mật khẩu cũ không chính xác');
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await this.userModel.findByIdAndUpdate(userId, {
+        password: hashedNewPassword,
+      });
+
+      this.logger.log(`Password changed for user: ${userId}`);
+      return { message: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.' };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Password change failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Đổi mật khẩu thất bại. Vui lòng thử lại.');
     }
-
-    // Verify old password
-    if (!user.password) {
-      throw new BadRequestException('Người dùng chưa đặt mật khẩu');
-    }
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
-    if (!isPasswordValid) {
-      throw new BadRequestException('Mật khẩu cũ không chính xác');
-    }
-
-    // Hash new password
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await this.userModel.findByIdAndUpdate(userId, {
-      password: hashedNewPassword,
-    });
-
-    this.logger.log(`Password changed for user: ${userId}`);
-    return { message: 'Đổi mật khẩu thành công' };
   }
 
   async getProgress(userId: string): Promise<{

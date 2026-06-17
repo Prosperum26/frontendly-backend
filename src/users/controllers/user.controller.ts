@@ -6,9 +6,12 @@ import {
   Patch,
   NotFoundException,
   Req,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Model } from 'mongoose';
 
@@ -20,6 +23,7 @@ import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 
+@ApiTags('Users')
 @Controller({
   path: 'users',
   version: '1',
@@ -29,7 +33,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly gamificationService: GamificationService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  ) { }
 
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
@@ -49,7 +53,14 @@ export class UserController {
   }
 
   @Patch('me')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Validation error or invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateProfile(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @Body() body: UpdateProfileDto,
@@ -67,7 +78,14 @@ export class UserController {
   }
 
   @Patch('me/password')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Đổi mật khẩu' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Validation error or invalid password' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async changePassword(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @Body() body: ChangePasswordDto,
