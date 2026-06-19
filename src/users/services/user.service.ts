@@ -91,28 +91,7 @@ export class UserService {
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
     // --- BẮT ĐẦU ĐOẠN THÊM MỚI: Kiểm tra khóa 30 ngày đổi số điện thoại ---
-    if (body.phoneNumber) {
-      const currentUser = await this.userModel
-        .findById(userId)
-        .select('phoneNumber lastPhoneUpdatedAt')
-        .lean();
 
-      // Nếu user có gửi số điện thoại mới và số đó khác số cũ
-      if (currentUser && currentUser.phoneNumber !== body.phoneNumber) {
-        if (currentUser.lastPhoneUpdatedAt) {
-          const nextAllowedDate = new Date(currentUser.lastPhoneUpdatedAt);
-          nextAllowedDate.setDate(nextAllowedDate.getDate() + 30);
-
-          if (new Date() < nextAllowedDate) {
-            throw new BadRequestException(
-              'Chỉ được thay đổi số điện thoại 30 ngày/lần.',
-            );
-          }
-        }
-        // Ghi nhận thời điểm đổi số mới nhất vào body để hàm $set bên dưới tự động lưu
-        Object.assign(body, { lastPhoneUpdatedAt: new Date() });
-      }
-    }
     // --- KẾT THÚC ĐOẠN THÊM MỚI ---
 
     if (body.username) {
