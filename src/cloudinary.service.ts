@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
-import { Express } from 'express'; // Import chuẩn để nhận diện Multer
-import { Readable } from 'stream';
+import { Express } from 'express';
 
 @Injectable()
 export class CloudinaryService {
@@ -14,18 +13,34 @@ export class CloudinaryService {
   }
 
   async uploadImage(file: Express.Multer.File): Promise<UploadApiResponse> {
+    console.log('1. Bắt đầu gọi hàm upload của Cloudinary...');
+    console.log(
+      '2. Kiểm tra KEY:',
+      process.env.CLOUDINARY_CLOUD_NAME
+        ? 'Đã có Key'
+        : 'BỊ TRỐNG KEY CLOUDINARY!!!',
+    );
+
     return new Promise((resolve, reject) => {
-      const upload = cloudinary.uploader.upload_stream(
-        { folder: 'frontendly_avatars' },
-        (error, result) => {
-          if (error || !result) {
-            // Sửa lỗi Promise rejection và type undefined ở đây
-            return reject(new Error(error?.message || 'Upload failed'));
-          }
-          resolve(result);
-        },
-      );
-      Readable.from(file.buffer).pipe(upload);
+      try {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: 'frontendly_avatars' },
+          (error, result) => {
+            console.log('4. Cloudinary đã phản hồi!');
+            if (error || !result) {
+              console.error('LỖI TỪ CLOUDINARY:', error);
+              return reject(new Error(error?.message || 'Upload failed'));
+            }
+            resolve(result);
+          },
+        );
+
+        console.log('3. Đang đẩy dữ liệu ảnh vào luồng...');
+        upload.end(file.buffer);
+      } catch (err) {
+        console.error('LỖI TRY-CATCH:', err);
+        reject(new Error(String(err)));
+      }
     });
   }
 }

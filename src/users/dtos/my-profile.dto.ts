@@ -22,6 +22,16 @@ export class MyProfileResponse {
   @Expose()
   username: string;
 
+  // THÊM: Expose 3 trường mới
+  @Expose()
+  phoneNumber?: string;
+
+  @Expose()
+  dateOfBirth?: string;
+
+  @Expose()
+  bio?: string;
+
   @Expose()
   role: string;
 
@@ -75,6 +85,14 @@ export class MyProfileResponse {
     this.name = user.name ?? '';
     this.avatarUrl = user.avatarUrl ?? '';
     this.username = user.username;
+
+    // THÊM: Gán giá trị từ model vào response
+    this.phoneNumber = user.phoneNumber ?? '';
+    this.dateOfBirth = user.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().split('T')[0]
+      : '';
+    this.bio = user.bio ?? '';
+
     this.role = user.role ?? 'user';
     this.xp = user.xp ?? 0;
     this.level = user.level ?? 1;

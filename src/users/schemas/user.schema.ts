@@ -129,7 +129,8 @@ export class User {
 
   @Prop()
   bio?: string;
-
+  @Prop()
+  lastPhoneUpdatedAt?: Date;
   _id!: Types.ObjectId;
 }
 

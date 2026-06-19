@@ -112,6 +112,11 @@ export class GamificationService {
       throw new Error('User not found');
     }
 
+    // THÊM: Đảm bảo object stats tồn tại để tránh lỗi 'Cannot read properties of undefined'
+    if (!user.stats) {
+      user.stats = { streakDays: 0, maxStreakDays: 0 };
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const yesterday = new Date(today);
@@ -126,37 +131,46 @@ export class GamificationService {
     let streakMaintained = false;
 
     if (!lastActiveAt || lastActiveAt < yesterday) {
-      // User missed a day, reset streak
+      // Bỏ lỡ ngày, reset chuỗi
       currentStreak = 1;
     } else if (lastActiveAt.getTime() === yesterday.getTime()) {
-      // User was active yesterday, continue streak
+      // Hôm qua có học, tăng chuỗi
       currentStreak += 1;
       streakMaintained = true;
+    } else if (lastActiveAt.getTime() === today.getTime()) {
+      // THÊM: Hôm nay đã tính streak rồi, giữ nguyên chuỗi
+      streakMaintained = true;
     }
-    // If lastActiveAt is today, do nothing
 
-    // Update user's streak data
+    // Cập nhật dữ liệu
     user.stats.streakDays = currentStreak;
     user.stats.lastActiveAt = new Date();
-    if (currentStreak > (user.stats.maxStreakDays || 0)) {
+
+    // THÊM: Khởi tạo an toàn cho maxStreakDays
+    if (!user.stats.maxStreakDays) {
+      user.stats.maxStreakDays = 0;
+    }
+
+    if (currentStreak > user.stats.maxStreakDays) {
       user.stats.maxStreakDays = currentStreak;
     }
 
-    // Update activity heatmap
+    // Cập nhật Heatmap
+    user.activity_heatmap = user.activity_heatmap || {};
     const todayKey = today.toISOString().split('T')[0];
     user.activity_heatmap[todayKey] =
       (user.activity_heatmap[todayKey] || 0) + 1;
+    user.markModified('activity_heatmap');
 
     await user.save();
 
-    // Log daily activity
+    // Log & Badges
     await this.logActivity(userId, ActivityType.DAILY_LOGIN);
-
     await this.checkAndUnlockBadges(user._id.toString());
 
     return {
       currentStreak,
-      maxStreak: user.stats.maxStreakDays || currentStreak,
+      maxStreak: user.stats.maxStreakDays,
       streakMaintained,
     };
   }
@@ -184,10 +198,10 @@ export class GamificationService {
       );
       if (earnedEntry) {
         const badgeObj = badge.toObject();
-        earned.push({
+        earned.push(<Badge & { earnedAt: Date }>(<unknown>{
           ...badgeObj,
           earnedAt: earnedEntry.earnedAt,
-        });
+        }));
       } else {
         unearned.push(badge.toObject());
       }
@@ -268,14 +282,13 @@ export class GamificationService {
       description: description || type,
     });
   }
-
   /**
    * Get user activity heatmap data for last N months
    */
   async getActivityHeatmap(
     userId: string | Types.ObjectId,
-    months: number = 12,
-  ): Promise<Record<string, number>> {
+    months: number = 3, // Chỉnh mặc định thành 3 tháng cho khớp Frontend
+  ): Promise<Array<{ date: string; count: number }>> {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new Error('User not found');
@@ -293,6 +306,10 @@ export class GamificationService {
       }
     }
 
-    return filteredHeatmap;
+    // CHUYỂN ĐỔI Object thành Array [{ date: '...', count: ... }]
+    return Object.entries(filteredHeatmap).map(([date, count]) => ({
+      date,
+      count,
+    }));
   }
 }

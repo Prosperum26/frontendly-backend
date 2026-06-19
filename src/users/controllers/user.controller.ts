@@ -128,6 +128,7 @@ export class UserController {
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
+    console.log('--- FILE NHẬN ĐƯỢC ---', file);
     const profile = <Record<string, string>>(<unknown>authUser.profile);
     const result = await this.userService.uploadAvatar(
       String(profile._id),
@@ -138,6 +139,17 @@ export class UserController {
       message: result.message,
       avatarUrl: result.avatarUrl,
     };
+  }
+  @Get('learning-progress')
+  @ConfigureAuth({ blockIfUnauthenticated: false })
+  @ApiOperation({
+    summary:
+      'Get learning progress track (Total, Completed, %, Milestone, Unlock Status)',
+  })
+  public async getLearningProgress(@Req() req: Request): Promise<unknown> {
+    const userId = this.extractUserId(req);
+    const data = await this.userService.getLearningProgress(userId);
+    return { success: true, data };
   }
   private extractUserId(req: Request): string {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
