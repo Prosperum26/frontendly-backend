@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 
 import { CheckLint } from './checkLint.service';
 import { VisualRegressionService } from './visual_regression.service';
+import { ExerciseTag } from '../db_schemas/exercise.enum';
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { SubmissionDocument } from '../db_schemas/submission_schema';
 import { SubmitResponse } from '../dtos/submitCodeResponse';
@@ -17,10 +18,7 @@ import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { BehaviorEvaluator } from '../evaluators/behavior/behavior.evaluator';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
 import { LearningPathService } from '@/learning-path/learning_path_service/learning_path.service';
-import {
-  GamificationService,
-  ActivityType,
-} from '@/users/services/gamification.service';
+import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
 export class EditorService {
@@ -107,6 +105,8 @@ export default function App() {
         },
         code_test: null,
         test_script: '',
+        restrictions: [],
+        tags: [ExerciseTag.EASY],
         requirements: [
           {
             id: 'req-1',
@@ -216,7 +216,13 @@ export default function App() {
       };
       let hasLintError = false;
       if (evalConfig.lint) {
-        lintResult = await this.codeLint.checkLintUserCode(html, css, js, jsx);
+        lintResult = await this.codeLint.checkLintUserCode(
+          html,
+          css,
+          js,
+          jsx,
+          exercise.restrictions,
+        );
         hasLintError =
           (lintResult?.html_err?.length ?? 0) > 0 ||
           (lintResult?.css_err?.length ?? 0) > 0 ||
@@ -224,22 +230,17 @@ export default function App() {
           (lintResult?.jsx_err?.length ?? 0) > 0;
       }
 
-      // Khởi tạo mảng requirementResults tổng (mặc định false nếu không lỗi lint)
       const reqList = exercise.requirements || [];
       const requirementResults: any[] = reqList.map(req => ({
         requirementId: req.id,
-        passed: false, // Mặc định false, lát sẽ đắp dần kết quả vào
+        passed: false,
       }));
 
-      let isStaticReqsPassed = true; // Cờ riêng để quyết định có chạy Visual hay không
-
-      // 2. CHECK STATIC REQUIREMENTS
       if (evalConfig.requirements && !hasLintError) {
         this.logger.debug(`[SubmitCode] Evaluating static requirements...`);
         const validReqs = reqList.filter(
           (req: any) => req.type_check !== 'behavior',
         );
-        let staticPassCount = 0;
 
         if (validReqs.length > 0) {
           const mergedReqResults: Record<string, boolean> = {};
@@ -269,22 +270,15 @@ export default function App() {
             });
           }
 
-          // Cập nhật kết quả Static vào mảng tổng
           requirementResults.forEach(req => {
             if (validReqs.find((v: any) => v.id === req.requirementId)) {
               req.passed = mergedReqResults[req.requirementId] || false;
-              if (req.passed) staticPassCount++;
             }
           });
-
-          // Quyết định xem riêng tụi Static có pass hết không
-          isStaticReqsPassed = staticPassCount === validReqs.length;
         }
-      } else if (hasLintError) {
-        isStaticReqsPassed = false;
       }
 
-      // 3. CHECK VISUAL REGRESSION
+      // visual regress
       let visualResults: VisualEvaluationDto[] = [];
       let isVisualPassed = true;
       let visualScore = 100;
@@ -293,33 +287,29 @@ export default function App() {
           `[SubmitCode] Visual check enabled, evaluating visual...`,
         );
 
-        // 🔥 Chỉ chạy Visual nếu phần code HTML/CSS cơ bản (Static Reqs) đã làm đúng
-        if (isStaticReqsPassed) {
-          visualResults = await this.visualRegressionService.evaluateVisual(
-            exerciseId,
-            html,
-            css,
-            js,
-          );
-          // 🔥 Fix bug logic (Bắt buộc dùng every, bỏ length > 0 ||)
-          isVisualPassed =
-            visualResults.length === 0 ||
-            visualResults.every(result => result.passed);
+        visualResults = await this.visualRegressionService.evaluateVisual(
+          exerciseId,
+          html,
+          css,
+          js,
+        );
+        isVisualPassed =
+          visualResults.length === 0 ||
+          visualResults.every(result => result.passed);
 
-          if (visualResults.length > 0) {
-            const totalVisualScore = visualResults.reduce(
-              (sum, current) => sum + current.matchPercentage,
-              0,
-            );
-            visualScore = totalVisualScore / visualResults.length;
-          }
-        } else {
-          isVisualPassed = false;
-          visualScore = 0;
+        if (visualResults.length > 0) {
+          const totalVisualScore = visualResults.reduce(
+            (sum, current) => sum + current.matchPercentage,
+            0,
+          );
+          visualScore = totalVisualScore / visualResults.length;
         }
+      } else {
+        isVisualPassed = false;
+        visualScore = 0;
       }
 
-      // 4. CHECK BEHAVIOR (JEST)
+      // check behavior
       let behaviorResult = {
         passed: false,
         totalTests: 0,
@@ -360,16 +350,12 @@ export default function App() {
           isBehaviorPassed = false;
         }
       }
-
-      // =======================================================
-      // 5. TỔNG KẾT & TÍNH TOÁN KẾT QUẢ CUỐI CÙNG
-      // =======================================================
+      // tính result
       let matchPercentage = 0;
       let isCompleted = false;
       let totalScore = 0;
       let checksCount = 0;
 
-      // Tính tổng isRequirementsPassed (Bao gồm cả Static + Behavior đã được nhồi vào mảng)
       let isRequirementsPassed = true;
       if (evalConfig.requirements && !hasLintError) {
         const countReq = requirementResults.length;
@@ -431,26 +417,26 @@ export default function App() {
         behavior_results: behaviorResult,
       });
 
-      if (isCompleted && userId !== 'guest') {
-        this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
-        try {
-          const stageId = exerciseId.startsWith('exercise_')
-            ? exerciseId.replace('exercise_', '')
-            : exerciseId;
+      // if (isCompleted && userId !== 'guest') {
+      //   this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
+      //   try {
+      //     const stageId = exerciseId.startsWith('exercise_')
+      //       ? exerciseId.replace('exercise_', '')
+      //       : exerciseId;
 
-          await this.learningPathService.completeStage(stageId, userId);
-          await this.gamificationService.addXp(
-            userId,
-            ActivityType.STAGE_COMPLETED,
-            exerciseId,
-          );
-          await this.gamificationService.updateStreak(userId);
-        } catch (err: any) {
-          this.logger.error(
-            `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
-          );
-        }
-      }
+      //     await this.learningPathService.completeStage(stageId, userId);
+      //     await this.gamificationService.addXp(
+      //       userId,
+      //       ActivityType.STAGE_COMPLETED,
+      //       exerciseId,
+      //     );
+      //     await this.gamificationService.updateStreak(userId);
+      //   } catch (err: any) {
+      //     this.logger.error(
+      //       `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
+      //     );
+      //   }
+      // }
 
       return {
         isCompleted,

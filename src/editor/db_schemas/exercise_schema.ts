@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
+import { ExerciseTag } from './exercise.enum';
+import { JsxRestriction } from './exercise.enum';
+
 export type ExerciseDocument = HydratedDocument<Exercise>;
 @Schema({ _id: false })
 export class ExerciseRequirement {
@@ -74,6 +77,16 @@ export class CodeTest {
 }
 const CodeTestSchema = SchemaFactory.createForClass(CodeTest);
 
+@Schema({ _id: false })
+export class RestrictionDetail {
+  @Prop({ type: String, enum: Object.values(JsxRestriction), required: true })
+  rule!: JsxRestriction;
+
+  @Prop({ type: String, required: true })
+  message!: string;
+}
+const RestrictionSchema = SchemaFactory.createForClass(RestrictionDetail);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
   @Prop({ type: String, required: true, unique: true })
@@ -97,25 +110,31 @@ export class Exercise {
   })
   evaluation_config!: EvaluationConfig;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ type: [RestrictionSchema], default: [] }) // dùng để thêm config cho ReactJS
+  restrictions!: RestrictionDetail[];
+
+  @Prop({ type: [String], default: [], enum: Object.values(ExerciseTag) })
+  tags!: ExerciseTag[];
+
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   html_content!: string;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   css_content!: string;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   js_content!: string;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   jsx_content!: string;
 
   @Prop({ type: TargetDesignSchema, default: null })
   target_design!: TargetDesign;
 
-  @Prop({ type: CodeTestSchema, default: null })
+  @Prop({ type: CodeTestSchema, default: null }) // code test mẫu để chạy visual regress
   code_test!: CodeTest | null;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ trim: true, default: '' }) // test script để test behavior cho reactjs
   test_script!: string;
 
   @Prop({ type: [ExerciseRequirementSchema], default: [] })

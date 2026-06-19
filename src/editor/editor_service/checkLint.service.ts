@@ -24,12 +24,16 @@ export class CheckLint {
     css: string,
     javascript: string,
     jsx: string,
+    restrictions: any[] = [],
   ): Promise<LintEvaluation> {
     try {
       const htmlCheck = this.checkLintHtml.checkHtml(html);
       const cssCheck = await this.checkLintExternalCss.checkCss(css);
       const jsCheck = await this.checkLintExternalJs.checkJs(javascript);
-      const reactCheck = await this.checkLintReact.checkReact(jsx);
+      const reactCheck = await this.checkLintReact.checkReact(
+        jsx,
+        restrictions,
+      );
 
       let HtmlErr = [...htmlCheck];
       const CssErr = [...cssCheck];

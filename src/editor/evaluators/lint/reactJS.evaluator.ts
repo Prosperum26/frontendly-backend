@@ -1,12 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ESLint } from 'eslint';
 
+import { JsxRestrictionAstMap } from '../../db_schemas/exercise.enum'; // Đổi lại đường dẫn import cho đúng vị trí file enum của ông nha
+
 @Injectable()
 export class CheckLintReact {
-  private eslint: ESLint;
+  async checkReact(
+    jsxContent: string,
+    restrictions: any[] = [],
+  ): Promise<{ line: number; message: string }[]> {
+    if (!jsxContent || jsxContent.trim() === '') return [];
 
-  constructor() {
-    this.eslint = new ESLint(<any>{
+    const restrictedSyntaxes: any[] = [];
+    restrictions.forEach(restriction => {
+      const ruleKey = restriction.rule;
+      if (JsxRestrictionAstMap[ruleKey]) {
+        restrictedSyntaxes.push({
+          selector: JsxRestrictionAstMap[ruleKey].selector,
+          message:
+            restriction.message || JsxRestrictionAstMap[ruleKey].defaultMessage, // nếu không có message trong db thì lấy default
+        });
+      }
+    });
+
+    // config
+    const eslint = new ESLint(<any>{
       useEslintrc: false,
       overrideConfig: {
         parserOptions: {
@@ -21,36 +39,38 @@ export class CheckLintReact {
         },
         plugins: ['react', 'react-hooks'],
         rules: {
-          // js
+          // base rules
           'no-undef': 'error',
           'no-unused-vars': 'warn',
           'no-const-assign': 'error',
           'no-dupe-keys': 'error',
           'no-unreachable': 'error',
-          // react
           'react/jsx-uses-react': 'error',
           'react/jsx-uses-vars': 'error',
           'react/jsx-no-undef': 'error',
           'react-hooks/rules-of-hooks': 'error',
           'react-hooks/exhaustive-deps': 'warn',
+
+          // thêm config
+          'no-restricted-syntax':
+            restrictedSyntaxes.length > 0
+              ? ['error', ...restrictedSyntaxes]
+              : ['off'],
         },
       },
     });
-  }
 
-  async checkReact(
-    jsxContent: string,
-  ): Promise<{ line: number; message: string }[]> {
-    if (!jsxContent || jsxContent.trim() === '') return [];
-
+    // 3. THỰC THI CHẤM ĐIỂM
     try {
-      const result = await this.eslint.lintText(jsxContent);
+      const result = await eslint.lintText(jsxContent);
+
       const lintResult = result[0].messages.map((err: any) => {
         return {
           line: err.line || 1,
-          message: err.message,
+          message: err.message, // Lỗi từ AST Map chửi như thế nào sẽ hiện thẳng ra đây
         };
       });
+
       return lintResult;
     } catch (error: any) {
       return [

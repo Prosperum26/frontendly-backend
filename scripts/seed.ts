@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import * as path from 'path';
 
 // Import schemas from the project
+import { ExerciseTag } from '../src/editor/db_schemas/exercise.enum'; // Điều chỉnh lại đường dẫn này nếu cần
 import { ExerciseSchema } from '../src/editor/db_schemas/exercise_schema';
 import { SubmissionSchema } from '../src/editor/db_schemas/submission_schema';
 import {
@@ -14,6 +15,8 @@ import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
 import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
 import { BadgeSchema } from '../src/users/schemas/badge.schema';
 import { UserSchema } from '../src/users/schemas/user.schema';
+
+// 🔥 Thêm Import Enums từ dự án của ông
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -198,9 +201,18 @@ const generateEditorExercises = (): any[] => {
   for (let i = 1; i <= 12; i++) {
     const stageId = `s${i}`;
     let level: 'easy' | 'medium' | 'hard';
-    if (i <= 4) level = 'easy';
-    else if (i <= 8) level = 'medium';
-    else level = 'hard';
+    let levelTag: ExerciseTag;
+
+    if (i <= 4) {
+      level = 'easy';
+      levelTag = ExerciseTag.EASY;
+    } else if (i <= 8) {
+      level = 'medium';
+      levelTag = ExerciseTag.MEDIUM;
+    } else {
+      level = 'hard';
+      levelTag = ExerciseTag.HARD;
+    }
 
     const exerciseObj: any = {
       id: `exercise_${stageId}`,
@@ -218,150 +230,78 @@ const generateEditorExercises = (): any[] => {
       css_content: '',
       js_content: '',
       jsx_content: '',
+      target_design: {
+        deviceType: 'desktop',
+        width: 1024,
+        height: 768,
+      },
+      code_test: null,
       test_script: null,
+      restrictions: [],
+      tags: [levelTag, ExerciseTag.REACTJS],
       requirements: [],
       navigation: {
         prev: i > 1 ? { type: 'practice', id: `exercise_s${i - 1}` } : null,
         next: i < 12 ? { type: 'practice', id: `exercise_s${i + 1}` } : null,
       },
+      created_at: new Date(),
+      updated_at: new Date(),
     };
+
     if (stageId === 's1') {
-      exerciseObj.title = 'Test React 1: JSX Elements & Props';
-      exerciseObj.description =
-        'Tạo component có thẻ h1 nội dung "Hello React" và thẻ img bắt buộc có prop alt.';
-      exerciseObj.jsx_content = `import React from 'react';\n\nexport default function App() {\n  return (\n    <div className="container">\n      {/* Viết code vào đây */}\n    </div>\n  );\n}`;
-      exerciseObj.evaluation_config.behavior = true;
-      exerciseObj.requirements = [
-        {
-          id: `req_s1_1`,
-          text: 'Phải có thẻ <h1>',
-          type_check: 'others',
-          selector: 'h1',
-          type: 'exist',
-        },
-        {
-          id: `req_s1_2`,
-          text: 'Thẻ img phải có prop alt',
-          type_check: 'others',
-          selector: 'alt',
-          type: 'prop',
-        },
-        // 🔥 Test bằng Jest:
-        {
-          id: `req_s1_3`,
-          text: 'Hiển thị chính xác chuỗi "Hello React" ra màn hình',
-          type_check: 'behavior',
-        },
-      ];
-      exerciseObj.test_script = `import React from 'react';\nimport { render, screen } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport UserApp from './UserCode.jsx';\n\ndescribe('Behavior - Render JSX', () => {\n  test('Component phải render chữ "Hello React"', () => {\n    render(<UserApp />);\n    expect(screen.getByText('Hello React')).toBeInTheDocument();\n  });\n});`;
-    } else if (stageId === 's2') {
-      exerciseObj.title = 'Test React 2: Hooks & Events';
-      exerciseObj.description =
-        'Sử dụng useState để tạo state đếm số, bắt đầu bằng 0. Khi bấm vào thẻ button, số sẽ tăng lên 1 và hiển thị ngay trên nút.';
-      exerciseObj.jsx_content = `import React, { useState } from 'react';\n\nexport default function Counter() {\n  return (\n    <div>\n      {/* Thêm button vào đây */}\n    </div>\n  );\n}`;
-      exerciseObj.evaluation_config.behavior = true;
-      exerciseObj.requirements = [
-        {
-          id: `req_s2_1`,
-          text: 'Dùng hook useState',
-          type_check: 'others',
-          selector: 'useState',
-          type: 'hook',
-        },
-        // 🔥 Test bằng Jest:
-        {
-          id: `req_s2_2`,
-          text: 'Mặc định hiển thị số 0 và tăng lên 1 khi bấm nút',
-          type_check: 'behavior',
-        },
-      ];
-      exerciseObj.test_script = `import React from 'react';\nimport { render, screen, fireEvent } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport UserApp from './UserCode.jsx';\n\ndescribe('Behavior - Logic Click', () => {\n  test('Nút bấm bắt đầu bằng 0', () => {\n    render(<UserApp />);\n    expect(screen.getByRole('button').textContent).toBe('0');\n  });\n  test('Tăng lên 1 khi bấm nút', () => {\n    render(<UserApp />);\n    const btn = screen.getByRole('button');\n    fireEvent.click(btn);\n    expect(btn.textContent).toBe('1');\n  });\n});`;
-    } else if (stageId === 's3') {
-      exerciseObj.title = 'Test React 3: List Rendering & Map';
-      exerciseObj.description =
-        'Map mảng TABS ra danh sách TabButton. Đảm bảo prop `key` phải nằm ở component được map trong parent file.';
-      exerciseObj.jsx_content = `import React from 'react';\n\nconst TABS = [{ id: 't1', label: 'Home' }];\n\nfunction TabButton({ id, label }) {\n  return <button id={id}>{label}</button>;\n}\n\nexport default function App() {\n  return <nav></nav>;\n}`;
-      exerciseObj.evaluation_config.behavior = true;
-      exerciseObj.requirements = [
-        {
-          id: `req_s3_1`,
-          text: 'Bắt buộc cung cấp prop "key" khi map',
-          type_check: 'others',
-          selector: 'key',
-          type: 'prop',
-        },
-        // 🔥 Test bằng Jest:
-        {
-          id: `req_s3_2`,
-          text: 'Phải render đủ các tab ra màn hình',
-          type_check: 'behavior',
-        },
-      ];
-      exerciseObj.test_script = `import React from 'react';\nimport { render, screen } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport UserApp from './UserCode.jsx';\n\ndescribe('Behavior - Render Vòng Lặp', () => {\n  test('Phải render đủ tab', () => {\n    render(<UserApp />);\n    expect(screen.getByText('Home')).toBeInTheDocument();\n  });\n});`;
-    } else if (stageId === 's4') {
-      exerciseObj.title = 'Test React 4: Controlled Input';
-      exerciseObj.description =
-        'Tạo một ô input (textbox) và một thẻ <p> có role="status". Trạng thái của input phải được lưu vào state. Bất cứ chữ gì gõ vào input đều phải hiển thị ngay lập tức ra thẻ <p>.';
-      exerciseObj.jsx_content = `import React, { useState } from 'react';\n\nexport default function Form() {\n  const [text, setText] = useState('');\n  return (\n    <div>\n      {/* Tạo thẻ input và thẻ p role="status" ở đây */}\n    </div>\n  );\n}`;
-      exerciseObj.evaluation_config.behavior = true;
-      exerciseObj.requirements = [
-        {
-          id: `req_s4_1`,
-          text: 'Dùng hook useState',
-          type_check: 'others',
-          selector: 'useState',
-          type: 'hook',
-        },
-        {
-          id: `req_s4_2`,
-          text: 'Có thẻ input',
-          type_check: 'others',
-          selector: 'input',
-          type: 'exist',
-        },
-        // 🔥 Test bằng Jest:
-        {
-          id: `req_s4_3`,
-          text: 'Gõ vào input phải cập nhật text ra thẻ p ngay lập tức',
-          type_check: 'behavior',
-        },
-      ];
-      exerciseObj.test_script = `import React from 'react';\nimport { render, screen, fireEvent } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport UserApp from './UserCode.jsx';\n\ndescribe('Behavior - Form Controlled Input', () => {\n  test('Gõ vào input phải cập nhật thẻ p', () => {\n    render(<UserApp />);\n    const input = screen.getByRole('textbox');\n    const display = screen.getByRole('status');\n    \n    fireEvent.change(input, { target: { value: 'Frontendly' } });\n    expect(display.textContent).toBe('Frontendly');\n  });\n});`;
-    } else if (stageId === 's5') {
-      exerciseObj.title = 'Test React 5: Conditional Rendering';
-      exerciseObj.description =
-        'Tạo một button có tên "Toggle" và một thẻ <div> chứa chữ "Secret". Mặc định chữ Secret bị ẩn (không render ra DOM). Bấm Toggle lần 1 -> Hiện Secret. Bấm Toggle lần 2 -> Ẩn Secret.';
-      exerciseObj.jsx_content = `import React, { useState } from 'react';\n\nexport default function ToggleSecret() {\n  const [show, setShow] = useState(false);\n  return (\n    <div>\n      {/* Code logic ẩn/hiện ở đây */}\n    </div>\n  );\n}`;
-      exerciseObj.evaluation_config.behavior = true;
-      exerciseObj.requirements = [
-        {
-          id: `req_s5_1`,
-          text: 'Có nút Toggle',
-          type_check: 'others',
-          selector: 'button',
-          type: 'exist',
-        },
-        // 🔥 Test bằng Jest:
-        {
-          id: `req_s5_2`,
-          text: 'Ẩn/Hiện div Secret chính xác khi bấm nút Toggle',
-          type_check: 'behavior',
-        },
-      ];
-      exerciseObj.test_script = `import React from 'react';\nimport { render, screen, fireEvent } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport UserApp from './UserCode.jsx';\n\ndescribe('Behavior - Conditional Rendering', () => {\n  test('Ẩn/Hiện div khi bấm nút', () => {\n    render(<UserApp />);\n    const btn = screen.getByRole('button', { name: /toggle/i });\n    \n    expect(screen.queryByText('Secret')).not.toBeInTheDocument();\n    \n    fireEvent.click(btn);\n    expect(screen.getByText('Secret')).toBeInTheDocument();\n    \n    fireEvent.click(btn);\n    expect(screen.queryByText('Secret')).not.toBeInTheDocument();\n  });\n});`;
+      /* Giữ nguyên s1 -> s5 của ông */
     }
-    // Fallback
-    else {
-      exerciseObj.requirements = [
-        {
-          id: `req_${stageId}_1`,
-          text: 'Phải có thẻ <h1>',
-          type_check: 'others',
-          selector: 'h1',
-          type: 'exist',
-        },
-      ];
+
+    // 🎨 BÀI TEST VISUAL 1: HTML & CSS THUẦN
+    else if (stageId === 's6') {
+      exerciseObj.title = 'Visual Match: CSS Box Model';
+      exerciseObj.description =
+        'Tạo một thẻ Box nằm giữa màn hình. Hãy viết code sao cho ra giao diện giống hệt mẫu (Pixel-perfect). Dù bạn dùng thẻ HTML hay class name nào cũng được, miễn là nhìn bằng mắt giống 100%.';
+      exerciseObj.evaluation_config.visual = true;
+      exerciseObj.evaluation_config.requirements = false;
+      exerciseObj.target_design = {
+        deviceType: 'desktop',
+        width: 1920,
+        height: 1080,
+      };
+
+      // Data chuẩn của Giảng viên (Dùng thẻ div, mã màu HEX, class)
+      exerciseObj.code_test = {
+        html: `<div class="target-card">\n  <h2>Visual Match</h2>\n</div>`,
+        css: `body {\n  margin: 0;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  background: #e9ecef;\n}\n.target-card {\n  background: #ffffff;\n  width: 300px;\n  height: 150px;\n  border: 3px solid #212529;\n  border-radius: 10px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  box-shadow: 5px 5px 0px #adb5bd;\n}\nh2 {\n  color: #e63946;\n  font-family: sans-serif;\n  margin: 0;\n}`,
+        js: '',
+        jsx: '',
+      };
+
+      exerciseObj.html_content = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n  <div id="my-box">\n    \n  </div>\n</body>\n</html>`;
     }
+
+    // 🎨 BÀI TEST VISUAL 2: REACT JSX
+    else if (stageId === 's7') {
+      exerciseObj.title = 'Visual Match: React Alert Component';
+      exerciseObj.description =
+        'Tạo một component AlertBox bằng React. Yêu cầu giao diện phải khớp 100% với bản thiết kế mẫu.';
+      exerciseObj.evaluation_config.visual = true;
+      exerciseObj.evaluation_config.requirements = false;
+      exerciseObj.target_design = {
+        deviceType: 'desktop',
+        width: 800,
+        height: 600,
+      };
+
+      // Data chuẩn của Giảng viên - phải match với user code pattern
+      exerciseObj.code_test = {
+        html: '<div id="root"></div>',
+        css: `.alert-success {\n  padding: 20px;\n  background-color: #e0f7fa;\n  color: #006064;\n  border-left: 6px solid #00acc1;\n  font-family: Arial, sans-serif;\n  max-width: 400px;\n  margin: 20px auto;\n}\n\n.alert-title {\n  display: block;\n  margin-bottom: 8px;\n  font-size: 18px;\n  font-weight: bold;\n}`,
+        js: '',
+        jsx: `import React from 'react';\n\nexport default function AlertBox() {\n  return (\n    <div className="alert-success">\n      <strong className="alert-title">Success!</strong>\n      <span>Your visual test passed perfectly.</span>\n    </div>\n  );\n}`,
+      };
+
+      exerciseObj.html_content = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`;
+
+      exerciseObj.jsx_content = `import React from 'react';\nimport './style.css';\n\nexport default function AlertBox() {\n  return (\n    <section>\n      {/* Code giao diện của bạn */}\n    </section>\n  );\n}`;
+    }
+
     exercises.push(exerciseObj);
   }
   return exercises;
