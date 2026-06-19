@@ -5,7 +5,7 @@ import * as htmlhint from 'htmlhint';
 export class CheckLintHtml {
   checkHtml(html: string): { line: number; message: string }[] {
     if (!html || html.trim() === '') return [];
-    const config: htmlhint.Ruleset = {
+    const config: Record<string, boolean | string> = {
       'doctype-first': true,
       'doctype-html5': false,
       'html-lang-require': true,

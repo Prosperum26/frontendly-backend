@@ -23,6 +23,9 @@ export class LintErrorGroup {
 
   @Prop({ type: [LintErrorDetailSchema], default: [] })
   js_err!: LintErrorDetail[];
+
+  @Prop({ type: [LintErrorDetailSchema], default: [] })
+  jsx_err!: LintErrorDetail[];
 }
 const LintErrorGroupSchema = SchemaFactory.createForClass(LintErrorGroup);
 
@@ -54,6 +57,22 @@ export class VisualTestResult {
 }
 const VisualTestResultSchema = SchemaFactory.createForClass(VisualTestResult);
 
+@Schema({ _id: false }) // _id: false vì đây chỉ là object con nằm trong Submission, không cần sinh ObjectId riêng
+export class BehaviorResult {
+  @Prop({ required: true, type: Boolean })
+  passed!: boolean;
+
+  @Prop({ required: true, type: Number })
+  totalTests!: number;
+
+  @Prop({ required: true, type: Number })
+  passedTests!: number;
+
+  @Prop({ type: [String], default: '' })
+  errors!: string;
+}
+const BehaviorResultSchema = SchemaFactory.createForClass(BehaviorResult);
+
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Submission {
   @Prop({ type: String, required: true, unique: true })
@@ -76,12 +95,15 @@ export class Submission {
 
   @Prop({
     type: LintErrorGroupSchema,
-    default: { html_err: [], css_err: [], js_err: [] },
+    default: { html_err: [], css_err: [], js_err: [], jsx_err: [] },
   })
   lint_errors!: LintErrorGroup;
 
   @Prop({ type: [VisualTestResultSchema], default: [] })
   visual_results!: VisualTestResult[];
+
+  @Prop({ type: BehaviorResultSchema, default: null })
+  behavior_results!: BehaviorResult | null;
 
   @Prop({ trim: true, maxlength: 100000, default: '' })
   html_content!: string;
@@ -91,6 +113,9 @@ export class Submission {
 
   @Prop({ trim: true, maxlength: 100000, default: '' })
   js_content!: string;
+
+  @Prop({ trim: true, maxlength: 100000, default: '' })
+  jsx_content!: string;
 
   created_at!: Date;
   updated_at!: Date;

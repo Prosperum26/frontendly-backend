@@ -18,6 +18,10 @@ export class EditorContentDto {
   @IsString()
   @IsOptional()
   js!: string;
+
+  @IsString()
+  @IsOptional()
+  jsx!: string;
 }
 export class SubmitCodeDto {
   @ValidateNested()

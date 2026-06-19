@@ -13,4 +13,8 @@ export class LintEvaluation {
   @IsArray()
   @IsOptional()
   js_err?: { line: number; message: string }[];
+
+  @IsArray()
+  @IsOptional()
+  jsx_err?: { line: number; message: string }[];
 }
