@@ -31,7 +31,7 @@ export class GamificationService {
     @InjectModel(Badge.name) private readonly badgeModel: Model<Badge>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLog>,
-  ) { }
+  ) {}
 
   /**
    * Calculate the level based on total XP
@@ -199,11 +199,11 @@ export class GamificationService {
       if (earnedEntry) {
         const badgeObj = badge.toObject();
         earned.push(<Badge & { earnedAt: Date }>(<unknown>{
-        ...badgeObj,
-        earnedAt: earnedEntry.earnedAt,
-      }));
+          ...badgeObj,
+          earnedAt: earnedEntry.earnedAt,
+        }));
       } else {
-        unearned.push(badge.toObject() as unknown as Badge);
+        unearned.push(<Badge>(<unknown>badge.toObject()));
       }
     });
 
@@ -282,6 +282,54 @@ export class GamificationService {
       description: description || type,
     });
   }
+  /**
+   * Check and handle daily login: add XP, update streak, check if already logged in today
+   */
+  async dailyCheckIn(userId: string | Types.ObjectId): Promise<{
+    checkedIn: boolean;
+    xpEarned: number;
+    currentStreak: number;
+  }> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check if already checked in today
+    const lastDailyLogin = user.lastDailyLogin
+      ? new Date(user.lastDailyLogin)
+      : null;
+    lastDailyLogin?.setHours(0, 0, 0, 0);
+
+    if (lastDailyLogin?.getTime() === today.getTime()) {
+      // Already checked in today
+      return {
+        checkedIn: false,
+        xpEarned: 0,
+        currentStreak: user.stats?.streakDays || 0,
+      };
+    }
+
+    // Add daily login XP
+    const xpResult = await this.addXp(userId, ActivityType.DAILY_LOGIN);
+
+    // Update streak
+    const streakResult = await this.updateStreak(userId);
+
+    // Update lastDailyLogin
+    user.lastDailyLogin = new Date();
+    await user.save();
+
+    return {
+      checkedIn: true,
+      xpEarned: xpResult.xpEarned,
+      currentStreak: streakResult.currentStreak,
+    };
+  }
+
   /**
    * Get user activity heatmap data for last N months
    */

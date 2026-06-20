@@ -6,6 +6,7 @@ import { GoogleAuthResult } from '../types';
 import { TokenService } from './token.service';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { UserService } from '@/users/services';
+import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
 export class GoogleAuthService {
@@ -16,7 +17,8 @@ export class GoogleAuthService {
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-  ) { }
+    private readonly gamificationService: GamificationService,
+  ) {}
 
   public async authenticate(
     idToken: string,
@@ -67,11 +69,15 @@ export class GoogleAuthService {
       expires: expiresAt,
     });
 
+    // Handle daily check-in
+    const dailyCheckIn = await this.gamificationService.dailyCheckIn(user._id);
+
     return {
       user,
       accessToken,
       refreshToken,
       isNewUser: !alreadyExists,
+      dailyCheckIn,
     };
   }
 }

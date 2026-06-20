@@ -18,9 +18,10 @@ import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { TokenService } from './services/token.service';
+import { AuthConfig, authConfigObj } from '@/common/config';
 import { EmailService } from '@/common/email/email.service';
 import { User } from '@/users/schemas';
-import { AuthConfig, authConfigObj } from '@/common/config';
+import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +32,8 @@ export class AuthService {
     private tokenService: TokenService,
     private emailService: EmailService,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) { }
+    private gamificationService: GamificationService,
+  ) {}
 
   async register(body: RegisterDto): Promise<{ message: string }> {
     try {
@@ -39,7 +41,10 @@ export class AuthService {
       const exist = await this.userModel.findOne({ email });
       if (exist) throw new BadRequestException('Email already exists');
 
-      const hashedPassword = await bcrypt.hash(<string>password, this.authConfig.bcryptSaltRounds);
+      const hashedPassword = await bcrypt.hash(
+        <string>password,
+        this.authConfig.bcryptSaltRounds,
+      );
 
       // Smart username generation
       const baseUsername = email.split('@')[0];
@@ -62,7 +67,9 @@ export class AuthService {
       return { message: 'Registration successful' };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
-      this.logger.error(`Registration failed for ${body.email}: ${error.message}`);
+      this.logger.error(
+        `Registration failed for ${body.email}: ${error.message}`,
+      );
       throw new BadRequestException(
         `An error occurred during registration: ${(<Error>error).message}`,
       );
@@ -77,6 +84,11 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
     user: any;
+    dailyCheckIn?: {
+      checkedIn: boolean;
+      xpEarned: number;
+      currentStreak: number;
+    };
   }> {
     try {
       const { email, password, rememberMe = false } = body;
@@ -93,7 +105,9 @@ export class AuthService {
         !user ||
         !(await bcrypt.compare(<string>password, <string>userDoc.password))
       ) {
-        throw new UnauthorizedException('Invalid login credentials. Please check your email or password and try again.');
+        throw new UnauthorizedException(
+          'Invalid login credentials. Please check your email or password and try again.',
+        );
       }
 
       const tokenDoc = await this.tokenService.create(
@@ -108,6 +122,11 @@ export class AuthService {
 
       this.setRefreshCookie(res, refreshToken, expiresAt);
 
+      // Handle daily check-in
+      const dailyCheckInResult = await this.gamificationService.dailyCheckIn(
+        userDoc._id,
+      );
+
       // Remove password and add id
       const userWithoutPassword = { ...userDoc };
       delete userWithoutPassword.password;
@@ -121,6 +140,7 @@ export class AuthService {
         accessToken,
         refreshToken,
         user: formattedUser,
+        dailyCheckIn: dailyCheckInResult,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) throw error;
@@ -147,13 +167,17 @@ export class AuthService {
     try {
       const user = await this.userModel.findOne({ email: body.email });
       if (!user) {
-        this.logger.warn(`Password reset requested for non-existent email: ${body.email}`);
+        this.logger.warn(
+          `Password reset requested for non-existent email: ${body.email}`,
+        );
         return { message: 'If the email exists, a reset link will be sent.' };
       }
 
       const resetToken = crypto.randomBytes(32).toString('hex');
       user.resetPasswordToken = resetToken;
-      user.resetPasswordExpires = new Date(Date.now() + this.authConfig.passwordResetExpiresInMinutes * 60 * 1000);
+      user.resetPasswordExpires = new Date(
+        Date.now() + this.authConfig.passwordResetExpiresInMinutes * 60 * 1000,
+      );
       await user.save();
 
       await this.emailService.sendPasswordResetEmail(user.email, resetToken);
@@ -161,8 +185,12 @@ export class AuthService {
       this.logger.log(`Password reset email sent to: ${body.email}`);
       return { message: 'Password reset link has been sent via email.' };
     } catch (error) {
-      this.logger.error(`Forgot password failed for ${body.email}: ${error.message}`);
-      throw new BadRequestException('Forgot password failed. Please try again.');
+      this.logger.error(
+        `Forgot password failed for ${body.email}: ${error.message}`,
+      );
+      throw new BadRequestException(
+        'Forgot password failed. Please try again.',
+      );
     }
   }
 
@@ -178,7 +206,10 @@ export class AuthService {
         throw new BadRequestException('Invalid or expired token');
       }
 
-      const hashedPassword = await bcrypt.hash(body.newPassword, this.authConfig.bcryptSaltRounds);
+      const hashedPassword = await bcrypt.hash(
+        body.newPassword,
+        this.authConfig.bcryptSaltRounds,
+      );
       user.password = hashedPassword;
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;

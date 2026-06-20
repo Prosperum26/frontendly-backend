@@ -20,7 +20,7 @@ export class GoogleAuthController {
   constructor(
     private readonly googleAuthService: GoogleAuthService,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) { }
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -30,9 +30,15 @@ export class GoogleAuthController {
     @Body() dto: GoogleLoginRequestDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginResponseDto> {
-    const { accessToken, refreshToken, user, isNewUser } =
+    const { accessToken, refreshToken, user, isNewUser, dailyCheckIn } =
       await this.googleAuthService.authenticate(dto.idToken, res);
 
-    return new GoogleLoginResponseDto(accessToken, user, refreshToken, isNewUser);
+    return new GoogleLoginResponseDto(
+      accessToken,
+      user,
+      refreshToken,
+      isNewUser,
+      dailyCheckIn,
+    );
   }
 }

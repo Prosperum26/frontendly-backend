@@ -117,6 +117,9 @@ export class User {
   @Prop({ type: Object, default: () => ({}) })
   activity_heatmap!: Record<string, number>; // key: YYYY-MM-DD, value: number of activities
 
+  @Prop()
+  lastDailyLogin?: Date;
+
   // --- THÊM MỚI CHO TASK PROFILE API ---
   @Prop()
   fullName?: string;
