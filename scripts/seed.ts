@@ -14,6 +14,8 @@ import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
 import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
 import { BadgeSchema } from '../src/users/schemas/badge.schema';
 import { UserSchema } from '../src/users/schemas/user.schema';
+import { EntranceTestQuestionSchema } from '../src/entrance-test/db_schemas/entrance-test.schema';
+import { ChallengeExerciseSchema } from '../src/challenge/db_schemas/challenge.schema';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -34,6 +36,8 @@ const Submission = mongoose.model('Submission', SubmissionSchema);
 const User = mongoose.model('User', UserSchema);
 const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
 const Badge = mongoose.model('Badge', BadgeSchema);
+const EntranceTestQuestion = mongoose.model('EntranceTestQuestion', EntranceTestQuestionSchema);
+const ChallengeExercise = mongoose.model('ChallengeExercise', ChallengeExerciseSchema);
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -144,6 +148,100 @@ const ROADMAP_DATA = [
     skillId: 'frontend',
     skillTitle: 'Frontend Developer Path',
     milestoneIds: ['m1', 'm2', 'm3'],
+  },
+];
+
+const ENTRANCE_TEST_QUESTIONS_DATA = [
+  {
+    id: 'etq1',
+    question: 'HTML là viết tắt của từ gì?',
+    type: 'multiple-choice',
+    options: ['Hyper Text Markup Language', 'High Tech Modern Language', 'Home Tool Markup Language', 'Hyperlinks and Text Markup Language'],
+    correctAnswer: 'Hyper Text Markup Language',
+    starterCode: '',
+  },
+  {
+    id: 'etq2',
+    question: 'Thẻ nào dùng để tạo liên kết trong HTML?',
+    type: 'multiple-choice',
+    options: ['<link>', '<a>', '<href>', '<url>'],
+    correctAnswer: '<a>',
+    starterCode: '',
+  },
+  {
+    id: 'etq3',
+    question: 'CSS dùng để làm gì?',
+    type: 'multiple-choice',
+    options: ['Lưu trữ dữ liệu', 'Định dạng và trang trí trang web', 'Thực hiện logic tính toán', 'Kết nối cơ sở dữ liệu'],
+    correctAnswer: 'Định dạng và trang trí trang web',
+    starterCode: '',
+  },
+  {
+    id: 'etq4',
+    question: 'JavaScript là ngôn ngữ biên dịch hay thông dịch?',
+    type: 'multiple-choice',
+    options: ['Biên dịch', 'Thông dịch', 'Cả hai', 'Không phải hai loại trên'],
+    correctAnswer: 'Thông dịch',
+    starterCode: '',
+  },
+  {
+    id: 'etq5',
+    question: 'DOM là viết tắt của Document Object Model.',
+    type: 'true-false',
+    options: ['Đúng', 'Sai'],
+    correctAnswer: 'Đúng',
+    starterCode: '',
+  },
+];
+
+const CHALLENGE_EXERCISES_DATA = [
+  {
+    id: 'ce1',
+    title: 'Landing Page đơn giản',
+    description: 'Tạo một trang landing page đẹp mắt với HTML và CSS cơ bản',
+    difficulty: 'beginner',
+    tags: ['HTML', 'CSS'],
+    previewImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'ce2',
+    title: 'Todo App với JS',
+    description: 'Xây dựng ứng dụng quản lý công việc với JavaScript vanilla',
+    difficulty: 'intermediate',
+    tags: ['JavaScript', 'DOM'],
+    previewImage: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'ce3',
+    title: 'Responsive Dashboard',
+    description: 'Tạo một bảng điều khiển hoàn chỉnh với responsive design',
+    difficulty: 'advanced',
+    tags: ['HTML', 'CSS', 'Flexbox', 'Grid'],
+    previewImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38e37?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'ce4',
+    title: 'Weather App',
+    description: 'Xây dựng ứng dụng xem thời tiết sử dụng API',
+    difficulty: 'intermediate',
+    tags: ['JavaScript', 'API'],
+    previewImage: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'ce5',
+    title: 'Blog Template',
+    description: 'Thiết kế một template blog hiện đại',
+    difficulty: 'intermediate',
+    tags: ['HTML', 'CSS', 'Design'],
+    previewImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'ce6',
+    title: 'E-Commerce Product Card',
+    description: 'Tạo thẻ sản phẩm cho trang thương mại điện tử',
+    difficulty: 'beginner',
+    tags: ['HTML', 'CSS'],
+    previewImage: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
   },
 ];
 
@@ -290,6 +388,8 @@ async function seed(): Promise<void> {
       Exercise.deleteMany({}),
       Submission.deleteMany({}),
       Badge.deleteMany({}),
+      EntranceTestQuestion.deleteMany({}),
+      ChallengeExercise.deleteMany({}),
     ]);
     console.log('✅ Cleanup complete.\n');
 
@@ -387,6 +487,16 @@ async function seed(): Promise<void> {
     console.log(
       `✅ Upserted ${editorExercises.length} coding workspace exercises.`,
     );
+
+    // 10. Seed Entrance Test Questions
+    console.log('🌱 Seeding Entrance Test Questions...');
+    await EntranceTestQuestion.insertMany(ENTRANCE_TEST_QUESTIONS_DATA);
+    console.log(`✅ Upserted ${ENTRANCE_TEST_QUESTIONS_DATA.length} entrance test questions.`);
+
+    // 11. Seed Challenge Exercises
+    console.log('🌱 Seeding Challenge Exercises...');
+    await ChallengeExercise.insertMany(CHALLENGE_EXERCISES_DATA);
+    console.log(`✅ Upserted ${CHALLENGE_EXERCISES_DATA.length} challenge exercises.`);
 
     console.log('\n✨ Seeding complete! Project is ready for testing.');
     process.exit(0);

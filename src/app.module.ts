@@ -21,6 +21,8 @@ import { ObservabilityModule } from './common/observability/observability.module
 import { EditorModule } from './editor/editor_module/editor.module';
 import { LearningPathModule } from './learning-path/learning_path_module/learning_path.module';
 import { UserModule } from './users/user.module';
+import { EntranceTestModule } from './entrance-test/entrance-test.module';
+import { ChallengeModule } from './challenge/challenge.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { UserModule } from './users/user.module';
     UserModule,
     EditorModule,
     LearningPathModule,
+    EntranceTestModule,
+    ChallengeModule,
   ],
   providers: [
     {
