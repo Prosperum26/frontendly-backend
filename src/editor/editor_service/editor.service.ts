@@ -292,6 +292,7 @@ export default function App() {
           html,
           css,
           js,
+          jsx,
         );
         isVisualPassed =
           visualResults.length === 0 ||

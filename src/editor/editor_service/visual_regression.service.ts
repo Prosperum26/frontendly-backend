@@ -9,34 +9,94 @@ import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
 
+declare const Babel: {
+  transform: (
+    code: string,
+    options: Record<string, unknown>,
+  ) => { code: string };
+};
+
 @Injectable()
 export class VisualRegressionService {
-  // Lưu các hình ảnh của code mẫu vào cache để sau này chỉ cần lấy ra xài
-  private targetImage = new Map<string, Buffer>();
+  private targetImageCache = new Map<string, Buffer>(); // lưu screenshot của các bài tập
   constructor(
     private readonly puppeteerEvaluator: PuppeteerEvaluator,
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
+
   async evaluateVisual(
-    exerciseId: string, // Thêm để lấy làm key cache
+    exerciseId: string,
     html: string,
     css: string,
     js: string,
+    jsx: string,
   ): Promise<VisualEvaluationDto[]> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
       .lean();
-    const codeTest = exercise?.code_test;
     const targetDesign = exercise?.target_design;
+    const codeTest = exercise?.code_test;
 
-    if (!targetDesign) {
-      return [];
+    if (!targetDesign) return [];
+
+    if (!html?.trim() && !css?.trim() && !js?.trim() && !jsx?.trim()) {
+      return [
+        {
+          deviceType: targetDesign.deviceType,
+          passed: false,
+          matchPercentage: 0,
+          diffImageUrl: null,
+        },
+      ];
     }
 
-    const browser = this.puppeteerEvaluator.getBrowser(); // Mở 1 cái trên server chạy ngầm
-    const page = await browser.newPage(); // Tab mới
+    const browser = this.puppeteerEvaluator.getBrowser();
+    let targetPage: any = null;
+    let userPage: any = null;
+
     try {
-      if (!html?.trim() && !css?.trim() && !js?.trim()) {
+      if (!codeTest) throw new Error('Cannot define the code testing!');
+
+      // codetest screenshot nếu chưa có trong cache
+      if (!this.targetImageCache.has(exerciseId)) {
+        targetPage = await browser.newPage();
+        await targetPage.setViewport({
+          width: targetDesign.width,
+          height: targetDesign.height,
+        });
+
+        const isTargetReady = await this.renderPage(
+          targetPage,
+          codeTest.html,
+          codeTest.css,
+          codeTest.js,
+          codeTest.jsx,
+        );
+        if (!isTargetReady)
+          throw new Error(`Target render timeout when render ${exerciseId}.`);
+
+        this.targetImageCache.set(
+          exerciseId,
+          <Buffer>await targetPage.screenshot({ type: 'png' }),
+        );
+        await targetPage.close(); // screenshot xong thì tắt tab luôn
+      }
+
+      // user screenshot
+      userPage = await browser.newPage();
+      userPage.on('pageerror', (err: any) =>
+        console.log('[Puppeteer User Error]', err.message),
+      );
+      await userPage.setViewport({
+        width: targetDesign.width,
+        height: targetDesign.height,
+      });
+
+      const isUserReady = await this.renderPage(userPage, html, css, js, jsx);
+      if (!isUserReady) {
+        console.log(
+          `[Visual Service] User code failed to render. Failing automatically.`,
+        );
         return [
           {
             deviceType: targetDesign.deviceType,
@@ -46,74 +106,37 @@ export class VisualRegressionService {
           },
         ];
       }
-      if (!codeTest) {
-        throw new Error('Cannot define the code testing!');
-      }
 
-      // xài cái này để khi có user submit code lần đầu thì sẽ lưu vào trong cache bài đó luôn
-      // sau này các user khác submit thì chỉ cần lấy từ cache ra là được
-      if (!this.targetImage.has(exerciseId)) {
-        const CODE_TEST = this.renderHtml(
-          codeTest.html,
-          codeTest.css,
-          codeTest.js,
-        );
-        await page.setContent(CODE_TEST, { waitUntil: 'load' });
-        await page.setViewport({
-          width: targetDesign.width,
-          height: targetDesign.height,
-        });
-        await new Promise(resolve => setTimeout(resolve, 1000)); // load trang
+      const userScreenshot = await userPage.screenshot({ type: 'png' });
+      const targetScreenshot = this.targetImageCache.get(exerciseId);
 
-        const targetBuffer = <Buffer>await page.screenshot({ type: 'png' }); // screenshot -> buffer
-        this.targetImage.set(exerciseId, targetBuffer); // lưu vào cache trình duyệt ngầm
-      }
+      if (!targetScreenshot)
+        throw new Error(`[Visual Service] Target image cache missing`);
 
-      // bắt đầu lấy code user để so sánh
-      const fullUserCode = this.renderHtml(html, css, js);
-      await page.setContent(fullUserCode, { waitUntil: 'load' }); // đưa html vào page chạy
-      await page.setViewport({
-        width: targetDesign.width,
-        height: targetDesign.height,
-      });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // load trang
-
-      const userScreenshot = await page.screenshot({ type: 'png' }); // screenshot usercode
-      const targetScreenshot = this.targetImage.get(exerciseId); // target screenshot
-      if (!targetScreenshot) {
-        throw new Error(
-          `Target image cache missing for exercise ${exerciseId}`,
-        );
-      }
-
-      // So sánh 2 ảnh
-      // buffer -> object có width, height, data (data sẽ là mảng 1 chiều, 1 phần tử là 1 array nhỏ với mã RGBA của 1 điểm ảnh)
-      const userImg = PNG.sync.read(Buffer.from(userScreenshot)); // buffer -> object
-      const targetImg = PNG.sync.read(targetScreenshot);
+      // compare pixel
+      const userImg = PNG.sync.read(Buffer.from(userScreenshot)); // Buffer -> Object
+      const targetImg = PNG.sync.read(targetScreenshot); // Buffer -> Object
       const { width, height } = targetImg;
-      const diff = new PNG({ width, height }); // khác pixel nào thì phần này sẽ bị tô màu
+      const diff = new PNG({ width, height });
 
-      // tính toán số pixel khác nhau và tính kết quả
-      const matchPixelCount = pixelmatch(
+      const mismatchedPixels = pixelmatch(
         userImg.data,
         targetImg.data,
         diff.data,
         width,
         height,
-        { threshold: 0.15 },
+        { threshold: 0.05, includeAA: true },
       );
-      // để threshold là 0.15 là cho phép sai lệch cỡ 15%
 
-      const totalPixelCount = width * height;
+      const totalPixels = width * height;
       const matchPercentage =
-        ((totalPixelCount - matchPixelCount) / totalPixelCount) * 100;
-      const isPassed = matchPercentage >= 90;
+        ((totalPixels - mismatchedPixels) / totalPixels) * 100;
+      const isPassed = matchPercentage >= 95;
 
-      // diff -> buffer -> url cho FE render ra cho user biết sai chỗ nào
-      let diffImage = null;
+      let diffImageUrl = null;
       if (!isPassed) {
-        const diffBuffer = PNG.sync.write(diff);
-        diffImage = `data:image/png;base64,${diffBuffer.toString('base64')}`; // hình được mã hóa thành text
+        const buffer = PNG.sync.write(diff, { deflateLevel: 9, filterType: 4 });
+        diffImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
       }
 
       return [
@@ -121,36 +144,109 @@ export class VisualRegressionService {
           deviceType: targetDesign.deviceType,
           passed: isPassed,
           matchPercentage: parseFloat(matchPercentage.toFixed(2)),
-          diffImageUrl: diffImage,
+          diffImageUrl: diffImageUrl,
         },
       ];
     } catch (error: any) {
       throw new Error(`Visual regression evaluation failed: ${error.message}`);
     } finally {
-      if (page && !page.isClosed()) {
-        await page.close();
-      }
+      if (targetPage && !targetPage.isClosed()) await targetPage.close();
+      if (userPage && !userPage.isClosed()) await userPage.close();
     }
   }
 
-  private renderHtml(html: string, css: string, js: string): string {
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-    const htmlBody = document.querySelector('body')?.innerHTML || '';
-    const htmlHead = document.querySelector('head')?.innerHTML || '';
-    const fullHtmlContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    ${htmlHead}
-                    <style> ${css} </style>
-                </head>
-                <body>
-                    ${htmlBody}
-                    <script>${js}</script>
-                </body>
-                </html>
+  // gom code
+  private async renderPage(
+    page: any,
+    html: string,
+    css: string,
+    js: string,
+    jsx: string,
+  ): Promise<boolean> {
+    try {
+      // 1. Gắn HTML và CSS cơ bản
+      const dom = new JSDOM(html || '<div id="root"></div>');
+      const doc = dom.window.document;
+      if (!doc.getElementById('root')) {
+        const rootDiv = doc.createElement('div');
+        rootDiv.id = 'root';
+        doc.body.appendChild(rootDiv);
+      }
+
+      const baseHtml = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${doc.body.innerHTML}</body></html>`;
+      await page.setContent(baseHtml, { waitUntil: 'load' });
+
+      // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
+      if (jsx?.trim()) {
+        await Promise.all([
+          page.addScriptTag({
+            url: 'https://unpkg.com/react@18/umd/react.development.js',
+          }),
+          page.addScriptTag({
+            url: 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+          }),
+          page.addScriptTag({
+            url: 'https://unpkg.com/@babel/standalone/babel.min.js',
+          }),
+        ]);
+
+        const { cleanJsx, componentName } = this.processJsx(jsx);
+
+        await page.evaluate(
+          (jsxStr: string, compName: string | null) => {
+            const transpiledCode = Babel.transform(jsxStr, {
+              presets: [['react', { runtime: 'classic' }]],
+            }).code;
+            const script = document.createElement('script');
+            script.innerHTML = transpiledCode;
+            document.body.appendChild(script);
+
+            if (compName) {
+              const mountScript = document.createElement('script');
+              mountScript.innerHTML = `
+              const rootEl = document.getElementById('root');
+              if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(${compName}));
             `;
-    return fullHtmlContent;
+              document.body.appendChild(mountScript);
+            }
+          },
+          cleanJsx,
+          componentName,
+        );
+
+        // Chờ component xuất hiện
+        await page.waitForSelector('#root > *', { timeout: 5000 });
+      } else if (js?.trim()) {
+        await page.addScriptTag({ content: js });
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return true;
+    } catch (error: any) {
+      console.error('[Render Page Error]', error.message);
+      return false;
+    }
+  }
+
+  // hàm clean lại jsx
+  private processJsx(jsx: string): {
+    cleanJsx: string;
+    componentName: string | null;
+  } {
+    if (!jsx) return { cleanJsx: '', componentName: null };
+
+    const cleanJsx = jsx
+      .replace(/import[^'"]+['"][^'"]+['"];?/g, '')
+      .replace(/export\s+default\s+/g, '')
+      .replace(/export\s+/g, '');
+
+    const match = jsx.match(
+      /export\s+default\s+(?:function\s+|class\s+)?(\w+)/,
+    );
+
+    return {
+      cleanJsx,
+      componentName: match ? match[1] : null,
+    };
   }
 }
