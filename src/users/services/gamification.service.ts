@@ -31,7 +31,7 @@ export class GamificationService {
     @InjectModel(Badge.name) private readonly badgeModel: Model<Badge>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLog>,
-  ) {}
+  ) { }
 
   /**
    * Calculate the level based on total XP
@@ -199,11 +199,11 @@ export class GamificationService {
       if (earnedEntry) {
         const badgeObj = badge.toObject();
         earned.push(<Badge & { earnedAt: Date }>(<unknown>{
-          ...badgeObj,
-          earnedAt: earnedEntry.earnedAt,
-        }));
+        ...badgeObj,
+        earnedAt: earnedEntry.earnedAt,
+      }));
       } else {
-        unearned.push(badge.toObject());
+        unearned.push(badge.toObject() as unknown as Badge);
       }
     });
 

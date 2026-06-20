@@ -25,7 +25,7 @@ export class JwtAuthGuard implements CanActivate {
     private reflector: Reflector,
     @InjectModel(StageProgress.name)
     private readonly stageProgressModel: Model<StageProgress>,
-  ) {}
+  ) { }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const opt = this.getAuthOption(ctx);
@@ -45,7 +45,7 @@ export class JwtAuthGuard implements CanActivate {
         const decoded = await this.tokenService.decodeAccessToken(rawToken);
         tokenId = decoded.tokenId;
       } catch {
-        throw new UnauthorizedException('Token has expired or is invalid');
+        throw new UnauthorizedException('Your session has expired. Please sign in again.');
       }
 
       const token = await this.tokenService.findAndValidateToken(
@@ -106,9 +106,9 @@ export class JwtAuthGuard implements CanActivate {
       blockIfUnauthenticated: true,
       skipAuth: false,
     };
-    const opt = this.reflector.get<AuthOption>(
+    const opt = this.reflector.getAllAndOverride<AuthOption>(
       CustomDecoratorKey.AUTH_OPTION,
-      ctx.getHandler(),
+      [ctx.getHandler(), ctx.getClass()],
     );
     return merge(defaultOpt, opt);
   }

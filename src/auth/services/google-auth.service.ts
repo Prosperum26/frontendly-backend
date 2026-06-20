@@ -16,7 +16,7 @@ export class GoogleAuthService {
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-  ) {}
+  ) { }
 
   public async authenticate(
     idToken: string,
@@ -36,13 +36,17 @@ export class GoogleAuthService {
 
     // It's safe to assume that `email` exists, since it should be provided if
     // the scope included the string "email".
-    const { user } = await this.userService.createOrUpdateUser({
+    const { user, alreadyExists } = await this.userService.createOrUpdateUser({
       email: email!,
       googleId,
       firstName,
       lastName,
       picture,
     });
+
+    this.logger.log(
+      `Google auth: ${alreadyExists ? 'Existing user' : 'New user'} authenticated - ${email}`,
+    );
 
     // Generate token for this authentication attempt
     const token = await this.tokenService.create(user._id);
@@ -67,6 +71,7 @@ export class GoogleAuthService {
       user,
       accessToken,
       refreshToken,
+      isNewUser: !alreadyExists,
     };
   }
 }

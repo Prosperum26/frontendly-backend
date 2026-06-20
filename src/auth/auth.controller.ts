@@ -1,30 +1,26 @@
 import {
   Body,
   Controller,
-  CustomDecorator,
   Get,
   HttpCode,
   HttpStatus,
-  Post, // Thêm Patch để hỗ trợ API cập nhật
+  Post,
   Req,
-  SetMetadata,
   Res,
+  UseGuards,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
+import { ConfigureAuth } from './decorators';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { LoginDto } from './dtos/login.dto';
-import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { CustomDecoratorKey } from '@/common/constants';
-// Import DTO cấu hình dữ liệu Profile
+import { RateLimitGuard } from './guards';
 
-// Sửa lại chìa khóa: Gắn đúng từ khóa AUTH_OPTION và truyền { skipAuth: true }
-export const Public = (): CustomDecorator =>
-  SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true });
-
+@ApiTags('Authentication')
 @Controller({
   path: 'auth',
   version: '1',
@@ -32,17 +28,45 @@ export const Public = (): CustomDecorator =>
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Public() // Đã có chìa khóa chuẩn, API này sẽ cho qua
+  @ConfigureAuth({ skipAuth: true })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - email already exists' })
   async register(@Body() body: RegisterDto): Promise<{ message: string }> {
     const result = await this.authService.register(body);
     return result;
   }
 
-  @Public() // Đã có chìa khóa chuẩn
+  @ConfigureAuth({ skipAuth: true })
+  @UseGuards(RateLimitGuard)
   @Post('login')
-  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        accessToken: { type: 'string' },
+        refreshToken: { type: 'string' },
+        user: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 429, description: 'Too many login attempts' })
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -56,19 +80,19 @@ export class AuthController {
     return result;
   }
 
-  @Public() // Đã có chìa khóa chuẩn
-  @Post('refresh-token')
-  @HttpCode(HttpStatus.OK)
-  async refreshToken(
-    @Body() body: RefreshTokenDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
-    const result = await this.authService.refreshToken(body, res);
-    return result;
-  }
-
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent (if email exists)',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
   async forgotPassword(
     @Body() body: ForgotPasswordDto,
   ): Promise<{ message: string }> {
@@ -76,8 +100,20 @@ export class AuthController {
     return result;
   }
 
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
   @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async resetPassword(
     @Body() body: ResetPasswordDto,
   ): Promise<{ message: string }> {
@@ -85,15 +121,23 @@ export class AuthController {
     return result;
   }
 
+  @ConfigureAuth({ skipAuth: false })
   @Get('me')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        data: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMe(@Req() req: any): Promise<{ message: string; data: any }> {
-    // Thêm async và Promise
-    const userId = <string>(req.user?._id || req.user?.id); // Lấy ID từ token
-
-    // Yêu cầu AuthService chọc xuống DB lấy User mới nhất
-    // Sửa đoạn gọi trong hàm getMe
-    await (<any>this.authService).getFreshUser(userId);
     return {
       message: 'Profile retrieved successfully',
       data: req.user,

@@ -1,4 +1,3 @@
-const XP_PER_LEVEL = 100; // Định nghĩa để hết lỗi Cannot find name
 import {
   Injectable,
   Logger,
@@ -22,12 +21,13 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
-import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
-import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning-path-schemas';
+import { MilestoneDocument } from '@/learning-path/db_schemas/milestone-schema';
 import 'multer';
+
 @Injectable()
 export class UserService {
-  private readonly logger: Logger = new Logger(UserService.name);
+  private readonly logger = new Logger(UserService.name);
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
@@ -38,16 +38,14 @@ export class UserService {
     private milestoneModel: Model<MilestoneDocument>,
     private readonly gamificationService: GamificationService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
     await createUserSchema.parseAsync(options);
-
     const { email, googleId, firstName, lastName, picture } = options;
 
-    // Generate a default avatar using the user's name (e.g., "John Doe" -> "JD")
     const safeFirstName = firstName || 'User';
     const safeLastName = lastName || '';
     const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${safeFirstName}+${safeLastName}&background=e2e8f0&color=475569`;
@@ -57,11 +55,9 @@ export class UserService {
         googleId,
         firstName,
         lastName,
-        // Only update the avatar if a new picture is explicitly provided (e.g., Google sync)
         ...(picture && { avatarUrl: picture }),
       },
       $setOnInsert: {
-        // If this is a brand NEW registration, assign the picture or the default avatar
         avatarUrl: picture || defaultAvatarUrl,
       },
     };
@@ -69,19 +65,18 @@ export class UserService {
     const res = await this.userModel.findOneAndUpdate({ email }, update, {
       new: true,
       upsert: true,
-      setDefaultsOnInsert: true, // Ensured this is true to trigger schema defaults
+      setDefaultsOnInsert: true,
       includeResultMetadata: true,
       lean: true,
     });
 
-    const userDoc = res.value!;
     const formattedUser = {
-      ...userDoc,
-      id: userDoc._id.toString(),
+      ...res.value,
+      id: res.value!._id.toString(),
     };
 
     return {
-      alreadyExists: res.lastErrorObject?.updatedExisting || false,
+      alreadyExists: !res.lastErrorObject?.upserted,
       user: <any>formattedUser,
     };
   }
@@ -90,14 +85,12 @@ export class UserService {
     userId: string,
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
-    // --- BẮT ĐẦU ĐOẠN THÊM MỚI: Kiểm tra khóa 30 ngày đổi số điện thoại ---
     if (body.phoneNumber) {
       const currentUser = await this.userModel
         .findById(userId)
         .select('phoneNumber lastPhoneUpdatedAt')
         .lean();
 
-      // Nếu user có gửi số điện thoại mới và số đó khác số cũ
       if (currentUser && currentUser.phoneNumber !== body.phoneNumber) {
         if (currentUser.lastPhoneUpdatedAt) {
           const nextAllowedDate = new Date(currentUser.lastPhoneUpdatedAt);
@@ -109,17 +102,15 @@ export class UserService {
             );
           }
         }
-        // Ghi nhận thời điểm đổi số mới nhất vào body để hàm $set bên dưới tự động lưu
         Object.assign(body, { lastPhoneUpdatedAt: new Date() });
       }
     }
-    // --- KẾT THÚC ĐOẠN THÊM MỚI ---
 
     if (body.username) {
       const existingUser = await this.userModel
         .findOne({
           username: body.username,
-          _id: { $ne: userId }, // Bỏ qua chính user hiện tại
+          _id: { $ne: userId },
         })
         .lean();
 
@@ -129,17 +120,19 @@ export class UserService {
         );
       }
     }
+
+    const updateData: Record<string, any> = { ...body };
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
         userId,
-        { $set: body },
-        { new: true, lean: true }, // new: true ensures we get the updated document
+        { $set: updateData },
+        { new: true, lean: true },
       )
       .select(
-        'username email firstName lastName fullName avatarUrl phoneNumber dateOfBirth bio lastPhoneUpdatedAt', // Đã THÊM lastPhoneUpdatedAt vào select để trả về FE
+        'username email firstName lastName fullName name avatar avatarUrl phoneNumber dateOfBirth bio lastPhoneUpdatedAt role',
       );
+
     if (!updatedUser) {
-      // Changed to NotFoundException as it's standard for 404 resource not found
       throw new NotFoundException('User not found');
     }
 
@@ -148,17 +141,19 @@ export class UserService {
       id: updatedUser._id.toString(),
     };
 
+    this.logger.log(`Profile updated for user: ${userId}`);
     return {
-      message: 'Cập nhật thông tin thành công',
+      message: 'Profile updated successfully',
       user: <any>formattedUser,
     };
   }
 
   public async changePassword(
     userId: string,
-    body: ChangePasswordDto,
+    dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    // We explicitly tell TS that this lean object might contain a password
+    const { oldPassword, newPassword } = dto;
+
     const user = await this.userModel
       .findById(userId)
       .select('+password')
@@ -168,27 +163,28 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    // Safety check: If user registered via Google, they might not have a password
     if (!user.password) {
       throw new BadRequestException(
         'This account does not have a password set. Please log in using your external provider (e.g., Google).',
       );
     }
 
-    // Removed the ugly eslint-disable comments by using proper types
-    const isMatch = await bcrypt.compare(body.oldPassword, user.password);
-
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('Incorrect old password');
     }
 
-    const hashedNewPassword = await bcrypt.hash(body.newPassword, 10);
+    if (oldPassword === newPassword) {
+      throw new BadRequestException('New password must be different from old password');
+    }
 
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     await this.userModel.findByIdAndUpdate(userId, {
       password: hashedNewPassword,
     });
 
-    return { message: 'Đổi mật khẩu thành công' };
+    this.logger.log(`Password changed for user: ${userId}`);
+    return { message: 'Password changed successfully. Please log in again.' };
   }
 
   async getProgress(userId: string): Promise<{
@@ -301,7 +297,6 @@ export class UserService {
       .limit(limit)
       .lean();
 
-    // Get user details for these progress entries
     const userIds = topUsers.map(p => p.userId);
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
@@ -312,12 +307,17 @@ export class UserService {
 
     return topUsers.map((p, index) => {
       const user = userMap.get(p.userId);
+      let level = 1;
+      let xpForCurrentLevel = 0;
+      while (getXpForLevel(level + 1) <= p.currentXp) {
+        level++;
+      }
       return {
         id: p.userId,
         rank: skip + index + 1,
         username: user?.name || user?.firstName || 'Unknown',
         avatar: user?.avatarUrl,
-        level: Math.floor(p.currentXp / XP_PER_LEVEL) + 1,
+        level,
         xp: p.currentXp,
       };
     });
@@ -335,7 +335,6 @@ export class UserService {
 
     return count + 1;
   }
-  // 👇 THÊM HÀM NÀY VÀO ĐỂ XỬ LÝ UPLOAD AVATAR
 
   public async uploadAvatar(
     userId: string,
@@ -345,7 +344,6 @@ export class UserService {
       throw new BadRequestException('Image file not found');
     }
 
-    // Thực hiện upload thật lên Cloudinary
     const uploadResult = await this.cloudinaryService.uploadImage(file);
     const realAvatarUrl = uploadResult.secure_url;
 
@@ -360,16 +358,15 @@ export class UserService {
       avatarUrl: realAvatarUrl,
     };
   }
+
   async getActivityStats(userId: string) {
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    // LƯU Ý: Thay "this.activityModel" bằng đúng Model đang lưu lịch sử bài học của bạn (ví dụ: lessonModel, userProgressModel...)
-    // Và thay trường "createdAt" bằng trường thời gian tương ứng trong DB của bạn.
     const stats = await this.activityLogModel.aggregate([
       {
         $match: {
-          userId: new Types.ObjectId(userId), // hoặc tùy thuộc cách bạn lưu khóa ngoại
+          userId: new Types.ObjectId(userId),
           createdAt: { $gte: ninetyDaysAgo },
         },
       },
@@ -390,19 +387,15 @@ export class UserService {
 
     return stats;
   }
-  // THÊM HÀM NÀY: Xây dựng API Progress Track theo đúng task
+
   async getLearningProgress(userId: string) {
     try {
-      // 1. Lấy dữ liệu tiến độ của user do team Learning Path quản lý
       const userProgress = await this.userProgressModel
         .findOne({ userId })
         .lean();
 
-      // 2. Lấy tổng số bài học từ Milestone (hoặc để team Learning Path sửa lại query này cho đúng cấu trúc của họ)
       const totalLessons = await this.milestoneModel.countDocuments();
 
-      // 3. Chuẩn bị 5 trường dữ liệu theo đúng yêu cầu
-      // Lưu ý: Các field như completedLessonsCount hay currentMilestoneName phụ thuộc vào Schema của team Learning Path.
       const completedLessons = (<any>userProgress)?.completedLessonsCount || 0;
 
       const completionPercentage =
@@ -414,19 +407,17 @@ export class UserService {
         (<any>userProgress)?.currentMilestoneName || 'Beginner';
       const isUnlocked = (<any>userProgress)?.isUnlocked ?? true;
 
-      // Trả về đúng 5 trường
       return {
-        totalLessons, // Tổng số bài học
-        completedLessons, // Số bài hoàn thành
-        completionPercentage, // Phần trăm hoàn thành
-        currentMilestone, // Milestone hiện tại
-        isUnlocked, // Trạng thái mở khóa
+        totalLessons,
+        completedLessons,
+        completionPercentage,
+        currentMilestone,
+        isUnlocked,
       };
     } catch (err) {
       this.logger.warn(
         `getLearningProgress error for ${userId}: ${String(err)}`,
       );
-      // Trả về giá trị mặc định nếu lỗi
       return {
         totalLessons: 0,
         completedLessons: 0,

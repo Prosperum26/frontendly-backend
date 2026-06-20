@@ -1,18 +1,21 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { merge } from 'lodash';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { TokenService } from '../services';
 import { AuthOption } from '../types';
 import { CustomDecoratorKey } from '@/common/constants';
+import { StageProgress } from '@/users/schemas/stage-progress.schema';
 
 /**
  * Implements main request authentication logic. The behaviour of this guard
@@ -37,7 +40,9 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly tokenService: TokenService,
     private reflector: Reflector,
-  ) {}
+    @InjectModel(StageProgress.name)
+    private readonly stageProgressModel: Model<StageProgress>,
+  ) { }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const opt = this.getAuthOption(ctx);
@@ -51,14 +56,49 @@ export class AuthGuard implements CanActivate {
           'No token was provided in request header',
         );
       }
-      const { tokenId } = await this.tokenService.decodeAccessToken(rawToken);
+
+      let tokenId: string;
+      try {
+        const decoded = await this.tokenService.decodeAccessToken(rawToken);
+        tokenId = decoded.tokenId;
+      } catch {
+        throw new UnauthorizedException('Your session has expired. Please sign in again.');
+      }
+
       const token = await this.tokenService.findAndValidateToken(
         new Types.ObjectId(tokenId),
       );
       if (!token) {
-        throw new UnauthorizedException('Invalid token provided');
+        throw new UnauthorizedException('Invalid or expired token');
       }
+
       const user = await this.tokenService.findUserByToken(token._id);
+
+      if (user.isBanned) {
+        throw new ForbiddenException(
+          'User is banned from accessing this resource',
+        );
+      }
+
+      if (user.isSuspended) {
+        throw new ForbiddenException('User account is suspended');
+      }
+
+      if (user.isDeleted) {
+        throw new ForbiddenException('User account has been deleted');
+      }
+
+      // Verify stage progress to prevent bypassing roadmap
+      const stageProgress = await this.stageProgressModel
+        .findOne({
+          user_id: user._id,
+        })
+        .lean();
+
+      if (stageProgress) {
+        // Attach stage progress to user object for downstream use
+        user.stage_progress = stageProgress;
+      }
 
       // Attach the user to the request object
       req.user = {

@@ -5,7 +5,8 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleAuthController, LogoutController } from './controllers';
+import { GoogleAuthController, LogoutController, RefreshTokenController, SessionController } from './controllers';
+import { AuthGuard, JwtAuthGuard, RateLimitGuard } from './guards';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
 import { Session, SessionSchema } from './schemas/session.schema';
@@ -37,11 +38,14 @@ import { UserModule } from '@/users/user.module';
       }),
     }),
   ],
-  controllers: [GoogleAuthController, LogoutController, AuthController],
+  controllers: [GoogleAuthController, LogoutController, RefreshTokenController, SessionController, AuthController],
   providers: [
     AuthService,
     GoogleAuthService,
     TokenService,
+    AuthGuard,
+    JwtAuthGuard,
+    RateLimitGuard,
     WsAuthMiddleware,
     {
       provide: OAuth2Client,
@@ -55,4 +59,4 @@ import { UserModule } from '@/users/user.module';
   ],
   exports: [AuthService, JwtModule, TokenService, WsAuthMiddleware],
 })
-export class AuthModule {}
+export class AuthModule { }

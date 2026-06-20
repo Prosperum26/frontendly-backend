@@ -1,15 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { XP_REWARDS } from '../seedFiles/learning-data';
 import { XpRewards } from '../types/learning-path.types';
-
-// THÊM: Khai báo tạm thời XP_REWARDS để bypass lỗi
-const XP_REWARDS = {
-  easy: 10,
-  medium: 20,
-  hard: 30,
-  theory: 5,
-  videoIntro: 5,
-};
 
 @Injectable()
 export class XpService {

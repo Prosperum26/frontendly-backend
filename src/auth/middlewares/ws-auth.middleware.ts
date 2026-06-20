@@ -30,7 +30,7 @@ interface AuthenticatedSocket extends Socket {
 export class WsAuthMiddleware {
   private readonly logger: Logger = new Logger(WsAuthMiddleware.name);
 
-  constructor(private readonly tokenService: TokenService) {}
+  constructor(private readonly tokenService: TokenService) { }
 
   async authenticate(
     socket: AuthenticatedSocket,
@@ -42,14 +42,35 @@ export class WsAuthMiddleware {
       if (!bearer) {
         throw new WsException('No token was provided in request header');
       }
-      const { tokenId } = await this.tokenService.decodeAccessToken(bearer);
+
+      let tokenId: string;
+      try {
+        const decoded = await this.tokenService.decodeAccessToken(bearer);
+        tokenId = decoded.tokenId;
+      } catch {
+        throw new WsException('Your session has expired. Please sign in again.');
+      }
+
       const token = await this.tokenService.findAndValidateToken(
         new Types.ObjectId(tokenId),
       );
       if (!token) {
-        throw new WsException('Invalid token provided');
+        throw new WsException('Invalid or expired token');
       }
+
       const user = await this.tokenService.findUserByToken(token._id);
+
+      if (user.isBanned) {
+        throw new WsException('User is banned from accessing this resource');
+      }
+
+      if (user.isSuspended) {
+        throw new WsException('User account is suspended');
+      }
+
+      if (user.isDeleted) {
+        throw new WsException('User account has been deleted');
+      }
 
       // Attach the user to the socket object
       socket.user = {
