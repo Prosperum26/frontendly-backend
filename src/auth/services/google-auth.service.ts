@@ -6,6 +6,7 @@ import { GoogleAuthResult } from '../types';
 import { TokenService } from './token.service';
 import { AuthConfig, authConfigObj } from '@/common/config';
 import { UserService } from '@/users/services';
+import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
 export class GoogleAuthService {
@@ -16,6 +17,7 @@ export class GoogleAuthService {
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   public async authenticate(
@@ -36,13 +38,17 @@ export class GoogleAuthService {
 
     // It's safe to assume that `email` exists, since it should be provided if
     // the scope included the string "email".
-    const { user } = await this.userService.createOrUpdateUser({
+    const { user, alreadyExists } = await this.userService.createOrUpdateUser({
       email: email!,
       googleId,
       firstName,
       lastName,
       picture,
     });
+
+    this.logger.log(
+      `Google auth: ${alreadyExists ? 'Existing user' : 'New user'} authenticated - ${email}`,
+    );
 
     // Generate token for this authentication attempt
     const token = await this.tokenService.create(user._id);
@@ -63,10 +69,15 @@ export class GoogleAuthService {
       expires: expiresAt,
     });
 
+    // Handle daily check-in
+    const dailyCheckIn = await this.gamificationService.dailyCheckIn(user._id);
+
     return {
       user,
       accessToken,
       refreshToken,
+      isNewUser: !alreadyExists,
+      dailyCheckIn,
     };
   }
 }

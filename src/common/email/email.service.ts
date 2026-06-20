@@ -28,9 +28,11 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
+    this.logger.log(`Attempting to send password reset email to ${to}`);
+
     if (!this.transporter) {
-      this.logger.warn(
-        `Password reset email skipped for ${to}: MAIL_HOST is not configured.`,
+      this.logger.error(
+        `Password reset email skipped for ${to}: MAIL_HOST is not configured. MAIL_HOST=${this.configService.get<string>('MAIL_HOST')}`,
       );
       return;
     }
@@ -38,6 +40,8 @@ export class EmailService {
     const resetUrl = `${this.configService.get<string>(
       'FRONTEND_URL',
     )}/reset-password?token=${token}`;
+
+    this.logger.log(`Reset URL: ${resetUrl}`);
 
     const mailOptions = {
       from: `"FrontEndly Support" <${this.configService.get<string>(
@@ -54,11 +58,13 @@ export class EmailService {
       `,
     };
 
+    this.logger.log(`Mail options: ${JSON.stringify({ to, from: mailOptions.from, subject: mailOptions.subject })}`);
+
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Password reset email sent to ${to}`);
+      this.logger.log(`Password reset email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${to}`, error);
+      this.logger.error(`Failed to send password reset email to ${to}: ${error.message}`, error.stack);
       throw error;
     }
   }

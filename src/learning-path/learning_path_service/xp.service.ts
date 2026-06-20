@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { XP_REWARDS } from '../seedFiles/data';
+import { XP_REWARDS } from '../seedFiles/learning-data';
 import { XpRewards } from '../types/learning-path.types';
 
 @Injectable()

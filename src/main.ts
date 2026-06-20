@@ -9,8 +9,11 @@ import { CommonConfig, commonConfigObj } from './common/config';
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
+
   configApp(app);
-  const { port } = <CommonConfig>app.get(commonConfigObj.KEY);
+
+  const { port } = app.get<CommonConfig>(commonConfigObj.KEY);
+
   await app.listen(port, () => {
     logger.log(`listening on port ${port}`);
   });
@@ -18,8 +21,6 @@ async function bootstrap(): Promise<void> {
 
 bootstrap()
   .then(() => {
-    // Notify the deployment platform that we're ready. This is used in PM2's
-    // graceful startup process
     if (process.send) process.send('ready');
   })
   .catch((err: unknown) => {

@@ -1,10 +1,17 @@
-/* eslint-disable new-cap */
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
+import { Express } from 'express';
 import { Model, UpdateQuery } from 'mongoose';
+import { Types } from 'mongoose';
 
 import { GamificationService } from './gamification.service';
+import { CloudinaryService } from '../../cloudinary.service';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User, getXpForLevel } from '../schemas';
@@ -14,12 +21,13 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
-import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
-import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning-path-schemas';
+import { MilestoneDocument } from '@/learning-path/db_schemas/milestone-schema';
+import 'multer';
 
 @Injectable()
 export class UserService {
-  private readonly logger: Logger = new Logger(UserService.name);
+  private readonly logger = new Logger(UserService.name);
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
@@ -29,35 +37,46 @@ export class UserService {
     @InjectModel('Milestone')
     private milestoneModel: Model<MilestoneDocument>,
     private readonly gamificationService: GamificationService,
-  ) {}
+    private readonly cloudinaryService: CloudinaryService,
+  ) { }
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
   ): Promise<CreateOrUpdateUserResult> {
     await createUserSchema.parseAsync(options);
     const { email, googleId, firstName, lastName, picture } = options;
+
+    const safeFirstName = firstName || 'User';
+    const safeLastName = lastName || '';
+    const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${safeFirstName}+${safeLastName}&background=e2e8f0&color=475569`;
+
     const update: UpdateQuery<User> = {
-      googleId,
-      firstName,
-      lastName,
-      avatarUrl: picture,
+      $set: {
+        googleId,
+        firstName,
+        lastName,
+        ...(picture && { avatarUrl: picture }),
+      },
+      $setOnInsert: {
+        avatarUrl: picture || defaultAvatarUrl,
+      },
     };
+
     const res = await this.userModel.findOneAndUpdate({ email }, update, {
       new: true,
       upsert: true,
-      setDefaultsOnInsert: false,
+      setDefaultsOnInsert: true,
       includeResultMetadata: true,
       lean: true,
     });
 
-    const userDoc = res.value!;
     const formattedUser = {
-      ...userDoc,
-      id: userDoc._id.toString(),
+      ...res.value,
+      id: res.value!._id.toString(),
     };
 
     return {
-      alreadyExists: res.lastErrorObject?.updatedExisting || false,
+      alreadyExists: !res.lastErrorObject?.upserted,
       user: <any>formattedUser,
     };
   }
@@ -66,12 +85,55 @@ export class UserService {
     userId: string,
     body: UpdateProfileDto,
   ): Promise<{ message: string; user: any }> {
+    if (body.phoneNumber) {
+      const currentUser = await this.userModel
+        .findById(userId)
+        .select('phoneNumber lastPhoneUpdatedAt')
+        .lean();
+
+      if (currentUser && currentUser.phoneNumber !== body.phoneNumber) {
+        if (currentUser.lastPhoneUpdatedAt) {
+          const nextAllowedDate = new Date(currentUser.lastPhoneUpdatedAt);
+          nextAllowedDate.setDate(nextAllowedDate.getDate() + 30);
+
+          if (new Date() < nextAllowedDate) {
+            throw new BadRequestException(
+              'Chỉ được thay đổi số điện thoại 30 ngày/lần.',
+            );
+          }
+        }
+        Object.assign(body, { lastPhoneUpdatedAt: new Date() });
+      }
+    }
+
+    if (body.username) {
+      const existingUser = await this.userModel
+        .findOne({
+          username: body.username,
+          _id: { $ne: userId },
+        })
+        .lean();
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'Username already exists, please choose another one.',
+        );
+      }
+    }
+
+    const updateData: Record<string, any> = { ...body };
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { $set: body }, { new: true, lean: true })
-      .select('-password');
+      .findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true, lean: true },
+      )
+      .select(
+        'username email firstName lastName fullName name avatar avatarUrl phoneNumber dateOfBirth bio lastPhoneUpdatedAt role',
+      );
 
     if (!updatedUser) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      throw new NotFoundException('User not found');
     }
 
     const formattedUser = {
@@ -79,43 +141,50 @@ export class UserService {
       id: updatedUser._id.toString(),
     };
 
+    this.logger.log(`Profile updated for user: ${userId}`);
     return {
-      message: 'Cập nhật thông tin thành công',
+      message: 'Profile updated successfully',
       user: <any>formattedUser,
     };
   }
 
   public async changePassword(
     userId: string,
-    body: ChangePasswordDto,
+    dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
+    const { oldPassword, newPassword } = dto;
+
     const user = await this.userModel
       .findById(userId)
       .select('+password')
-      .lean();
+      .lean<{ password?: string }>();
 
     if (!user) {
-      throw new BadRequestException('Không tìm thấy người dùng');
+      throw new NotFoundException('User not found');
     }
 
-    const userDoc = <Record<string, string>>(<unknown>user);
+    if (!user.password) {
+      throw new BadRequestException(
+        'This account does not have a password set. Please log in using your external provider (e.g., Google).',
+      );
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const isMatch = await bcrypt.compare(
-      <string>body.oldPassword,
-      <string>userDoc.password,
-    );
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException('Mật khẩu cũ không chính xác');
+      throw new BadRequestException('Incorrect old password');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-    const hashedNewPassword = await bcrypt.hash(<string>body.newPassword, 10);
+    if (oldPassword === newPassword) {
+      throw new BadRequestException('New password must be different from old password');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     await this.userModel.findByIdAndUpdate(userId, {
       password: hashedNewPassword,
     });
 
-    return { message: 'Đổi mật khẩu thành công' };
+    this.logger.log(`Password changed for user: ${userId}`);
+    return { message: 'Password changed successfully. Please log in again.' };
   }
 
   async getProgress(userId: string): Promise<{
@@ -207,40 +276,6 @@ export class UserService {
       .lean();
   }
 
-  async getActivityStats(
-    userId: string,
-  ): Promise<Array<{ date: string; count: number }>> {
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
-    const stats = await this.activityLogModel.aggregate([
-      {
-        $match: {
-          userId,
-          timestamp: { $gte: ninetyDaysAgo },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$timestamp' },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          date: '$_id',
-          count: 1,
-        },
-      },
-      { $sort: { date: 1 } },
-    ]);
-
-    return stats;
-  }
-
   async logActivity(
     userId: string,
     type: 'lesson_completed' | 'challenge_won' | 'streak_achieved',
@@ -262,7 +297,6 @@ export class UserService {
       .limit(limit)
       .lean();
 
-    // Get user details for these progress entries
     const userIds = topUsers.map(p => p.userId);
     const users = await this.userModel
       .find({ _id: { $in: userIds } })
@@ -273,12 +307,17 @@ export class UserService {
 
     return topUsers.map((p, index) => {
       const user = userMap.get(p.userId);
+      let level = 1;
+      let xpForCurrentLevel = 0;
+      while (getXpForLevel(level + 1) <= p.currentXp) {
+        level++;
+      }
       return {
         id: p.userId,
         rank: skip + index + 1,
         username: user?.name || user?.firstName || 'Unknown',
         avatar: user?.avatarUrl,
-        level: Math.floor(p.currentXp / XP_PER_LEVEL) + 1,
+        level,
         xp: p.currentXp,
       };
     });
@@ -295,5 +334,97 @@ export class UserService {
     });
 
     return count + 1;
+  }
+
+  public async uploadAvatar(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<{ message: string; avatarUrl: string }> {
+    if (!file) {
+      throw new BadRequestException('Image file not found');
+    }
+
+    const uploadResult = await this.cloudinaryService.uploadImage(file);
+    const realAvatarUrl = uploadResult.secure_url;
+
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: { avatarUrl: realAvatarUrl } },
+      { new: true },
+    );
+
+    return {
+      message: 'Avatar updated successfully',
+      avatarUrl: realAvatarUrl,
+    };
+  }
+
+  async getActivityStats(userId: string) {
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    const stats = await this.activityLogModel.aggregate([
+      {
+        $match: {
+          userId: new Types.ObjectId(userId),
+          createdAt: { $gte: ninetyDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: '$_id',
+          count: 1,
+        },
+      },
+    ]);
+
+    return stats;
+  }
+
+  async getLearningProgress(userId: string) {
+    try {
+      const userProgress = await this.userProgressModel
+        .findOne({ userId })
+        .lean();
+
+      const totalLessons = await this.milestoneModel.countDocuments();
+
+      const completedLessons = (<any>userProgress)?.completedLessonsCount || 0;
+
+      const completionPercentage =
+        totalLessons > 0
+          ? Math.round((completedLessons / totalLessons) * 100)
+          : 0;
+
+      const currentMilestone =
+        (<any>userProgress)?.currentMilestoneName || 'Beginner';
+      const isUnlocked = (<any>userProgress)?.isUnlocked ?? true;
+
+      return {
+        totalLessons,
+        completedLessons,
+        completionPercentage,
+        currentMilestone,
+        isUnlocked,
+      };
+    } catch (err) {
+      this.logger.warn(
+        `getLearningProgress error for ${userId}: ${String(err)}`,
+      );
+      return {
+        totalLessons: 0,
+        completedLessons: 0,
+        completionPercentage: 0,
+        currentMilestone: '-',
+        isUnlocked: false,
+      };
+    }
   }
 }

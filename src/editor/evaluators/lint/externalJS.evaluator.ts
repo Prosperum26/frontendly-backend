@@ -31,7 +31,7 @@ export class CheckLintExternalJs {
           'no-console': 'off',
         },
       },
-    });
+    } as any);
 
     const result = await eslint.lintText(js);
     const lintResult = result[0].messages.map((err: any) => {

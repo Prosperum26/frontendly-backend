@@ -34,7 +34,7 @@ export class EditorService {
     private readonly visualRegressionService: VisualRegressionService,
     private readonly learningPathService: LearningPathService,
     private readonly gamificationService: GamificationService,
-  ) {}
+  ) { }
 
   // Lấy bài tập
   async getExerciseById(exerciseId: string): Promise<Exercise> {
@@ -193,9 +193,9 @@ console.log('Hello from practice!');`,
       // Khởi tạo các biến chứa kết quả mặc định
       let requirementResults: any[] = Array.isArray(exercise.requirements)
         ? exercise.requirements.map(req => ({
-            requirementId: req.id,
-            passed: true, // Mặc định pass nếu không kiểm tra
-          }))
+          requirementId: req.id,
+          passed: true, // Mặc định pass nếu không kiểm tra
+        }))
         : [];
       let isRequirementsPassed = true;
 

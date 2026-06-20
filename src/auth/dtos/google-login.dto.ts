@@ -1,10 +1,20 @@
 import { Expose } from 'class-transformer';
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class GoogleLoginRequestDto {
   @IsString()
   idToken: string;
+
+  @IsString()
+  @IsOptional()
+  redirectUrl?: string;
 }
+
+type DailyCheckInResult = {
+  checkedIn: boolean;
+  xpEarned: number;
+  currentStreak: number;
+};
 
 export class GoogleLoginResponseDto {
   @Expose()
@@ -16,9 +26,23 @@ export class GoogleLoginResponseDto {
   @Expose()
   user: any;
 
-  constructor(accessToken: string, user: any, refreshToken?: string) {
+  @Expose()
+  isNewUser: boolean;
+
+  @Expose()
+  dailyCheckIn?: DailyCheckInResult;
+
+  constructor(
+    accessToken: string,
+    user: any,
+    refreshToken?: string,
+    isNewUser: boolean = false,
+    dailyCheckIn?: DailyCheckInResult,
+  ) {
     this.accessToken = accessToken;
     this.user = user;
     this.refreshToken = refreshToken;
+    this.isNewUser = isNewUser;
+    this.dailyCheckIn = dailyCheckIn;
   }
 }

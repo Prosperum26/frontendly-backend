@@ -1,37 +1,72 @@
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
   Get,
+  HttpCode,
+  HttpStatus,
+  Post,
   Req,
-  SetMetadata,
   Res,
+  UseGuards,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
+import { ConfigureAuth } from './decorators';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { LoginDto } from './dtos/login.dto';
-import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { CustomDecoratorKey } from '@/common/constants';
+import { RateLimitGuard } from './guards';
 
+@ApiTags('Authentication')
 @Controller({
   path: 'auth',
   version: '1',
 })
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - email already exists' })
   async register(@Body() body: RegisterDto): Promise<{ message: string }> {
-    return this.authService.register(body);
+    const result = await this.authService.register(body);
+    return result;
   }
 
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
+  @UseGuards(RateLimitGuard)
   @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        accessToken: { type: 'string' },
+        refreshToken: { type: 'string' },
+        user: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 429, description: 'Too many login attempts' })
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -45,18 +80,19 @@ export class AuthController {
     return result;
   }
 
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
-  @Post('refresh')
-  async refresh(
-    @Body() body: RefreshTokenDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
-    const result = await this.authService.refreshToken(body, res);
-    return result;
-  }
-
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent (if email exists)',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
   async forgotPassword(
     @Body() body: ForgotPasswordDto,
   ): Promise<{ message: string }> {
@@ -64,8 +100,20 @@ export class AuthController {
     return result;
   }
 
-  @SetMetadata(CustomDecoratorKey.AUTH_OPTION, { skipAuth: true })
+  @ConfigureAuth({ skipAuth: true })
   @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async resetPassword(
     @Body() body: ResetPasswordDto,
   ): Promise<{ message: string }> {
@@ -73,14 +121,26 @@ export class AuthController {
     return result;
   }
 
+  @ConfigureAuth({ skipAuth: false })
   @Get('me')
-  getProfile(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @Req() req: any,
-  ): { message: string; user: Record<string, unknown> | undefined } {
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        data: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMe(@Req() req: any): Promise<{ message: string; data: any }> {
     return {
       message: 'Profile retrieved successfully',
-      user: req.user,
+      data: req.user,
     };
   }
 }

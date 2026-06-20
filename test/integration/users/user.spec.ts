@@ -37,10 +37,13 @@ describe('User APIs', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
-        email: mockUser.email,
-        firstName: mockUser.firstName,
-        lastName: mockUser.lastName,
-        avatarUrl: mockUser.avatarUrl,
+        success: true,
+        data: {
+          email: mockUser.email,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+          avatarUrl: mockUser.avatarUrl,
+        },
       });
     });
   });

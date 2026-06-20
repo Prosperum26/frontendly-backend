@@ -13,16 +13,24 @@ export class PuppeteerEvaluator implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     // Start trình duyệt ngầm trên server 1 lần và dùng hoài
-    this.browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-      ],
-    });
-    this.logger.log('Puppeteer browser launched');
+    try {
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
+      });
+      this.logger.log('Puppeteer browser launched');
+    } catch (error) {
+      this.logger.warn(
+        'Failed to launch Puppeteer browser - visual regression testing will be disabled',
+      );
+      this.logger.warn(error);
+      // Continue without browser - visual regression will fail gracefully
+    }
   }
 
   async onModuleDestroy() {

@@ -6,9 +6,15 @@ import {
   Patch,
   NotFoundException,
   Req,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { InjectModel } from '@nestjs/mongoose';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Model } from 'mongoose';
 
@@ -20,6 +26,7 @@ import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
 
+@ApiTags('Users')
 @Controller({
   path: 'users',
   version: '1',
@@ -29,7 +36,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly gamificationService: GamificationService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  ) { }
 
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
@@ -49,7 +56,14 @@ export class UserController {
   }
 
   @Patch('me')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Validation error or invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateProfile(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @Body() body: UpdateProfileDto,
@@ -67,7 +81,14 @@ export class UserController {
   }
 
   @Patch('me/password')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Đổi mật khẩu' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Validation error or invalid password' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async changePassword(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,
     @Body() body: ChangePasswordDto,
@@ -118,6 +139,38 @@ export class UserController {
   public async updateStreak(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
     const data = await this.gamificationService.updateStreak(userId);
+    return { success: true, data };
+  }
+
+  @Post('me/avatar')
+  @ApiOperation({ summary: 'Upload avatar' })
+  @UseInterceptors(FileInterceptor('file'))
+  public async uploadAvatar(
+    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
+    console.log('--- FILE NHẬN ĐƯỢC ---', file);
+    const profile = <Record<string, string>>(<unknown>authUser.profile);
+    const result = await this.userService.uploadAvatar(
+      String(profile._id),
+      file,
+    );
+    return {
+      success: true,
+      message: result.message,
+      avatarUrl: result.avatarUrl,
+    };
+  }
+
+  @Get('learning-progress')
+  @ConfigureAuth({ blockIfUnauthenticated: false })
+  @ApiOperation({
+    summary:
+      'Get learning progress track (Total, Completed, %, Milestone, Unlock Status)',
+  })
+  public async getLearningProgress(@Req() req: Request): Promise<unknown> {
+    const userId = this.extractUserId(req);
+    const data = await this.userService.getLearningProgress(userId);
     return { success: true, data };
   }
 

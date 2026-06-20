@@ -21,6 +21,10 @@ import { ObservabilityModule } from './common/observability/observability.module
 import { EditorModule } from './editor/editor_module/editor.module';
 import { LearningPathModule } from './learning-path/learning_path_module/learning_path.module';
 import { UserModule } from './users/user.module';
+import {
+  StageProgress,
+  StageProgressSchema,
+} from './users/schemas/stage-progress.schema';
 
 @Module({
   imports: [
@@ -32,6 +36,9 @@ import { UserModule } from './users/user.module';
       useFactory: ({ dbUri }: CommonConfig) => ({ uri: dbUri }),
       inject: [commonConfigObj.KEY],
     }),
+    MongooseModule.forFeature([
+      { name: StageProgress.name, schema: StageProgressSchema },
+    ]),
     ObservabilityModule,
     AuthModule,
     UserModule,
@@ -54,4 +61,4 @@ import { UserModule } from './users/user.module';
     { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
   ],
 })
-export class AppModule {}
+export class AppModule { }
