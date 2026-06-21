@@ -9,6 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards';
+import { ChallengeModule } from './challenge/challenge.module';
 import { ApiEnvGuard } from './common/api-env/guards';
 import {
   authConfigObj,
@@ -19,6 +20,7 @@ import {
 import { MetricsInterceptor } from './common/observability/interceptors';
 import { ObservabilityModule } from './common/observability/observability.module';
 import { EditorModule } from './editor/editor_module/editor.module';
+import { EntranceTestModule } from './entrance-test/entrance-test.module';
 import { LearningPathModule } from './learning-path/learning_path_module/learning_path.module';
 import {
   StageProgress,
@@ -44,6 +46,8 @@ import { UserModule } from './users/user.module';
     UserModule,
     EditorModule,
     LearningPathModule,
+    EntranceTestModule,
+    ChallengeModule,
   ],
   providers: [
     {

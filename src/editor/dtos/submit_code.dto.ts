@@ -1,14 +1,9 @@
 import { Type } from 'class-transformer';
-import {
-  IsString,
-  IsNotEmpty,
-  ValidateNested,
-  IsOptional,
-} from 'class-validator';
+import { IsString, ValidateNested, IsOptional } from 'class-validator';
 export class EditorContentDto {
   // lấy code của user từ API
   @IsString()
-  @IsNotEmpty({ message: 'Invalid HTML' })
+  @IsOptional()
   html!: string;
 
   @IsString()
