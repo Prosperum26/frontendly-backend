@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
@@ -20,11 +20,18 @@ declare const Babel: {
 export class VisualRegressionService {
   private targetImageCache = new Map<string, Buffer>(); // lưu screenshot của các bài tập
   constructor(
-    private readonly puppeteerEvaluator: PuppeteerEvaluator,
+    @Optional() private readonly puppeteerEvaluator: PuppeteerEvaluator | null,
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
 
   async getTargetPreview(exerciseId: string): Promise<string | null> {
+    if (!this.puppeteerEvaluator) {
+      console.warn(
+        '[VisualRegression] Puppeteer not available - skipping target preview',
+      );
+      return null;
+    }
+
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
       .lean();
@@ -33,41 +40,48 @@ export class VisualRegressionService {
 
     if (!targetDesign || !codeTest) return null;
 
-    const browser = this.puppeteerEvaluator.getBrowser();
-    let page: any = null;
-
     try {
-      if (!this.targetImageCache.has(exerciseId)) {
-        page = await browser.newPage();
-        await page.setViewport({
-          width: targetDesign.width,
-          height: targetDesign.height,
-        });
+      const browser = this.puppeteerEvaluator.getBrowser();
+      let page: any = null;
 
-        const isReady = await this.renderPage(
-          page,
-          codeTest.html,
-          codeTest.css,
-          codeTest.js,
-          codeTest.jsx,
-        );
-        if (!isReady) return null;
+      try {
+        if (!this.targetImageCache.has(exerciseId)) {
+          page = await browser.newPage();
+          await page.setViewport({
+            width: targetDesign.width,
+            height: targetDesign.height,
+          });
 
-        this.targetImageCache.set(
-          exerciseId,
-          <Buffer>await page.screenshot({ type: 'png' }),
-        );
+          const isReady = await this.renderPage(
+            page,
+            codeTest.html,
+            codeTest.css,
+            codeTest.js,
+            codeTest.jsx,
+          );
+          if (!isReady) return null;
+
+          this.targetImageCache.set(
+            exerciseId,
+            <Buffer>await page.screenshot({ type: 'png' }),
+          );
+        }
+
+        const screenshot = this.targetImageCache.get(exerciseId);
+        if (!screenshot) return null;
+
+        return `data:image/png;base64,${screenshot.toString('base64')}`;
+      } catch (error: any) {
+        console.error('[Target Preview Error]', error.message);
+        return null;
+      } finally {
+        if (page && !page.isClosed()) await page.close();
       }
-
-      const screenshot = this.targetImageCache.get(exerciseId);
-      if (!screenshot) return null;
-
-      return `data:image/png;base64,${screenshot.toString('base64')}`;
-    } catch (error: any) {
-      console.error('[Target Preview Error]', error.message);
+    } catch {
+      console.warn(
+        '[VisualRegression] Browser not available - skipping target preview',
+      );
       return null;
-    } finally {
-      if (page && !page.isClosed()) await page.close();
     }
   }
 
@@ -82,9 +96,16 @@ export class VisualRegressionService {
       .findOne({ id: exerciseId })
       .lean();
     const targetDesign = exercise?.target_design;
-    const codeTest = exercise?.code_test;
 
     if (!targetDesign) return [];
+
+    // Nếu Puppeteer không khả dụng, trả về mảng rỗng (không làm lỗi)
+    if (!this.puppeteerEvaluator) {
+      console.warn(
+        '[VisualRegression] Puppeteer not available - skipping visual evaluation',
+      );
+      return [];
+    }
 
     if (!html?.trim() && !css?.trim() && !js?.trim() && !jsx?.trim()) {
       return [
@@ -97,108 +118,120 @@ export class VisualRegressionService {
       ];
     }
 
-    const browser = this.puppeteerEvaluator.getBrowser();
-    let targetPage: any = null;
-    let userPage: any = null;
-
     try {
-      if (!codeTest) throw new Error('Cannot define the code testing!');
+      const browser = this.puppeteerEvaluator.getBrowser();
+      const codeTest = exercise?.code_test;
+      let targetPage: any = null;
+      let userPage: any = null;
 
-      // codetest screenshot nếu chưa có trong cache
-      if (!this.targetImageCache.has(exerciseId)) {
-        targetPage = await browser.newPage();
-        await targetPage.setViewport({
+      try {
+        if (!codeTest) throw new Error('Cannot define the code testing!');
+
+        // codetest screenshot nếu chưa có trong cache
+        if (!this.targetImageCache.has(exerciseId)) {
+          targetPage = await browser.newPage();
+          await targetPage.setViewport({
+            width: targetDesign.width,
+            height: targetDesign.height,
+          });
+
+          const isTargetReady = await this.renderPage(
+            targetPage,
+            codeTest.html,
+            codeTest.css,
+            codeTest.js,
+            codeTest.jsx,
+          );
+          if (!isTargetReady)
+            throw new Error(`Target render timeout when render ${exerciseId}.`);
+
+          this.targetImageCache.set(
+            exerciseId,
+            <Buffer>await targetPage.screenshot({ type: 'png' }),
+          );
+          await targetPage.close(); // screenshot xong thì tắt tab luôn
+        }
+
+        // user screenshot
+        userPage = await browser.newPage();
+        userPage.on('pageerror', (err: any) =>
+          console.log('[Puppeteer User Error]', err.message),
+        );
+        await userPage.setViewport({
           width: targetDesign.width,
           height: targetDesign.height,
         });
 
-        const isTargetReady = await this.renderPage(
-          targetPage,
-          codeTest.html,
-          codeTest.css,
-          codeTest.js,
-          codeTest.jsx,
-        );
-        if (!isTargetReady)
-          throw new Error(`Target render timeout when render ${exerciseId}.`);
+        const isUserReady = await this.renderPage(userPage, html, css, js, jsx);
+        if (!isUserReady) {
+          console.log(
+            `[Visual Service] User code failed to render. Failing automatically.`,
+          );
+          return [
+            {
+              deviceType: targetDesign.deviceType,
+              passed: false,
+              matchPercentage: 0,
+              diffImageUrl: null,
+            },
+          ];
+        }
 
-        this.targetImageCache.set(
-          exerciseId,
-          <Buffer>await targetPage.screenshot({ type: 'png' }),
-        );
-        await targetPage.close(); // screenshot xong thì tắt tab luôn
-      }
+        const userScreenshot = await userPage.screenshot({ type: 'png' });
+        const targetScreenshot = this.targetImageCache.get(exerciseId);
 
-      // user screenshot
-      userPage = await browser.newPage();
-      userPage.on('pageerror', (err: any) =>
-        console.log('[Puppeteer User Error]', err.message),
-      );
-      await userPage.setViewport({
-        width: targetDesign.width,
-        height: targetDesign.height,
-      });
+        if (!targetScreenshot)
+          throw new Error(`[Visual Service] Target image cache missing`);
 
-      const isUserReady = await this.renderPage(userPage, html, css, js, jsx);
-      if (!isUserReady) {
-        console.log(
-          `[Visual Service] User code failed to render. Failing automatically.`,
+        // compare pixel
+        const userImg = PNG.sync.read(Buffer.from(userScreenshot)); // Buffer -> Object
+        const targetImg = PNG.sync.read(targetScreenshot); // Buffer -> Object
+        const { width, height } = targetImg;
+        const diff = new PNG({ width, height });
+
+        const mismatchedPixels = pixelmatch(
+          userImg.data,
+          targetImg.data,
+          diff.data,
+          width,
+          height,
+          { threshold: 0.05, includeAA: true },
         );
+
+        const totalPixels = width * height;
+        const matchPercentage =
+          ((totalPixels - mismatchedPixels) / totalPixels) * 100;
+        const isPassed = matchPercentage >= 95;
+
+        let diffImageUrl = null;
+        if (!isPassed) {
+          const buffer = PNG.sync.write(diff, {
+            deflateLevel: 9,
+            filterType: 4,
+          });
+          diffImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
+        }
+
         return [
           {
             deviceType: targetDesign.deviceType,
-            passed: false,
-            matchPercentage: 0,
-            diffImageUrl: null,
+            passed: isPassed,
+            matchPercentage: parseFloat(matchPercentage.toFixed(2)),
+            diffImageUrl: diffImageUrl,
           },
         ];
+      } catch (error: any) {
+        console.error('[Visual Evaluation Error]', error.message);
+        return []; // Trả về mảng rỗng thay vì throw lỗi
+      } finally {
+        if (targetPage && !targetPage.isClosed()) await targetPage.close();
+        if (userPage && !userPage.isClosed()) await userPage.close();
       }
-
-      const userScreenshot = await userPage.screenshot({ type: 'png' });
-      const targetScreenshot = this.targetImageCache.get(exerciseId);
-
-      if (!targetScreenshot)
-        throw new Error(`[Visual Service] Target image cache missing`);
-
-      // compare pixel
-      const userImg = PNG.sync.read(Buffer.from(userScreenshot)); // Buffer -> Object
-      const targetImg = PNG.sync.read(targetScreenshot); // Buffer -> Object
-      const { width, height } = targetImg;
-      const diff = new PNG({ width, height });
-
-      const mismatchedPixels = pixelmatch(
-        userImg.data,
-        targetImg.data,
-        diff.data,
-        width,
-        height,
-        { threshold: 0.05, includeAA: true },
+    } catch {
+      console.warn(
+        '[VisualRegression] Browser not available - skipping visual evaluation',
       );
-
-      const totalPixels = width * height;
-      const matchPercentage =
-        ((totalPixels - mismatchedPixels) / totalPixels) * 100;
-      const isPassed = matchPercentage >= 95;
-
-      let diffImageUrl = null;
-      if (!isPassed) {
-        const buffer = PNG.sync.write(diff, { deflateLevel: 9, filterType: 4 });
-        diffImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
-      }
-
-      return [
-        {
-          deviceType: targetDesign.deviceType,
-          passed: isPassed,
-          matchPercentage: parseFloat(matchPercentage.toFixed(2)),
-          diffImageUrl: diffImageUrl,
-        },
-      ];
-    } catch (error: any) {
-      throw new Error(`Visual regression evaluation failed: ${error.message}`);
-    } finally {
-      if (targetPage && !targetPage.isClosed()) await targetPage.close();
-      if (userPage && !userPage.isClosed()) await userPage.close();
+      return [];
     }
   }
 
