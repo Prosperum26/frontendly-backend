@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import * as path from 'path';
@@ -345,12 +346,14 @@ async function seed(): Promise<void> {
 
     // 3. Seed Test User
     console.log('🌱 Seeding Test User...');
+    const passwordHash = await bcrypt.hash('123456', 10);
     let testUser = await User.findOne({ email: 'test@frontendly.com' });
     if (!testUser) {
       testUser = await User.create({
         email: 'test@frontendly.com',
         username: 'testuser',
         name: 'Test User',
+        password: passwordHash,
         avatarUrl:
           'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
         level: 5,
@@ -370,7 +373,10 @@ async function seed(): Promise<void> {
       });
       console.log(`✅ Created test user: ${testUser.email}`);
     } else {
-      console.log(`✅ Test user already exists: ${testUser.email}`);
+      // Update existing user with password
+      testUser.password = passwordHash;
+      await testUser.save();
+      console.log(`✅ Updated test user password: ${testUser.email}`);
     }
 
     // 4. Seed Activity Logs for test user only if none exist

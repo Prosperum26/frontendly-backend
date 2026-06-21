@@ -20,12 +20,27 @@ export function configApp(app: INestApplication): INestApplication {
     }),
   );
   app.use(
-    helmet({ contentSecurityPolicy: true, crossOriginEmbedderPolicy: true }),
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", ...corsOrigins],
+          fontSrc: ["'self'", 'https:', 'data:'],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
   );
   app.enableCors({
     credentials: true,
     origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.setGlobalPrefix('api', {

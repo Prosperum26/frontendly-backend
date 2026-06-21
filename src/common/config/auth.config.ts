@@ -3,10 +3,13 @@ import { z } from 'zod';
 
 const authConfigSchema = z.object({
   google: z.object({
-    clientId: z.string().nonempty(),
-    clientSecret: z.string().nonempty(),
+    clientId: z.string().optional().default(''),
+    clientSecret: z.string().optional().default(''),
   }),
-  jwtSecret: z.string().nonempty(),
+  jwtSecret: z
+    .string()
+    .nonempty()
+    .default('dev-secret-key-change-this-in-production'),
   frontendUrl: z.string().default('http://localhost:5173'),
   accessTokenExpiresIn: z.string().default('3h'),
   passwordResetExpiresInMinutes: z.number().default(15),

@@ -172,32 +172,52 @@ export class GamificationService {
   /**
    * Get all badges, grouped by category and whether they're unlocked
    */
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   async getUserBadges(userId: string | Types.ObjectId): Promise<{
-    earned: Array<Badge & { earnedAt: Date }>;
-    unearned: Badge[];
+    earned: Array<{
+      _id: Types.ObjectId;
+      name: string;
+      icon: string;
+      description: string;
+      earnedAt: Date;
+    }>;
+    unearned: Array<{
+      _id: Types.ObjectId;
+      name: string;
+      icon: string;
+      description: string;
+    }>;
   }> {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
-    const allBadges = await this.badgeModel.find().exec();
+    const allBadges = await this.badgeModel.find().lean().exec();
 
-    const earned: Array<Badge & { earnedAt: Date }> = [];
-    const unearned: Badge[] = [];
+    const earned: Array<{
+      _id: Types.ObjectId;
+      name: string;
+      icon: string;
+      description: string;
+      earnedAt: Date;
+    }> = [];
+    const unearned: Array<{
+      _id: Types.ObjectId;
+      name: string;
+      icon: string;
+      description: string;
+    }> = [];
 
     allBadges.forEach(badge => {
       const earnedEntry = user.badges.find(
-        b => b.badgeId.toString() === badge._id.toString(),
+        b => String(b.badgeId) === String(badge._id),
       );
       if (earnedEntry) {
-        const badgeObj = badge.toObject();
-        earned.push(<Badge & { earnedAt: Date }>(<unknown>{
-          ...badgeObj,
+        earned.push({
+          ...badge,
           earnedAt: earnedEntry.earnedAt,
-        }));
+        });
       } else {
-        unearned.push(<Badge>(<unknown>badge.toObject()));
+        unearned.push(badge);
       }
     });
 

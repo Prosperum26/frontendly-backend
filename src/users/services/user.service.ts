@@ -250,14 +250,14 @@ export class UserService {
         await this.gamificationService.getUserBadges(userId);
       return {
         earned: earned.map(badge => ({
-          id: badge._id.toString(),
+          id: String(badge._id),
           name: badge.name,
           icon: badge.icon,
           description: badge.description,
           earnedAt: badge.earnedAt,
         })),
         unearned: unearned.map(badge => ({
-          id: badge._id.toString(),
+          id: String(badge._id),
           name: badge.name,
           icon: badge.icon,
           description: badge.description,
