@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
     private reflector: Reflector,
     @InjectModel(StageProgress.name)
     private readonly stageProgressModel: Model<StageProgress>,
-  ) { }
+  ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const opt = this.getAuthOption(ctx);
@@ -62,7 +62,9 @@ export class AuthGuard implements CanActivate {
         const decoded = await this.tokenService.decodeAccessToken(rawToken);
         tokenId = decoded.tokenId;
       } catch {
-        throw new UnauthorizedException('Your session has expired. Please sign in again.');
+        throw new UnauthorizedException(
+          'Your session has expired. Please sign in again.',
+        );
       }
 
       const token = await this.tokenService.findAndValidateToken(

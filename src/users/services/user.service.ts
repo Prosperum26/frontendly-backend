@@ -38,7 +38,7 @@ export class UserService {
     private milestoneModel: Model<MilestoneDocument>,
     private readonly gamificationService: GamificationService,
     private readonly cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   public async createOrUpdateUser(
     options: CreateUserOptions,
@@ -175,7 +175,9 @@ export class UserService {
     }
 
     if (oldPassword === newPassword) {
-      throw new BadRequestException('New password must be different from old password');
+      throw new BadRequestException(
+        'New password must be different from old password',
+      );
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -199,10 +201,9 @@ export class UserService {
     try {
       const user = await this.userModel.findById(userId).lean();
       if (user) {
-        const xpForCurrentLevel = getXpForLevel(user.level);
         const xpForNextLevel = getXpForLevel(user.level + 1);
-        const xpInLevel = user.xp - xpForCurrentLevel;
-        const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+        const xpInLevel = user.xp - getXpForLevel(user.level);
+        const xpNeeded = xpForNextLevel - getXpForLevel(user.level);
         return {
           level: user.level,
           xp: xpInLevel,
@@ -308,7 +309,6 @@ export class UserService {
     return topUsers.map((p, index) => {
       const user = userMap.get(p.userId);
       let level = 1;
-      let xpForCurrentLevel = 0;
       while (getXpForLevel(level + 1) <= p.currentXp) {
         level++;
       }

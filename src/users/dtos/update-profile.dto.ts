@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsDateString, Matches, IsEmail, MinLength, MaxLength, IsUrl, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  Matches,
+  MinLength,
+  MaxLength,
+  IsUrl,
+  IsEnum,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -53,7 +62,7 @@ export class UpdateProfileDto {
   @IsString()
   @MinLength(3, { message: 'Username phải có ít nhất 3 ký tự' })
   @MaxLength(30, { message: 'Username không được vượt quá 30 ký tự' })
-  @Matches(/^[a-zA-Z0-9_]+$/, {
+  @Matches(/^\w+$/, {
     message: 'Username chỉ được chứa chữ cái, số và dấu gạch dưới',
   })
   username?: string;

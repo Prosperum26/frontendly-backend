@@ -42,7 +42,10 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Bad request - email already exists' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - email already exists',
+  })
   async register(@Body() body: RegisterDto): Promise<{ message: string }> {
     const result = await this.authService.register(body);
     return result;
@@ -137,6 +140,7 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getMe(@Req() req: any): Promise<{ message: string; data: any }> {
     return {
       message: 'Profile retrieved successfully',

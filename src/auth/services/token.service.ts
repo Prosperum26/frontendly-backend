@@ -28,14 +28,14 @@ export class TokenService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) { }
+  ) {}
 
   public async signAccessToken(token: Token): Promise<string> {
     const jwt: DecodedJwt = {
       tokenId: token._id.toString(),
     };
     return this.jwtService.signAsync(jwt, {
-      expiresIn: this.authConfig.accessTokenExpiresIn as any,
+      expiresIn: <any>this.authConfig.accessTokenExpiresIn,
       secret: this.authConfig.jwtSecret,
     });
   }
@@ -130,7 +130,9 @@ export class TokenService {
 
       if (new Date() >= session.expires_at) {
         await this.sessionModel.deleteOne({ _id: session._id });
-        this.logger.warn(`Expired refresh token attempted for user: ${session.user_id}`);
+        this.logger.warn(
+          `Expired refresh token attempted for user: ${session.user_id}`,
+        );
         throw new UnauthorizedException('Refresh token has expired');
       }
 
@@ -156,7 +158,9 @@ export class TokenService {
         expires: expiresAt,
       });
 
-      this.logger.log(`Token refreshed successfully for user: ${session.user_id}`);
+      this.logger.log(
+        `Token refreshed successfully for user: ${session.user_id}`,
+      );
       return { accessToken, refreshToken };
     } catch (error) {
       if (error instanceof UnauthorizedException) throw error;
@@ -171,7 +175,8 @@ export class TokenService {
   public async revokeSession(
     refreshToken: string,
     res: Response,
-    userId?: Types.ObjectId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _userId?: Types.ObjectId,
   ): Promise<void> {
     try {
       const refreshTokenHash = this.hashRefreshToken(refreshToken);
@@ -181,13 +186,19 @@ export class TokenService {
 
       if (session) {
         const sessionUserId = session.user_id;
-        const result = await this.sessionModel.deleteOne({ refresh_token_hash: refreshTokenHash });
+        const result = await this.sessionModel.deleteOne({
+          refresh_token_hash: refreshTokenHash,
+        });
 
         if (result.deletedCount > 0) {
-          this.logger.log(`Session revoked successfully for user: ${sessionUserId}`);
+          this.logger.log(
+            `Session revoked successfully for user: ${sessionUserId}`,
+          );
         }
       } else {
-        this.logger.warn('Session not found for revocation (may already be revoked)');
+        this.logger.warn(
+          'Session not found for revocation (may already be revoked)',
+        );
       }
 
       // Clear refresh token cookie
@@ -205,9 +216,13 @@ export class TokenService {
   public async revokeAllUserSessions(userId: Types.ObjectId): Promise<void> {
     try {
       const result = await this.sessionModel.deleteMany({ user_id: userId });
-      this.logger.log(`Revoked ${result.deletedCount} sessions for user: ${userId}`);
+      this.logger.log(
+        `Revoked ${result.deletedCount} sessions for user: ${userId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to revoke all sessions for user ${userId}: ${error.message}`);
+      this.logger.error(
+        `Failed to revoke all sessions for user ${userId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -215,9 +230,7 @@ export class TokenService {
   /**
    * Get all active sessions for a user
    */
-  public async getUserSessions(
-    userId: Types.ObjectId,
-  ): Promise<Session[]> {
+  public async getUserSessions(userId: Types.ObjectId): Promise<Session[]> {
     try {
       const sessions = await this.sessionModel
         .find({ user_id: userId })
@@ -225,7 +238,9 @@ export class TokenService {
         .lean();
       return sessions;
     } catch (error) {
-      this.logger.error(`Failed to get sessions for user ${userId}: ${error.message}`);
+      this.logger.error(
+        `Failed to get sessions for user ${userId}: ${error.message}`,
+      );
       throw error;
     }
   }

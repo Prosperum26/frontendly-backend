@@ -24,7 +24,8 @@ export const authConfigObj = registerAs('auth', () => {
     jwtSecret: process.env.JWT_SECRET,
     frontendUrl: process.env.FRONTEND_URL,
     accessTokenExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '3h',
-    passwordResetExpiresInMinutes: Number(process.env.PASSWORD_RESET_EXPIRES_IN_MINUTES) || 15,
+    passwordResetExpiresInMinutes:
+      Number(process.env.PASSWORD_RESET_EXPIRES_IN_MINUTES) || 15,
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
     rateLimitMaxAttempts: Number(process.env.RATE_LIMIT_MAX_ATTEMPTS) || 5,
     rateLimitWindowMinutes: Number(process.env.RATE_LIMIT_WINDOW_MINUTES) || 15,

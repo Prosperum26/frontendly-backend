@@ -16,7 +16,7 @@ import { TokenService } from '../services';
 @ApiTags('Authentication')
 @Controller('auth')
 export class RefreshTokenController {
-  constructor(private readonly tokenService: TokenService) { }
+  constructor(private readonly tokenService: TokenService) {}
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

@@ -23,8 +23,9 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
-  ) { }
+  ) {}
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const ip = this.getClientIp(request);
@@ -49,7 +50,9 @@ export class RateLimitGuard implements CanActivate {
     rateLimitInfo.count++;
 
     if (rateLimitInfo.count > maxAttempts) {
-      const remainingTime = Math.ceil((rateLimitInfo.resetTime - now) / 1000 / 60);
+      const remainingTime = Math.ceil(
+        (rateLimitInfo.resetTime - now) / 1000 / 60,
+      );
       throw new HttpException(
         `Too many login attempts. Please try again in ${remainingTime} minutes.`,
         HttpStatus.TOO_MANY_REQUESTS,
@@ -61,9 +64,16 @@ export class RateLimitGuard implements CanActivate {
 
   private getClientIp(request: Request): string {
     const forwarded = request.headers['x-forwarded-for'];
-    const ip = forwarded
-      ? (Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0])
-      : request.socket.remoteAddress;
+    let ip: string | undefined;
+    if (forwarded) {
+      if (Array.isArray(forwarded)) {
+        ip = forwarded[0];
+      } else {
+        ip = forwarded.split(',')[0];
+      }
+    } else {
+      ip = request.socket.remoteAddress;
+    }
     return ip || 'unknown';
   }
 }

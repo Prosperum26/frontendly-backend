@@ -74,10 +74,10 @@ export class SessionController {
   ): Promise<{ message: string }> {
     const userId = req.user.userId;
     await this.tokenService.revokeAllUserSessions(userId);
-    
+
     // Clear refresh token cookie
     res.clearCookie('refreshToken');
-    
+
     return { message: 'All sessions revoked successfully' };
   }
 }

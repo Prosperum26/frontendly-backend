@@ -30,7 +30,7 @@ interface AuthenticatedSocket extends Socket {
 export class WsAuthMiddleware {
   private readonly logger: Logger = new Logger(WsAuthMiddleware.name);
 
-  constructor(private readonly tokenService: TokenService) { }
+  constructor(private readonly tokenService: TokenService) {}
 
   async authenticate(
     socket: AuthenticatedSocket,
@@ -48,7 +48,9 @@ export class WsAuthMiddleware {
         const decoded = await this.tokenService.decodeAccessToken(bearer);
         tokenId = decoded.tokenId;
       } catch {
-        throw new WsException('Your session has expired. Please sign in again.');
+        throw new WsException(
+          'Your session has expired. Please sign in again.',
+        );
       }
 
       const token = await this.tokenService.findAndValidateToken(

@@ -58,13 +58,22 @@ export class EmailService {
       `,
     };
 
-    this.logger.log(`Mail options: ${JSON.stringify({ to, from: mailOptions.from, subject: mailOptions.subject })}`);
+    this.logger.log(
+      `Mail options: ${JSON.stringify({
+        to,
+        from: mailOptions.from,
+        subject: mailOptions.subject,
+      })}`,
+    );
 
     try {
       await this.transporter.sendMail(mailOptions);
       this.logger.log(`Password reset email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${to}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send password reset email to ${to}: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

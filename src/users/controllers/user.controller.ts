@@ -8,12 +8,11 @@ import {
   Req,
   UsePipes,
   ValidationPipe,
-  BadRequestException,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { InjectModel } from '@nestjs/mongoose';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Model } from 'mongoose';
@@ -36,7 +35,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly gamificationService: GamificationService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) { }
+  ) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
@@ -87,7 +86,10 @@ export class UserController {
     status: 200,
     description: 'Password changed successfully',
   })
-  @ApiResponse({ status: 400, description: 'Validation error or invalid password' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or invalid password',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async changePassword(
     @ReqUser() authUser: Express.AuthenticatedHttpUser,

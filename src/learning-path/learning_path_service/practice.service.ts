@@ -31,7 +31,7 @@ export class PracticeService {
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
     private readonly stageContextService: StageContextService,
-  ) { }
+  ) {}
 
   async unlockPractice(stageId: string, userId: string): Promise<unknown> {
     // Skip saving progress for guest users
@@ -57,7 +57,7 @@ export class PracticeService {
           lastStreakDate: null,
           unlockedStages: [],
         });
-        dbProgress = newProgress.toObject() as any;
+        dbProgress = <any>newProgress.toObject();
       }
 
       if (!dbProgress) {

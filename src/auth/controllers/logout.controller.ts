@@ -16,7 +16,7 @@ import { TokenService } from '../services';
 @ApiTags('Authentication')
 @Controller('auth')
 export class LogoutController {
-  constructor(private readonly tokenService: TokenService) { }
+  constructor(private readonly tokenService: TokenService) {}
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
@@ -45,14 +45,19 @@ export class LogoutController {
       const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
       if (refreshToken) {
-        await this.tokenService.revokeSession(refreshToken, res, new Types.ObjectId(userId));
+        await this.tokenService.revokeSession(
+          refreshToken,
+          res,
+          // eslint-disable-next-line sonarjs/deprecation
+          new Types.ObjectId(userId),
+        );
       } else {
         // Even if no refresh token, clear the cookie
         res.clearCookie('refreshToken');
       }
 
       return { message: 'Logged out successfully' };
-    } catch (error) {
+    } catch {
       // Always clear cookie even if error occurs
       res.clearCookie('refreshToken');
       return { message: 'Logged out successfully' };
@@ -83,13 +88,14 @@ export class LogoutController {
       const userId = req.user?.userId;
 
       // Revoke all sessions for the user
+      // eslint-disable-next-line sonarjs/deprecation
       await this.tokenService.revokeAllUserSessions(new Types.ObjectId(userId));
 
       // Clear refresh token cookie
       res.clearCookie('refreshToken');
 
       return { message: 'Logged out from all devices successfully' };
-    } catch (error) {
+    } catch {
       // Always clear cookie even if error occurs
       res.clearCookie('refreshToken');
       return { message: 'Logged out from all devices successfully' };
