@@ -21,8 +21,8 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
-import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning-path-schemas';
-import { MilestoneDocument } from '@/learning-path/db_schemas/milestone-schema';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
+import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
 import 'multer';
 
 @Injectable()
@@ -329,9 +329,10 @@ export class UserService {
   }
 
   async getUserRank(userId: string): Promise<number> {
-    const userProgress = await this.userProgressModel
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const userProgress = (await this.userProgressModel
       .findOne({ userId })
-      .lean();
+      .lean()) as unknown as { currentXp: number } | null;
     if (!userProgress) return -1;
 
     const count = await this.userProgressModel.countDocuments({

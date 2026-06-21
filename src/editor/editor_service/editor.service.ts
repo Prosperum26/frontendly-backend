@@ -18,6 +18,8 @@ import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { BehaviorEvaluator } from '../evaluators/behavior/behavior.evaluator';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
 import { LearningPathService } from '@/learning-path/learning_path_service/learning_path.service';
+import { UserUtilsService } from '@/learning-path/learning_path_service/user-utils.service';
+import { ActivityType } from '@/users/schemas/activity-log.schema';
 import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
@@ -35,6 +37,7 @@ export class EditorService {
     private readonly learningPathService: LearningPathService,
     private readonly gamificationService: GamificationService,
     private readonly behaviorEvaluator: BehaviorEvaluator,
+    private readonly userUtilsService: UserUtilsService,
   ) {}
 
   // Lấy bài tập
@@ -410,6 +413,12 @@ export default function App() {
         `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
       );
 
+      // Check if user already completed this exercise to prevent XP farming
+      const previousSubmissions = await this.submissionModel
+        .find({ userId, exerciseId, isCompleted: true })
+        .lean();
+      const alreadyCompleted = previousSubmissions.length > 0;
+
       await this.saveSubmission(userId, exerciseId, editorContent, {
         isCompleted,
         match_percentage: finalMatchPercentage,
@@ -419,26 +428,30 @@ export default function App() {
         behavior_results: behaviorResult,
       });
 
-      // if (isCompleted && userId !== 'guest') {
-      //   this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
-      //   try {
-      //     const stageId = exerciseId.startsWith('exercise_')
-      //       ? exerciseId.replace('exercise_', '')
-      //       : exerciseId;
+      if (
+        isCompleted &&
+        !this.userUtilsService.isGuestUser(userId) &&
+        !alreadyCompleted
+      ) {
+        this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
+        try {
+          const stageId = exerciseId.startsWith('exercise_')
+            ? exerciseId.replace('exercise_', '')
+            : exerciseId;
 
-      //     await this.learningPathService.completeStage(stageId, userId);
-      //     await this.gamificationService.addXp(
-      //       userId,
-      //       ActivityType.STAGE_COMPLETED,
-      //       exerciseId,
-      //     );
-      //     await this.gamificationService.updateStreak(userId);
-      //   } catch (err: any) {
-      //     this.logger.error(
-      //       `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
-      //     );
-      //   }
-      // }
+          await this.learningPathService.completeStage(stageId, userId);
+          await this.gamificationService.addXp(
+            userId,
+            ActivityType.STAGE_COMPLETED,
+            exerciseId,
+          );
+          await this.gamificationService.updateStreak(userId);
+        } catch (err: any) {
+          this.logger.error(
+            `Failed to update progress for user ${userId} on exercise ${exerciseId}: ${err.message}`,
+          );
+        }
+      }
 
       return {
         isCompleted,

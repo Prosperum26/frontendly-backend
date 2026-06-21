@@ -236,7 +236,8 @@ export class TokenService {
         .find({ user_id: userId })
         .select('-refresh_token_hash')
         .lean();
-      return sessions;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      return sessions as unknown as Session[];
     } catch (error) {
       this.logger.error(
         `Failed to get sessions for user ${userId}: ${error.message}`,
