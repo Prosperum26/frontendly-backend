@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { ActivityLog, ActivityType } from '../schemas/activity-log.schema';
 import { Badge, BadgeUnlockType } from '../schemas/badge.schema';
 import { User, getXpForLevel } from '../schemas/user.schema';
+import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
 
 const XP_VALUES: Record<ActivityType, number> = {
   [ActivityType.STAGE_COMPLETED]: 50,
@@ -22,6 +23,8 @@ export class GamificationService {
     @InjectModel(Badge.name) private readonly badgeModel: Model<Badge>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLog>,
+    @InjectModel('UserLearningProgress')
+    private readonly userProgressModel: Model<UserLearningProgressDocument>,
   ) {}
 
   /**
@@ -214,6 +217,15 @@ export class GamificationService {
 
     const earnedBadgeIds = new Set(user.badges.map(b => b.badgeId.toString()));
 
+    // Calculate total completed stages across all skills
+    const userProgresses = await this.userProgressModel.find({ userId }).lean();
+    let totalCompletedStages = 0;
+    for (const progress of userProgresses) {
+      totalCompletedStages += progress.unlockedStages.filter(
+        s => (s.earnedStars ?? 0) >= 3,
+      ).length;
+    }
+
     for (const badge of allBadges) {
       if (earnedBadgeIds.has(badge._id.toString())) continue;
 
@@ -228,9 +240,7 @@ export class GamificationService {
             (user.stats.streakDays || 0) >= badge.unlockCondition.value;
           break;
         case BadgeUnlockType.STAGES_COMPLETED:
-          shouldUnlock =
-            (user.stage_progress.completedStages?.length || 0) >=
-            badge.unlockCondition.value;
+          shouldUnlock = totalCompletedStages >= badge.unlockCondition.value;
           break;
         default:
           break;

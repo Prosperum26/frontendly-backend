@@ -13,6 +13,8 @@ import {
   RoadmapDocument,
 } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
+import { ActivityType } from '@/users/schemas/activity-log.schema';
+import { GamificationService } from '@/users/services/gamification.service';
 
 @Injectable()
 export class StageService {
@@ -29,6 +31,7 @@ export class StageService {
     private readonly progressService: ProgressService,
     private readonly userUtilsService: UserUtilsService,
     private readonly xpService: XpService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   async completeStage(
@@ -77,6 +80,7 @@ export class StageService {
       const newStars = Math.max(currentStars, 3);
       const isStageComplete = newStars >= 3;
       const alreadyBadged = !!stageEntry?.badgeEarned;
+      const alreadyCompleted = (stageEntry?.earnedStars ?? 0) >= 3;
 
       const streakIncremented = this.progressService.shouldIncrementStreak(
         dbProgress.lastStreakDate,
@@ -86,7 +90,17 @@ export class StageService {
         : dbProgress.streakDays;
 
       const awardBadge = isStageComplete && !alreadyBadged;
-      const xpEarned = isStageComplete ? this.xpService.getXpReward('hard') : 0;
+      let xpEarned = 0;
+
+      if (isStageComplete && !alreadyCompleted) {
+        xpEarned = this.xpService.getXpReward('hard');
+        await this.gamificationService.addXp(
+          userId,
+          ActivityType.STAGE_COMPLETED,
+          stageId,
+        );
+        await this.gamificationService.updateStreak(userId);
+      }
 
       const topLevelSet = this.buildTopLevelSet(
         stageId,
@@ -225,9 +239,15 @@ export class StageService {
       );
 
       const alreadyAwarded = stageEntry?.theoryXpAwarded ?? false;
-      const xpEarned = alreadyAwarded
-        ? 0
-        : this.xpService.getXpReward('theory');
+      let xpEarned = 0;
+      if (!alreadyAwarded) {
+        xpEarned = this.xpService.getXpReward('theory');
+        await this.gamificationService.addXp(
+          userId,
+          ActivityType.LESSON_COMPLETED,
+          stageId,
+        );
+      }
 
       if (stageEntry) {
         if (!stageEntry.theoryCompleted || !alreadyAwarded) {
