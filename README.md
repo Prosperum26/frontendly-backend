@@ -1,10 +1,10 @@
 # Frontendly Backend
 
-Backend NestJS cho Frontendly, nền tảng học React/frontend theo hướng gamified. Service này phụ trách auth, learning path, editor evaluation, gamification, profile, leaderboard, realtime và observability.
+Frontendly Backend là service NestJS cho nền tảng học frontend theo hướng gamified. Service phụ trách auth, user/profile, learning path, exercise/workspace evaluation, entrance test, challenge catalog, leaderboard, gamification và observability.
 
-Frontend repo tương ứng nằm ở `../frontendly-frontend` trong workspace local hiện tại, nhưng hai folder được xem như hai repo riêng.
+Frontend repo tương ứng nằm ở `../frontendly-frontend`. Hai thư mục được xem như hai repo riêng trong workspace local.
 
-## Chạy local
+## Chạy Local
 
 ```bash
 yarn install
@@ -17,20 +17,13 @@ Backend mặc định chạy ở `http://localhost:3000`.
 
 - API base: `http://localhost:3000/api/v1`
 - Swagger: `http://localhost:3000/api-docs`
+- Swagger YAML: `http://localhost:3000/swagger/yaml`
 - Health: `http://localhost:3000/health`
 - Metrics: `http://localhost:3000/metrics`
 
-## Tech stack
-
-- NestJS 11, TypeScript, SWC build
-- MongoDB/Mongoose, Socket.IO
-- Passport/JWT, bcrypt, Google Auth, Nodemailer
-- Swagger, Terminus health checks, Prometheus metrics
-- Jest, ESLint, Docker Compose cho MongoDB local
-
 ## Env
 
-Tạo `.env` trong folder này:
+Tạo `.env` trong folder backend:
 
 ```env
 NODE_ENV=local
@@ -57,54 +50,267 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 ```
 
-Backend validate env lúc khởi động. Nếu thiếu `NODE_ENV`, `PORT`, `DB_URI`, `CORS_ORIGINS`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, hoặc `O11Y_HEAP_THRESHOLD_BYTES`, app có thể fail ngay khi boot.
+Backend validate env lúc khởi động. Nếu thiếu `NODE_ENV`, `PORT`, `DB_URI`, `CORS_ORIGINS`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` hoặc `O11Y_HEAP_THRESHOLD_BYTES`, app có thể fail khi boot.
 
 ## Scripts
 
 ```bash
-yarn start:dev
-yarn build
-yarn lint:check
-yarn test
-yarn test:integration
-yarn test:e2e
-yarn seed
-yarn infra
+yarn start:dev          # Nest watch mode
+yarn build              # Nest/SWC build
+yarn lint:check         # ESLint check
+yarn lint               # ESLint --fix
+yarn test               # unit tests
+yarn test:integration   # integration tests
+yarn test:e2e           # e2e tests
+yarn seed               # seed learning content
+yarn infra              # start local MongoDB infra
 ```
 
-## Module chính
+## Tech Stack
 
-- `auth`: đăng ký, đăng nhập, Google login, refresh token, logout, session.
-- `users`: profile, avatar, progress, badge, streak, activity, leaderboard.
-- `learning-path`: roadmap, milestone, stage, theory, video progress, practice.
-- `editor`: lấy exercise, submit code, lint/requirement/behavior/visual evaluator.
-- `common/observability`: health check, metrics.
+- NestJS 11, TypeScript, SWC build
+- MongoDB/Mongoose
+- Passport/JWT, bcrypt, Google Auth
+- Nodemailer
+- Socket.IO package is installed for realtime-capable modules, but current challenge scope is catalog-only
+- Swagger/OpenAPI
+- Terminus health checks
+- Prometheus metrics
+- Jest, ESLint, Docker Compose
 
-## API surface chính
+## Module Chính
+
+- `auth`: register, login, Google login, refresh token, logout, sessions, password reset.
+- `users`: profile, password, avatar, progress, badges, streak, activity, leaderboard, gamification.
+- `learning-path`: roadmap, milestone, stage, theory, video progress, practice exercises, progress summary.
+- `editor`: exercise schema, get exercise, submit workspace code, lint/requirement/behavior/visual evaluation.
+- `entrance-test`: public entrance questions and score/placement result.
+- `challenge`: public challenge catalog. Challenge là danh sách bài tập code, không phải battle/matchmaking.
+- `common/observability`: health checks, metrics.
+- `common/api-env`: environment guards/decorators.
+
+## Auth Và Guards
+
+Routes mặc định đi qua global auth guard. Controller public hoặc guest-friendly dùng `@ConfigureAuth`.
+
+Ví dụ:
+
+- `@ConfigureAuth({ skipAuth: true })`: bỏ qua auth hoàn toàn.
+- `@ConfigureAuth({ blockIfUnauthenticated: false })`: cho phép request guest nhưng vẫn parse auth nếu có token.
+
+Các controller public/guest hiện có gồm exercises, entrance test, challenge catalog, health/metrics và các auth endpoint public.
+
+## API Surface Chính
 
 Tất cả route versioned nằm dưới `/api/v1`, trừ `/health`, `/metrics`, `/api-docs`, `/swagger/yaml`.
 
-- Auth: `/auth/register`, `/auth/login`, `/auth/google`, `/auth/refresh-token`, `/auth/logout`, `/auth/logout-all`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/sessions`.
-- Users/profile: `/users/me`, `/users/me/password`, `/users/me/avatar`, `/users/progress`, `/users/badges`, `/users/activity`, `/users/activity/stats`, `/users/streak`, `/users/learning-progress`.
-- Learning path: `/roadmaps/:skillId`, `/stages/:stageId/theory`, `/stages/:stageId/complete`, `/stages/:stageId/unlock-practice`, `/stages/:stageId/practices`, `/learning-content/skills`, `/learning-content/progress/summary`.
-- Exercises: `/exercises/:exerciseId/:userId`, `/exercises/:exerciseId/:userId/submit`, `/lp-exercises/:exerciseId/submit`.
-- Leaderboard: `/leaderboard`, `/leaderboard/:userId/rank`.
+### Auth
 
-## Trạng thái kiểm tra
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/google`
+- `POST /auth/refresh-token`
+- `POST /auth/logout`
+- `POST /auth/logout-all`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `GET /auth/sessions`
+
+### Users/Profile/Gamification
+
+- `GET /users/me`
+- `PATCH /users/me`
+- `PATCH /users/me/password`
+- `POST /users/me/avatar`
+- `GET /users/progress`
+- `GET /users/badges`
+- `GET /users/activity`
+- `GET /users/activity/stats`
+- `GET /users/streak`
+- `GET /users/learning-progress`
+- `GET /leaderboard`
+- `GET /leaderboard/:userId/rank`
+
+### Entrance Test
+
+- `GET /entrance-test/questions`
+- `POST /entrance-test/submit`
+
+`GET /entrance-test/questions` trả danh sách câu hỏi không kèm đáp án đúng. `POST /entrance-test/submit` nhận:
+
+```json
+{
+  "answers": {
+    "question-id": "answer"
+  }
+}
+```
+
+Response hiện gồm:
+
+```json
+{
+  "skipToMilestoneId": "m1",
+  "skillId": "frontend",
+  "score": 2,
+  "totalQuestions": 4
+}
+```
+
+### Challenge Catalog
+
+- `GET /challenge/exercises`
+
+Challenge hiện chỉ là catalog bài tập code để frontend mở vào `/workspace/:exerciseId`. Không có endpoint room, match, battle, live standings hoặc matchmaking.
+
+Response item:
+
+```json
+{
+  "id": "exercise_s1",
+  "title": "Semantic HTML Starter",
+  "description": "Build a clear page structure with headings, content sections, and useful labels.",
+  "difficulty": "easy",
+  "tags": ["HTML", "Semantics"],
+  "previewImage": "https://..."
+}
+```
+
+### Learning Path
+
+- `GET /roadmaps/:skillId`
+- `GET /stages/:stageId/theory`
+- `POST /stages/:stageId/complete`
+- `POST /stages/:stageId/unlock-practice`
+- `GET /stages/:stageId/practices`
+- `GET /learning-content/skills`
+- `GET /learning-content/progress/summary`
+- `POST /lp-exercises/:exerciseId/submit`
+
+### Exercises/Workspace
+
+- `GET /exercises/:exerciseId/:userId`
+- `POST /exercises/:exerciseId/:userId/submit`
+
+`GET /exercises/:exerciseId/:userId` trả exercise definition và merge lần submit gần nhất của user nếu có. Nếu không tìm thấy exercise, service đang tạo fallback exercise để workspace không chết trong local/dev.
+
+Submit body:
+
+```json
+{
+  "editorContent": {
+    "html": "",
+    "css": "",
+    "js": "",
+    "jsx": ""
+  }
+}
+```
+
+`html`, `css`, `js`, `jsx` đều optional ở DTO để hỗ trợ bài React/JSX-only.
+
+Submit response:
+
+```json
+{
+  "isCompleted": true,
+  "match_percentage": 100,
+  "lint_errors": {
+    "html_err": [],
+    "css_err": [],
+    "js_err": [],
+    "jsx_err": []
+  },
+  "requirementResult": [],
+  "visual_results": [],
+  "behavior_results": null
+}
+```
+
+## Exercise Schema Và Evaluation
+
+Schema chính: `src/editor/db_schemas/exercise_schema.ts`.
+
+Exercise fields quan trọng:
+
+- `id`: id public, ví dụ `exercise_s1`.
+- `module`: module/skill label.
+- `title`, `level`, `description`.
+- `evaluation_config`: bật/tắt `lint`, `requirements`, `visual`, `behavior`.
+- `restrictions`: config restriction cho JSX lint.
+- `tags`: enum trong `exercise.enum.ts`.
+- `html_content`, `css_content`, `js_content`, `jsx_content`: starter/latest code.
+- `target_design`: kích thước target cho visual regression.
+- `code_test`: code mẫu cho visual regression.
+- `test_script`: script cho behavior evaluator.
+- `requirements`: danh sách requirement static/behavior.
+- `navigation`: prev/next metadata cho frontend.
+
+Evaluation pipeline trong `EditorService.submitCode`:
+
+1. Load exercise.
+2. Chạy lint nếu `evaluation_config.lint = true`.
+3. Nếu không có lint error, evaluate static requirements.
+4. Nếu bật visual, chạy visual regression.
+5. Nếu bật behavior, chạy behavior evaluator với `test_script`.
+6. Tính `match_percentage`, `isCompleted`.
+7. Lưu submission, giữ tối đa 5 submission gần nhất mỗi user/exercise.
+
+## JSX Restrictions
+
+Enum restriction: `src/editor/db_schemas/exercise.enum.ts`.
+
+Các rule hiện có:
+
+- `banned:hooks`
+- `banned:map`
+- `banned:create-element`
+- `banned-attr:style`
+- `banned:ternary`
+- `banned:logical-and`
+- `banned:if`
+- `banned:destructuring`
+- `required:destructuring`
+- `banned:useeffect`
+- `banned:useref`
+- `banned:usestate`
+
+Restrictions được map sang ESLint `no-restricted-syntax` trong `src/editor/evaluators/lint/reactJS.evaluator.ts`. Mỗi restriction gồm:
+
+```json
+{
+  "rule": "banned:usestate",
+  "message": "You must not use useState in this practice."
+}
+```
+
+Nếu `message` rỗng, evaluator dùng default message từ `JsxRestrictionAstMap`.
+
+## Notes
+
+- Challenge không phải battle. Không thêm lại room/matchmaking/live battle nếu không có yêu cầu rõ.
+- Khi thêm field exercise mới, cập nhật schema, DTO/response, evaluator nếu cần, frontend type và frontend mapper.
+- `EditorContentDto` đang cho phép file rỗng/optional để hỗ trợ bài JSX-only.
+- Frontend workspace đang dùng cả `target_design` singular và `target_designs` plural để tương thích contract.
+- Backend `EditorService.getExerciseById` có fallback exercise khi DB chưa seed đủ.
+- Unit test backend hiện chưa xanh vì lỗi Jest/ESM và type `.lean()` cũ, không phải do entrance/challenge catalog.
+- README này có thể dùng làm context cho AI khi làm việc tiếp trong repo.
+
+## Trạng Thái Kiểm Tra
 
 Lần kiểm tra gần nhất trong workspace ngày 2026-06-21:
 
 - `yarn lint:check`: pass.
 - `yarn build`: pass.
-- `yarn test`: fail do Jest chưa xử lý ESM dependency từ `jsdom/@exodus/bytes` và lỗi type ở `src/auth/services/token.service.ts:239`.
+- `yarn test`: fail do lỗi nền hiện có:
+  - Jest chưa xử lý ESM dependency từ `jsdom/@exodus/bytes`.
+  - Type error ở `src/auth/services/token.service.ts:239` khi return kết quả `.lean()` như `Session[]`.
 
-## Điểm cần cải thiện
+## Việc Nên Làm Tiếp
 
-- Test backend chưa xanh, làm CI khó đáng tin. Cần xử lý Jest transform cho ESM dependency hoặc mock evaluator liên quan `jsdom`, đồng thời sửa kiểu `getUserSessions`.
-- Sửa Jest config hoặc mock evaluator để unit test chạy được.
-- Sửa return type `getUserSessions` khi dùng `.lean()`.
-- Chuẩn hóa lại encoding tiếng Việt trong log/message/Swagger.
-- Giảm `any` ở auth, editor evaluator và service layer.
-- Hợp nhất các file Docker Compose MongoDB local.
-- Backend package name đang là `ai-service`, chưa khớp tên dự án.
-- Nên thêm `.env.example` để onboarding bớt phụ thuộc vào README.
+- Sửa Jest transform/mocking cho dependency ESM từ `jsdom`.
+- Sửa return type `getUserSessions` trong `src/auth/services/token.service.ts`.
+- Chuẩn hóa text tiếng Việt còn mojibake trong log/message/Swagger cũ.
+- Giảm `any` ở editor evaluator và service layer.
+- Cân nhắc đưa challenge catalog vào DB nếu cần quản trị động thay vì in-memory list.
+- Backend package name hiện vẫn là `ai-service`, chưa khớp tên dự án.
