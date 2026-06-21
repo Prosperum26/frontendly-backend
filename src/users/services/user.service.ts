@@ -210,8 +210,8 @@ export class UserService {
           xpToNextLevel: xpNeeded,
           progressPercent:
             xpNeeded > 0 ? Math.round((xpInLevel / xpNeeded) * 100) : 100,
-          streak: user.stats.streakDays || 0,
-          maxStreak: user.stats.maxStreakDays || 0,
+          streak: user.stats?.streakDays || 0,
+          maxStreak: user.stats?.maxStreakDays || 0,
           rank: '-',
         };
       }
@@ -269,17 +269,22 @@ export class UserService {
     }
   }
 
-  async getActivity(userId: string): Promise<ActivityLog[]> {
-    return this.activityLogModel
+  async getActivity(userId: string): Promise<any[]> {
+    const activities = await this.activityLogModel
       .find({ userId })
       .sort({ timestamp: -1 })
       .limit(10)
       .lean();
+
+    return activities.map(activity => ({
+      ...activity,
+      id: activity._id.toString(),
+    }));
   }
 
   async logActivity(
     userId: string,
-    type: 'lesson_completed' | 'challenge_won' | 'streak_achieved',
+    type: any,
     description: string,
   ): Promise<void> {
     await this.activityLogModel.create({
