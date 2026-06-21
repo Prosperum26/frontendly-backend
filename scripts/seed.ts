@@ -9,7 +9,6 @@ import {
   JsxRestriction,
 } from '../src/editor/db_schemas/exercise.enum';
 import { ExerciseSchema } from '../src/editor/db_schemas/exercise_schema';
-import { SubmissionSchema } from '../src/editor/db_schemas/submission_schema';
 import { CanonicalMapSchema } from '../src/entrance-test/db_schemas/canonical-map.schema';
 import { CourseTheorySchema } from '../src/entrance-test/db_schemas/course-theory.schema';
 import { EntranceTestSchema } from '../src/entrance-test/db_schemas/entrance-test.schema';
@@ -36,7 +35,6 @@ const Milestone = mongoose.model('Milestone', MilestoneSchema);
 const LpExercise = mongoose.model('LpExercise', LpExerciseSchema);
 const Theory = mongoose.model('Theory', TheorySchema);
 const Exercise = mongoose.model('Exercise', ExerciseSchema);
-const Submission = mongoose.model('Submission', SubmissionSchema);
 const Badge = mongoose.model('Badge', BadgeSchema);
 const EntranceTest = mongoose.model('EntranceTest', EntranceTestSchema);
 const CanonicalMap = mongoose.model('CanonicalMap', CanonicalMapSchema);
@@ -343,58 +341,84 @@ async function seed(): Promise<void> {
     await mongoose.connect(MONGO_URI!);
     console.log('✅ Connected.\n');
 
-    console.log('🧹 Cleaning up old data...');
-    await Promise.all([
-      Roadmap.deleteMany({}),
-      Milestone.deleteMany({}),
-      LpExercise.deleteMany({}),
-      Theory.deleteMany({}),
-      Exercise.deleteMany({}),
-      Submission.deleteMany({}),
-      Badge.deleteMany({}),
-      EntranceTest.deleteMany({}),
-      CanonicalMap.deleteMany({}),
-      CourseTheory.deleteMany({}),
-    ]);
-    console.log('✅ Cleanup complete.\n');
+    console.log('🔄 Upserting data (keeping user data)...\n');
 
-    console.log('🌱 Seeding Entrance Test Data...');
+    console.log('🌱 Upserting Entrance Test Data...');
+    await EntranceTest.deleteMany({}); // Xóa và tạo lại vì đây là dữ liệu test cố định
     await EntranceTest.create(entranceTestData);
     console.log('✅ Upserted entrance test data.\n');
 
-    console.log('🌱 Seeding Canonical Map Data...');
+    console.log('🌱 Upserting Canonical Map Data...');
+    await CanonicalMap.deleteMany({}); // Xóa và tạo lại vì đây là dữ liệu cố định
     await CanonicalMap.create(canonicalMapData);
     console.log('✅ Upserted canonical map data.\n');
 
-    console.log('🌱 Seeding Course Theory Data...');
+    console.log('🌱 Upserting Course Theory Data...');
+    await CourseTheory.deleteMany({}); // Xóa và tạo lại vì đây là dữ liệu cố định
     await CourseTheory.create(theoryData);
     console.log('✅ Upserted course theory data.\n');
 
-    console.log('🌱 Seeding Badges...');
-    await Badge.insertMany(BADGES_DATA);
+    console.log('🌱 Upserting Badges...');
+    for (const badge of BADGES_DATA) {
+      await Badge.updateOne(
+        { name: badge.name }, // Tìm badge theo tên
+        { $set: badge }, // Cập nhật nếu tìm thấy
+        { upsert: true }, // Tạo mới nếu không tìm thấy
+      );
+    }
     console.log(`✅ Upserted ${BADGES_DATA.length} badges.\n`);
 
-    console.log('🌱 Seeding Roadmaps...');
-    await Roadmap.insertMany(ROADMAP_DATA);
+    console.log('🌱 Upserting Roadmaps...');
+    for (const roadmap of ROADMAP_DATA) {
+      await Roadmap.updateOne(
+        { skillId: roadmap.skillId },
+        { $set: roadmap },
+        { upsert: true },
+      );
+    }
     console.log(`✅ Upserted ${ROADMAP_DATA.length} roadmaps.`);
 
-    console.log('🌱 Seeding Milestones...');
-    await Milestone.insertMany(MILESTONES_DATA);
+    console.log('🌱 Upserting Milestones...');
+    for (const milestone of MILESTONES_DATA) {
+      await Milestone.updateOne(
+        { id: milestone.id },
+        { $set: milestone },
+        { upsert: true },
+      );
+    }
     console.log(`✅ Upserted ${MILESTONES_DATA.length} milestones.`);
 
-    console.log('🌱 Seeding Theories...');
+    console.log('🌱 Upserting Theories...');
     const theories = generateTheories();
-    await Theory.insertMany(theories);
+    for (const theory of theories) {
+      await Theory.updateOne(
+        { stageId: theory.stageId },
+        { $set: theory },
+        { upsert: true },
+      );
+    }
     console.log(`✅ Upserted ${theories.length} theories.`);
 
-    console.log('🌱 Seeding LpExercises...');
+    console.log('🌱 Upserting LpExercises...');
     const lpExercises = generateLpExercises();
-    await LpExercise.insertMany(lpExercises);
+    for (const exercise of lpExercises) {
+      await LpExercise.updateOne(
+        { id: exercise.id },
+        { $set: exercise },
+        { upsert: true },
+      );
+    }
     console.log(`✅ Upserted ${lpExercises.length} learning path exercises.`);
 
-    console.log('🌱 Seeding Editor Exercises...');
+    console.log('🌱 Upserting Editor Exercises...');
     const editorExercises = generateEditorExercises();
-    await Exercise.insertMany(editorExercises);
+    for (const exercise of editorExercises) {
+      await Exercise.updateOne(
+        { id: exercise.id },
+        { $set: exercise },
+        { upsert: true },
+      );
+    }
     console.log(
       `✅ Upserted ${editorExercises.length} coding workspace exercises.`,
     );
