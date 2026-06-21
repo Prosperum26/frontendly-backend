@@ -3,6 +3,15 @@ import { HydratedDocument } from 'mongoose';
 
 export type ActivityLogDocument = HydratedDocument<ActivityLog>;
 
+export enum ActivityType {
+  STAGE_COMPLETED = 'stage_completed',
+  LESSON_COMPLETED = 'lesson_completed',
+  DAILY_LOGIN = 'daily_login',
+  CHALLENGE_WON = 'challenge_won',
+  STREAK_ACHIEVED = 'streak_achieved',
+  BADGE_EARNED = 'badge_earned',
+}
+
 @Schema({ timestamps: { createdAt: 'timestamp' } })
 export class ActivityLog {
   @Prop({ required: true })
@@ -10,9 +19,9 @@ export class ActivityLog {
 
   @Prop({
     required: true,
-    enum: ['lesson_completed', 'challenge_won', 'streak_achieved'],
+    enum: ActivityType,
   })
-  type!: 'lesson_completed' | 'challenge_won' | 'streak_achieved';
+  type!: ActivityType;
 
   @Prop({ required: true })
   description!: string;

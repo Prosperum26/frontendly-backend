@@ -2,18 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import { ActivityLog } from '../schemas/activity-log.schema';
+import { ActivityLog, ActivityType } from '../schemas/activity-log.schema';
 import { Badge, BadgeUnlockType } from '../schemas/badge.schema';
 import { User, getXpForLevel } from '../schemas/user.schema';
-
-export enum ActivityType {
-  STAGE_COMPLETED = 'stage_completed',
-  LESSON_COMPLETED = 'lesson_completed',
-  DAILY_LOGIN = 'daily_login',
-  CHALLENGE_WON = 'challenge_won',
-  STREAK_ACHIEVED = 'streak_achieved',
-  BADGE_EARNED = 'badge_earned',
-}
 
 const XP_VALUES: Record<ActivityType, number> = {
   [ActivityType.STAGE_COMPLETED]: 50,
