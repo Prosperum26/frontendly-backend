@@ -24,6 +24,53 @@ export class VisualRegressionService {
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
 
+  async getTargetPreview(exerciseId: string): Promise<string | null> {
+    const exercise = await this.exerciseModel
+      .findOne({ id: exerciseId })
+      .lean();
+    const targetDesign = exercise?.target_design;
+    const codeTest = exercise?.code_test;
+
+    if (!targetDesign || !codeTest) return null;
+
+    const browser = this.puppeteerEvaluator.getBrowser();
+    let page: any = null;
+
+    try {
+      if (!this.targetImageCache.has(exerciseId)) {
+        page = await browser.newPage();
+        await page.setViewport({
+          width: targetDesign.width,
+          height: targetDesign.height,
+        });
+
+        const isReady = await this.renderPage(
+          page,
+          codeTest.html,
+          codeTest.css,
+          codeTest.js,
+          codeTest.jsx,
+        );
+        if (!isReady) return null;
+
+        this.targetImageCache.set(
+          exerciseId,
+          <Buffer>await page.screenshot({ type: 'png' }),
+        );
+      }
+
+      const screenshot = this.targetImageCache.get(exerciseId);
+      if (!screenshot) return null;
+
+      return `data:image/png;base64,${screenshot.toString('base64')}`;
+    } catch (error: any) {
+      console.error('[Target Preview Error]', error.message);
+      return null;
+    } finally {
+      if (page && !page.isClosed()) await page.close();
+    }
+  }
+
   async evaluateVisual(
     exerciseId: string,
     html: string,

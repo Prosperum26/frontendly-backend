@@ -27,6 +27,22 @@ export class EditorController {
 
   constructor(private readonly editorService: EditorService) {}
 
+  @Get(':exerciseId/target-preview')
+  async getTargetPreview(
+    @Param('exerciseId') exerciseId: string,
+  ): Promise<{ success: boolean; data: { imageUrl: string | null } }> {
+    try {
+      const imageUrl = await this.editorService.getTargetPreview(exerciseId);
+      return { success: true, data: { imageUrl } };
+    } catch (error) {
+      this.logger.error(
+        `Error generating target preview for ${exerciseId}:`,
+        error,
+      );
+      return { success: true, data: { imageUrl: null } };
+    }
+  }
+
   @Get(':exerciseId')
   async getExercise(
     @Param('exerciseId') exerciseId: string,

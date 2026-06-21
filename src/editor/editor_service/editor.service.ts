@@ -162,6 +162,11 @@ export default function App() {
     };
   }
 
+  async getTargetPreview(exerciseId: string): Promise<string | null> {
+    await this.getExerciseById(exerciseId);
+    return this.visualRegressionService.getTargetPreview(exerciseId);
+  }
+
   // Lấy bài tập
   async getExercise(exerciseId: string, userId: string): Promise<Exercise> {
     const rawExercise = await this.getExerciseById(exerciseId);
