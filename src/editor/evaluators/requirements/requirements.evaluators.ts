@@ -1,11 +1,17 @@
+import * as parser from '@babel/parser';
+import rawTraverse from '@babel/traverse';
 import { Injectable } from '@nestjs/common';
 import { JSDOM, VirtualConsole } from 'jsdom';
 
 import { RequirmentsEvaluationDto } from '../../dtos/requirement_evaluators';
+const traverse =
+  typeof (<any>rawTraverse) === 'function'
+    ? <any>rawTraverse
+    : (<any>rawTraverse).default;
 
 @Injectable()
 export class RequirementEvaluator {
-  evaluateCode(
+  evaluateCodeHtmlCssJs(
     html: string,
     css: string,
     javascript: string,
@@ -97,6 +103,145 @@ export class RequirementEvaluator {
       if (htmlDom) {
         htmlDom.window.close();
       }
+    }
+  }
+
+  evaluateCodeReact(
+    jsx: string,
+    requirements: any[],
+  ): RequirmentsEvaluationDto[] {
+    if (!jsx || jsx.trim() === '') {
+      return requirements.map(req => ({
+        requirementId: req.id,
+        passed: false,
+      }));
+    }
+
+    // tạo cấy cấu trúc AST
+    try {
+      const ast = parser.parse(jsx, {
+        sourceType: 'module',
+        plugins: ['jsx'],
+      });
+
+      // lưu trữ dom
+      const elementsCount: Record<string, number> = {}; // số lượng thẻ
+      const textContents = new Set<string>(); // các đoạn text
+      const attributes = new Set<string>(); // tên các props/attributes
+      const hooks = new Set<string>(); // tên các hook
+
+      // quét cây cấu trúc AST của toàn bộ code
+      traverse(ast, {
+        jsxOpeningElement(path: any) {
+          // lấy các thẻ
+          const nodeName = path.node.name;
+          if (nodeName.type === 'JSXIdentifier') {
+            const tagName = nodeName.name;
+            elementsCount[tagName] = (elementsCount[tagName] || 0) + 1;
+          }
+        },
+        jsxAttribute(path: any) {
+          // lấy các attribute
+          const attrName = path.node.name;
+          if (attrName.type === 'JSXIdentifier') {
+            attributes.add(attrName.name);
+          }
+        },
+        jsxText(path: any) {
+          // lấy text
+          if (path.node.value.trim()) {
+            textContents.add(path.node.value.trim());
+          }
+        },
+        stringLiteral(path: any) {
+          // lấy text được gán vào biến
+          if (path.node.value.trim()) {
+            textContents.add(path.node.value.trim());
+          }
+        },
+        callExpression(path: any) {
+          const callee = path.node.callee;
+          if (callee.type === 'Identifier') {
+            const hookName = callee.name;
+            if (hookName === 'useState') {
+              const parent = path.parent;
+              if (
+                parent.type === 'VariableDeclarator' &&
+                parent.id.type === 'ArrayPattern' &&
+                parent.id.elements.length >= 2
+              ) {
+                hooks.add(hookName);
+              }
+            } else if (hookName === 'useRef') {
+              const parent = path.parent;
+              if (
+                parent.type === 'VariableDeclarator' &&
+                parent.id.type === 'Identifier'
+              ) {
+                hooks.add(hookName);
+              }
+            } else if (hookName === 'useEffect') {
+              const args = path.node.arguments;
+              if (args.length > 0) {
+                const firstArgType = args[0].type;
+                if (
+                  firstArgType === 'ArrowFunctionExpression' ||
+                  firstArgType === 'FunctionExpression' ||
+                  firstArgType === 'Identifier'
+                ) {
+                  hooks.add(hookName);
+                }
+              }
+            } else {
+              hooks.add(hookName);
+            }
+          }
+        },
+      });
+      return requirements.map(req => {
+        let isPassed = false;
+        switch (req.type) {
+          case 'exist':
+            isPassed = (elementsCount[req.selector] || 0) > 0;
+            break;
+
+          case 'count':
+            const expectedCount = parseInt(req.expectedValue);
+            isPassed = (elementsCount[req.selector] || 0) === expectedCount;
+            break;
+
+          case 'content':
+            const expectedContent = req.expectedValue?.trim();
+            if (expectedContent) {
+              isPassed = Array.from(textContents).some(text =>
+                text.includes(expectedContent),
+              );
+            }
+            break;
+
+          case 'attribute':
+          case 'prop':
+            isPassed = attributes.has(req.selector || req.expectedValue);
+            break;
+
+          case 'hook':
+            isPassed = hooks.has(req.selector);
+            break;
+
+          default:
+            isPassed = false;
+        }
+        return {
+          requirementId: req.id,
+          passed: isPassed,
+        };
+      });
+    } catch (error: any) {
+      console.error('Babel AST Parsing Error:', error);
+      return requirements.map(req => ({
+        requirementId: req.id,
+        passed: false,
+      }));
     }
   }
 }

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import * as path from 'path';
 
 // Import schemas from the project
+import { ExerciseTag } from '../src/editor/db_schemas/exercise.enum'; // Điều chỉnh lại đường dẫn này nếu cần
 import { ExerciseSchema } from '../src/editor/db_schemas/exercise_schema';
 import { SubmissionSchema } from '../src/editor/db_schemas/submission_schema';
 import {
@@ -14,6 +15,8 @@ import { TheorySchema } from '../src/learning-path/db_schemas/theory_schema';
 import { ActivityLogSchema } from '../src/users/schemas/activity-log.schema';
 import { BadgeSchema } from '../src/users/schemas/badge.schema';
 import { UserSchema } from '../src/users/schemas/user.schema';
+
+// 🔥 Thêm Import Enums từ dự án của ông
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -195,80 +198,122 @@ const generateLpExercises = (): any[] => {
 // Helper to generate main Editor Exercises (1 per stage)
 const generateEditorExercises = (): any[] => {
   const exercises: any[] = [];
+
   for (let i = 1; i <= 12; i++) {
     const stageId = `s${i}`;
     let level: 'easy' | 'medium' | 'hard';
+    let levelTag: ExerciseTag;
+
     if (i <= 4) {
       level = 'easy';
+      levelTag = ExerciseTag.EASY;
     } else if (i <= 8) {
       level = 'medium';
+      levelTag = ExerciseTag.MEDIUM;
     } else {
       level = 'hard';
-    }
-    const evaluationConfig = {
-      lint: true,
-      requirements: true,
-      visual: false,
-    };
-    let targetDesigns: Array<{
-      deviceType: string;
-      width: number;
-      height: number;
-      url: string;
-    }> = [];
-
-    // Bài từ s8 trở đi (hard) cần visual check
-    if (level === 'hard') {
-      evaluationConfig.visual = true;
-      targetDesigns = [
-        {
-          deviceType: 'desktop',
-          width: 1280,
-          height: 720,
-          url: 'https://via.placeholder.com/1280x720',
-        },
-      ];
+      levelTag = ExerciseTag.HARD;
     }
 
-    // Ví dụ bài s1 siêu đơn giản
-    if (stageId === 's1') {
-      evaluationConfig.requirements = true;
-      evaluationConfig.lint = true;
-      evaluationConfig.visual = false;
-    }
-
-    // Ví dụ bài tự do (s12 có thể tự do hơn)
-    if (stageId === 's12') {
-      evaluationConfig.lint = false;
-      evaluationConfig.requirements = false;
-      evaluationConfig.visual = false;
-    }
-
-    exercises.push({
+    // Default object template cho toàn bộ 12 bài
+    const exerciseObj: any = {
       id: `exercise_${stageId}`,
       module: `Milestone ${Math.ceil(i / 4)}`,
       title: `Thực hành Coding Workspace ${stageId}`,
       level,
-      description: `Đây là bài tập lớn cuối stage ${stageId}. Hãy sử dụng trình soạn thảo code để hoàn thành thử thách này.`,
-      target_designs: targetDesigns,
-      evaluation_config: evaluationConfig,
-      html_content: '<!-- Viết code HTML của bạn ở đây -->\n<h1></h1>',
-      css_content: '/* Viết code CSS của bạn ở đây */\nh1 { color: blue; }',
-      js_content: '// Viết code JS của bạn ở đây\nconsole.log("Start!");',
-      requirements: [
-        {
-          id: `req_${stageId}_1`,
-          text: 'Phải có thẻ <h1>',
-          selector: 'h1',
-          type: 'exist',
-        },
-      ],
+      description: `Bài tập thực hành mặc định cho stage ${stageId}.`,
+      evaluation_config: {
+        lint: true,
+        requirements: false,
+        visual: true,
+        behavior: false,
+      },
+      html_content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`,
+      css_content: '',
+      js_content: '',
+      jsx_content: '',
+      target_design: {
+        deviceType: 'desktop',
+        width: 800,
+        height: 600,
+      },
+      code_test: {
+        html: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root">\n    <h1 style="font-family: sans-serif; text-align: center; margin-top: 50px;">Default Test ${stageId}</h1>\n  </div>\n</body>\n</html>`,
+        css: '',
+        js: '',
+        jsx: '',
+      },
+      test_script: null,
+      restrictions: [],
+      tags: [levelTag, ExerciseTag.REACTJS],
+      requirements: [],
       navigation: {
         prev: i > 1 ? { type: 'practice', id: `exercise_s${i - 1}` } : null,
         next: i < 12 ? { type: 'practice', id: `exercise_s${i + 1}` } : null,
       },
-    });
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    // 🎨 BÀI S1: TEST VISUAL HTML & CSS THUẦN
+    if (stageId === 's1') {
+      exerciseObj.title = 'Visual Match 1: CSS Box Model';
+      exerciseObj.description =
+        'Tạo một thẻ Box nằm giữa màn hình. Hãy viết code sao cho ra giao diện giống hệt mẫu (Pixel-perfect).';
+      exerciseObj.code_test = {
+        html: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div class="target-card">\n    <h2>Visual Match</h2>\n  </div>\n</body>\n</html>`,
+        css: `body {\n  margin: 0;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  background: #e9ecef;\n}\n.target-card {\n  background: #ffffff;\n  width: 300px;\n  height: 150px;\n  border: 3px solid #212529;\n  border-radius: 10px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  box-shadow: 5px 5px 0px #adb5bd;\n}\nh2 {\n  color: #e63946;\n  font-family: sans-serif;\n  margin: 0;\n}`,
+        js: '',
+        jsx: '',
+      };
+      exerciseObj.html_content = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  \n</body>\n</html>`;
+    }
+
+    // 🎨 BÀI S2: TEST VISUAL REACT ALERT COMPONENT
+    else if (stageId === 's2') {
+      exerciseObj.title = 'Visual Match 2: React Alert Component';
+      exerciseObj.description =
+        'Tạo một component AlertBox bằng React. Yêu cầu giao diện khớp 100%.';
+      exerciseObj.code_test = {
+        html: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`,
+        css: `.alert-success {\n  padding: 20px;\n  background-color: #e0f7fa;\n  color: #006064;\n  border-left: 6px solid #00acc1;\n  font-family: Arial, sans-serif;\n  max-width: 400px;\n  margin: 20px auto;\n}\n.alert-title {\n  display: block;\n  margin-bottom: 8px;\n  font-size: 18px;\n  font-weight: bold;\n}`,
+        js: '',
+        jsx: `import React from 'react';\n\nexport default function AlertBox() {\n  return (\n    <div className="alert-success">\n      <strong className="alert-title">Success!</strong>\n      <span>Your visual test passed perfectly.</span>\n    </div>\n  );\n}`,
+      };
+      exerciseObj.jsx_content = `import React from 'react';\nimport './style.css';\n\nexport default function AlertBox() {\n  return (\n    <section>\n      {/* Xây dựng Alert Box ở đây */}\n    </section>\n  );\n}`;
+    }
+
+    // 🎨 BÀI S3: TEST VISUAL REACT PROFILE CARD
+    else if (stageId === 's3') {
+      exerciseObj.title = 'Visual Match 3: React Profile Card';
+      exerciseObj.description =
+        'Tạo một thẻ Profile chứa hình đại diện (Avatar) hình tròn và tên người dùng được canh giữa trang.';
+      exerciseObj.code_test = {
+        html: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`,
+        css: `body {\n  margin: 0;\n  background-color: #f3f4f6;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n}\n.profile-card {\n  background: white;\n  padding: 24px;\n  border-radius: 12px;\n  box-shadow: 0 4px 6px rgba(0,0,0,0.1);\n  text-align: center;\n  width: 250px;\n}\n.avatar {\n  width: 80px;\n  height: 80px;\n  background-color: #3b82f6;\n  border-radius: 50%;\n  margin: 0 auto 16px auto;\n}\n.name {\n  font-family: sans-serif;\n  font-size: 20px;\n  font-weight: 600;\n  color: #1f2937;\n  margin: 0;\n}`,
+        js: '',
+        jsx: `import React from 'react';\n\nexport default function Profile() {\n  return (\n    <div className="profile-card">\n      <div className="avatar"></div>\n      <h3 className="name">Frontendly User</h3>\n    </div>\n  );\n}`,
+      };
+      exerciseObj.jsx_content = `import React from 'react';\nimport './style.css';\n\nexport default function Profile() {\n  return (\n    <div>\n      {/* Xây dựng Profile Card ở đây */}\n    </div>\n  );\n}`;
+    }
+
+    // 🎨 BÀI S4: TEST VISUAL REACT BADGE TAG
+    else if (stageId === 's4') {
+      exerciseObj.title = 'Visual Match 4: Status Badge';
+      exerciseObj.description =
+        'Tạo một Status Badge hình viên thuốc báo hiệu trạng thái Danger.';
+      exerciseObj.code_test = {
+        html: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <div id="root"></div>\n</body>\n</html>`,
+        css: `body {\n  margin: 0;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  background-color: white;\n}\n.badge {\n  display: inline-block;\n  padding: 6px 16px;\n  background: #fee2e2;\n  color: #991b1b;\n  border-radius: 9999px;\n  font-family: sans-serif;\n  font-size: 14px;\n  font-weight: bold;\n}`,
+        js: '',
+        jsx: `import React from 'react';\n\nexport default function Badge() {\n  return (\n    <span className="badge">Danger</span>\n  );\n}`,
+      };
+      exerciseObj.jsx_content = `import React from 'react';\nimport './style.css';\n\nexport default function Badge() {\n  return (\n    <div>\n      {/* Xây dựng Badge ở đây */}\n    </div>\n  );\n}`;
+    }
+
+    exercises.push(exerciseObj);
   }
+
   return exercises;
 };
 
@@ -314,6 +359,7 @@ async function seed(): Promise<void> {
           { name: 'HTML', level: 8, earnedAt: new Date() },
           { name: 'CSS', level: 6, earnedAt: new Date() },
           { name: 'JS', level: 4, earnedAt: new Date() },
+          { name: 'JSX', level: 2, earnedAt: new Date() },
         ],
         stats: {
           totalLearningTime: 1200,

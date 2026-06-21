@@ -17,7 +17,7 @@ export const commonConfigObj = registerAs('common', () => {
     nodeEnv: <NodeEnv>process.env.NODE_ENV,
     port: parseInt(process.env.PORT!, 10),
     dbUri: process.env.DB_URI!,
-    corsOrigins: process.env.CORS_ORIGINS!.split(','),
+    corsOrigins: (process.env.CORS_ORIGINS || '').split(','),
   };
   commonConfigSchema.parse(config);
   return config;

@@ -30,6 +30,7 @@ export class CheckLintInternalCss {
         'declaration-block-no-duplicate-properties': true, //  thuộc tính giống nhau
         'no-duplicate-selectors': true, // block CSS trùng selector
         'block-no-empty': true, // class trống
+        'declaration-no-important': true,
       },
     };
 

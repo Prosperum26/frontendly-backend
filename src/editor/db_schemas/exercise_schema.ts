@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
+import { ExerciseTag } from './exercise.enum';
+import { JsxRestriction } from './exercise.enum';
+
 export type ExerciseDocument = HydratedDocument<Exercise>;
 @Schema({ _id: false })
 export class ExerciseRequirement {
@@ -10,13 +13,19 @@ export class ExerciseRequirement {
   @Prop({ required: true })
   text!: string;
 
-  @Prop({ required: true })
-  selector!: string;
+  @Prop({ default: '' })
+  selector?: string;
 
-  @Prop({ required: true, enum: ['exist', 'count', 'content', 'attribute'] })
-  type!: string;
+  @Prop({
+    enum: ['exist', 'count', 'content', 'attribute', 'hook', 'prop', ''],
+    default: '',
+  })
+  type?: string;
 
-  @Prop({ required: false })
+  @Prop({ required: true, default: 'others', enum: ['behavior', 'others'] })
+  type_check!: string;
+
+  @Prop({ default: '' })
   expectedValue?: string;
 }
 
@@ -33,9 +42,6 @@ export class TargetDesign {
 
   @Prop({ required: true })
   height!: number;
-
-  @Prop({ required: true })
-  url!: string;
 }
 const TargetDesignSchema = SchemaFactory.createForClass(TargetDesign);
 
@@ -49,8 +55,37 @@ export class EvaluationConfig {
 
   @Prop({ type: Boolean, default: false })
   visual!: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  behavior!: boolean;
 }
 const EvaluationConfigSchema = SchemaFactory.createForClass(EvaluationConfig);
+
+@Schema({ _id: false })
+export class CodeTest {
+  @Prop({ trim: true, default: '' })
+  html!: string;
+
+  @Prop({ trim: true, default: '' })
+  css!: string;
+
+  @Prop({ trim: true, default: '' })
+  js!: string;
+
+  @Prop({ trim: true, default: '' })
+  jsx!: string;
+}
+const CodeTestSchema = SchemaFactory.createForClass(CodeTest);
+
+@Schema({ _id: false })
+export class RestrictionDetail {
+  @Prop({ type: String, enum: Object.values(JsxRestriction), required: true })
+  rule!: JsxRestriction;
+
+  @Prop({ type: String, required: true })
+  message!: string;
+}
+const RestrictionSchema = SchemaFactory.createForClass(RestrictionDetail);
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Exercise {
@@ -69,23 +104,38 @@ export class Exercise {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ type: [TargetDesignSchema], default: [] })
-  target_designs!: TargetDesign[];
-
   @Prop({
     type: EvaluationConfigSchema,
     default: () => ({ lint: true, requirements: true, visual: false }),
   })
   evaluation_config!: EvaluationConfig;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ type: [RestrictionSchema], default: [] }) // dùng để thêm config cho ReactJS
+  restrictions!: RestrictionDetail[];
+
+  @Prop({ type: [String], default: [], enum: Object.values(ExerciseTag) })
+  tags!: ExerciseTag[];
+
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   html_content!: string;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   css_content!: string;
 
-  @Prop({ trim: true, default: '', maxlength: 100000 })
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   js_content!: string;
+
+  @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
+  jsx_content!: string;
+
+  @Prop({ type: TargetDesignSchema, default: null })
+  target_design!: TargetDesign;
+
+  @Prop({ type: CodeTestSchema, default: null }) // code test mẫu để chạy visual regress
+  code_test!: CodeTest | null;
+
+  @Prop({ trim: true, default: '' }) // test script để test behavior cho reactjs
+  test_script!: string;
 
   @Prop({ type: [ExerciseRequirementSchema], default: [] })
   requirements!: ExerciseRequirement[];
