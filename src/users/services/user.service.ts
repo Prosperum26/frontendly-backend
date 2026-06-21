@@ -296,47 +296,37 @@ export class UserService {
 
   async getLeaderboard(page: number = 1, limit: number = 50): Promise<any[]> {
     const skip = (page - 1) * limit;
-    const topUsers = await this.userProgressModel
-      .find({})
-      .sort({ currentXp: -1 })
+    const topUsers = await this.userModel
+      .find({ isDeleted: { $ne: true }, isBanned: { $ne: true } })
+      .sort({ xp: -1, _id: 1 }) // _id to handle ties
       .skip(skip)
       .limit(limit)
+      .select('name firstName lastName avatarUrl xp level')
       .lean();
 
-    const userIds = topUsers.map(p => p.userId);
-    const users = await this.userModel
-      .find({ _id: { $in: userIds } })
-      .select('name firstName lastName avatarUrl')
-      .lean();
-
-    const userMap = new Map(users.map(u => [u._id.toString(), u]));
-
-    return topUsers.map((p, index) => {
-      const user = userMap.get(p.userId);
-      let level = 1;
-      while (getXpForLevel(level + 1) <= p.currentXp) {
-        level++;
-      }
+    return topUsers.map((user, index) => {
       return {
-        id: p.userId,
+        id: user._id.toString(),
         rank: skip + index + 1,
-        username: user?.name || user?.firstName || 'Unknown',
-        avatar: user?.avatarUrl,
-        level,
-        xp: p.currentXp,
+        username: user.name || user.firstName || 'Unknown',
+        avatar: user.avatarUrl,
+        level: user.level,
+        xp: user.xp,
       };
     });
   }
 
   async getUserRank(userId: string): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const userProgress = (await this.userProgressModel
-      .findOne({ userId })
-      .lean()) as unknown as { currentXp: number } | null;
-    if (!userProgress) return -1;
+    const user = await this.userModel.findById(userId).select('xp').lean();
+    if (!user) return -1;
 
-    const count = await this.userProgressModel.countDocuments({
-      currentXp: { $gt: userProgress.currentXp },
+    const count = await this.userModel.countDocuments({
+      isDeleted: { $ne: true },
+      isBanned: { $ne: true },
+      $or: [
+        { xp: { $gt: user.xp } },
+        { xp: user.xp, _id: { $lt: new Types.ObjectId(userId) } },
+      ],
     });
 
     return count + 1;
