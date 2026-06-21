@@ -28,6 +28,7 @@ import { RoadmapService } from '../learning_path_service/roadmap.service';
 import { StageService } from '../learning_path_service/stage.service';
 import { TheoryService } from '../learning_path_service/theory.service';
 import { VideoService } from '../learning_path_service/video.service';
+import { UserModule } from '@/users/user.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { VideoService } from '../learning_path_service/video.service';
       { name: 'Roadmap', schema: RoadmapSchema },
       { name: 'UserLearningProgress', schema: UserLearningProgressSchema },
     ]),
+    UserModule,
   ],
   controllers: [
     RoadmapController,
