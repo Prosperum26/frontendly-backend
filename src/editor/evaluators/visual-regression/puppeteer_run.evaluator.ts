@@ -15,15 +15,17 @@ export class PuppeteerEvaluator implements OnModuleInit, OnModuleDestroy {
     // Start trình duyệt ngầm trên server 1 lần và dùng hoài
     try {
       this.browser = await puppeteer.launch({
-        headless: true,
+        headless: 'new',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
           '--disable-gpu',
+          '--no-zygote',
         ],
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       });
-      this.logger.log('Puppeteer browser launched');
+      this.logger.log('Puppeteer browser launched successfully');
     } catch (error) {
       this.logger.warn(
         'Failed to launch Puppeteer browser - visual regression testing will be disabled',
