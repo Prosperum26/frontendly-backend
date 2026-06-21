@@ -10,7 +10,7 @@ export class ChallengeController {
   constructor(private readonly challengeService: ChallengeService) {}
 
   @Get('exercises')
-  getExercises(): ChallengeExercise[] {
-    return this.challengeService.getExercises();
+  getExercises(): { success: boolean; data: ChallengeExercise[] } {
+    return { success: true, data: this.challengeService.getExercises() };
   }
 }

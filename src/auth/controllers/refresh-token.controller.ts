@@ -28,6 +28,7 @@ export class RefreshTokenController {
     schema: {
       type: 'object',
       properties: {
+        message: { type: 'string' },
         accessToken: { type: 'string' },
         refreshToken: { type: 'string' },
       },
@@ -37,9 +38,13 @@ export class RefreshTokenController {
   public async refreshToken(
     @Body() body: RefreshTokenDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
     const { accessToken, refreshToken } =
       await this.tokenService.refreshAccessToken(body.refreshToken, res);
-    return { accessToken, refreshToken };
+    return {
+      message: 'Token refreshed successfully',
+      accessToken,
+      refreshToken,
+    };
   }
 }

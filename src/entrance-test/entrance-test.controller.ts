@@ -13,14 +13,15 @@ export class EntranceTestController {
   constructor(private readonly entranceTestService: EntranceTestService) {}
 
   @Get('questions')
-  getQuestions(): EntranceTestQuestion[] {
-    return this.entranceTestService.getQuestions();
+  getQuestions(): { success: boolean; data: EntranceTestQuestion[] } {
+    return { success: true, data: this.entranceTestService.getQuestions() };
   }
 
   @Post('submit')
-  submitTest(
-    @Body('answers') answers: Record<string, unknown> = {},
-  ): EntranceTestResult {
-    return this.entranceTestService.submit(answers);
+  submitTest(@Body('answers') answers: Record<string, unknown> = {}): {
+    success: boolean;
+    data: EntranceTestResult;
+  } {
+    return { success: true, data: this.entranceTestService.submit(answers) };
   }
 }

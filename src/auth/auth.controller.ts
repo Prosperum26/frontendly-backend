@@ -1,11 +1,9 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -122,29 +120,5 @@ export class AuthController {
   ): Promise<{ message: string }> {
     const result = await this.authService.resetPassword(body);
     return result;
-  }
-
-  @ConfigureAuth({ skipAuth: false })
-  @Get('me')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'Profile retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        data: { type: 'object' },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async getMe(@Req() req: any): Promise<{ message: string; data: any }> {
-    return {
-      message: 'Profile retrieved successfully',
-      data: req.user,
-    };
   }
 }
