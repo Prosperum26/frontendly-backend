@@ -8,6 +8,8 @@ import {
 } from '../db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '../db_schemas/milestone_schema';
 
+type PlacementLessonStatus = 'auto_passed' | 'required' | 'locked';
+
 @Injectable()
 export class RoadmapService {
   private readonly logger: Logger = new Logger(RoadmapService.name);
@@ -28,101 +30,121 @@ export class RoadmapService {
     userId: string,
   ): Promise<unknown> {
     const dbRoadmap = await this.roadmapModel.findOne({ skillId }).lean();
-    if (dbRoadmap) {
-      const rawMilestones = await this.milestoneModel
-        .find({ id: { $in: dbRoadmap.milestoneIds } })
-        .lean();
-
-      const milestoneIdOrder = <string[]>dbRoadmap.milestoneIds;
-      const sortedMilestones = [...rawMilestones];
-      sortedMilestones.sort(
-        (a, b) =>
-          milestoneIdOrder.indexOf(<string>a.id) -
-          milestoneIdOrder.indexOf(<string>b.id),
+    if (!dbRoadmap) {
+      throw new NotFoundException(
+        `Roadmap not found in database for skill: ${skillId}`,
       );
-      const dbMilestones = sortedMilestones;
+    }
 
-      const dbProgress = await this.userProgressModel
-        .findOne({ userId, skillId })
-        .lean();
+    const rawMilestones = await this.milestoneModel
+      .find({ id: { $in: dbRoadmap.milestoneIds } })
+      .lean();
 
-      const unlockedMap = new Map(
-        (dbProgress?.unlockedStages ?? []).map(us => [
-          us.stageId,
-          {
-            earnedStars: us.earnedStars,
-            isPracticeUnlocked: us.isPracticeUnlocked,
-            videoWatchPercentage: us.videoWatchPercentage,
-            theoryCompleted: us.theoryCompleted,
-          },
-        ]),
-      );
+    const milestoneIdOrder = <string[]>dbRoadmap.milestoneIds;
+    const sortedMilestones = [...rawMilestones];
+    sortedMilestones.sort(
+      (a, b) =>
+        milestoneIdOrder.indexOf(<string>a.id) -
+        milestoneIdOrder.indexOf(<string>b.id),
+    );
 
-      let prevMilestoneCompleted = false;
-      const milestonesWithProgress = dbMilestones.map((milestone, index) => {
-        const stagesWithProgress = milestone.stages.map(stage => {
-          const prog = unlockedMap.get(stage.id);
-          const earnedStars = prog?.earnedStars ?? 0;
-          const theoryCompleted = prog?.theoryCompleted ?? false;
-          const stageProgressPercentage =
-            (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
-          return {
-            id: stage.id,
-            title: stage.title,
-            isCompleted: earnedStars >= 1,
-            earnedStars,
-            stageProgressPercentage,
-          };
-        });
+    const dbProgress = userId
+      ? await this.userProgressModel.findOne({ userId, skillId }).lean()
+      : null;
 
-        const allCompleted = stagesWithProgress.every(s => s.isCompleted);
+    const placementMap = new Map<string, PlacementLessonStatus>(
+      (dbProgress?.personalizedLearningPath ?? []).map(item => [
+        item.stageId,
+        item.status,
+      ]),
+    );
 
-        let computedStatus: 'locked' | 'in_progress' | 'completed';
-        if (allCompleted) {
-          computedStatus = 'completed';
-        } else if (index === 0 || prevMilestoneCompleted) {
-          computedStatus = 'in_progress';
-        } else {
-          computedStatus = 'locked';
+    const unlockedMap = new Map(
+      (dbProgress?.unlockedStages ?? []).map(us => [
+        us.stageId,
+        {
+          earnedStars: us.earnedStars,
+          isPracticeUnlocked: us.isPracticeUnlocked,
+          videoWatchPercentage: us.videoWatchPercentage,
+          theoryCompleted: us.theoryCompleted,
+        },
+      ]),
+    );
+
+    let prevMilestoneCompleted = false;
+    const milestonesWithProgress = sortedMilestones.map((milestone, index) => {
+      const stagesWithProgress = milestone.stages.map(stage => {
+        const prog = unlockedMap.get(stage.id);
+        const placementStatus = placementMap.get(stage.id);
+        let earnedStars = prog?.earnedStars ?? 0;
+        let theoryCompleted = prog?.theoryCompleted ?? false;
+
+        if (placementStatus === 'auto_passed') {
+          earnedStars = Math.max(earnedStars, 3);
+          theoryCompleted = true;
         }
 
-        // Update previous milestone completion flag for next iteration
-        prevMilestoneCompleted = computedStatus === 'completed';
+        const isCompleted =
+          earnedStars >= 1 || placementStatus === 'auto_passed';
+        const stageProgressPercentage =
+          (theoryCompleted ? 50 : 0) + Math.round((earnedStars / 3) * 50);
 
         return {
-          id: milestone.id,
-          title: milestone.title,
-          icon: milestone.icon,
-          status: computedStatus,
-          stages: stagesWithProgress,
+          id: stage.id,
+          title: stage.title,
+          isCompleted,
+          earnedStars,
+          stageProgressPercentage,
+          placementStatus: placementStatus ?? null,
         };
       });
 
-      const startIndex = (page - 1) * limit;
+      const hasPlacementLocked = stagesWithProgress.some(
+        s => s.placementStatus === 'locked',
+      );
+      const allCompleted = stagesWithProgress.every(s => s.isCompleted);
+
+      let computedStatus: 'locked' | 'in_progress' | 'completed';
+      if (allCompleted) {
+        computedStatus = 'completed';
+      } else if (index === 0 || prevMilestoneCompleted) {
+        computedStatus = hasPlacementLocked ? 'locked' : 'in_progress';
+      } else {
+        computedStatus = 'locked';
+      }
+
+      prevMilestoneCompleted = computedStatus === 'completed';
 
       return {
-        skillId: dbRoadmap.skillId,
-        skillTitle: dbRoadmap.skillTitle,
-        userProgress: {
-          currentXp: dbProgress?.currentXp ?? 0,
-          streakDays: dbProgress?.streakDays ?? 0,
-        },
-        milestones: milestonesWithProgress.slice(
-          startIndex,
-          startIndex + limit,
-        ),
-        pagination: {
-          currentPage: page,
-          limit,
-          totalItems: milestonesWithProgress.length,
-          totalPages: Math.ceil(milestonesWithProgress.length / limit),
-        },
+        id: milestone.id,
+        title: milestone.title,
+        icon: milestone.icon,
+        status: computedStatus,
+        stages: stagesWithProgress,
       };
-    }
+    });
 
-    throw new NotFoundException(
-      `Roadmap not found in database for skill: ${skillId}`,
-    );
+    const startIndex = (page - 1) * limit;
+
+    return {
+      skillId: dbRoadmap.skillId,
+      skillTitle: dbRoadmap.skillTitle,
+      userProgress: {
+        currentXp: dbProgress?.currentXp ?? 0,
+        streakDays: dbProgress?.streakDays ?? 0,
+        placementTestCompleted: dbProgress?.placementTestCompleted ?? false,
+        skipToMilestoneId: dbProgress?.skipToMilestoneId ?? null,
+      },
+      personalizedLearningPath: dbProgress?.personalizedLearningPath ?? [],
+      studyPlan: dbProgress?.studyPlan ?? [],
+      milestones: milestonesWithProgress.slice(startIndex, startIndex + limit),
+      pagination: {
+        currentPage: page,
+        limit,
+        totalItems: milestonesWithProgress.length,
+        totalPages: Math.ceil(milestonesWithProgress.length / limit),
+      },
+    };
   }
 
   async getAvailableSkills(): Promise<unknown> {

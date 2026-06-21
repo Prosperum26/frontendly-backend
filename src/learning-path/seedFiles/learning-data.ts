@@ -1,23 +1,9 @@
-import {
-  Roadmap,
-  Milestone,
-  Theory,
-  Practice,
-  XpRewards,
-} from '../types/learning-path.types';
-
-export const ROADMAPS: Roadmap[] = [];
-
-export const MILESTONES: Milestone[] = [];
-
-export const THEORIES: Theory[] = [];
-
-export const PRACTICES: Practice[] = [];
+import { XpRewards } from '../types/learning-path.types';
 
 export const XP_REWARDS: XpRewards = {
-  easy: 10,
-  medium: 20,
-  hard: 30,
-  theory: 15,
-  videoIntro: 5,
+  easy: 50,
+  medium: 100,
+  hard: 150,
+  theory: 25,
+  videoIntro: 30,
 };

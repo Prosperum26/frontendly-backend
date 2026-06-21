@@ -1,0 +1,435 @@
+{
+  "course": "DevCamp 2026 - React Fundamentals",
+  "milestones": [
+    {
+      "milestoneId": "m1",
+      "title": "Milestone 1: Introduction to React and JSX",
+      "lessons": [
+        {
+          "lessonId": "m1_l1",
+          "order": 1,
+          "title": "Lesson 1: React Intro",
+          "relatedExerciseIds": ["exercise_s1"],
+          "sections": [
+            {
+              "heading": "What is React?",
+              "content": "React is a front-end JavaScript library developed by Facebook Software Engineer Jordan Walke. Also known as React.js or ReactJS, it is a tool for building UI components."
+            },
+            {
+              "heading": "How does React Work?",
+              "content": "React creates a Virtual DOM in memory. Instead of manipulating the browser's DOM directly, React performs all manipulations in the virtual DOM first, then applies only the necessary changes to the real browser DOM. React finds out what changes have been made and changes only what needs to be changed."
+            },
+            {
+              "heading": "Prerequisites",
+              "content": "Before learning React you should have a basic understanding of HTML, CSS, and JavaScript. The HTML-like code in React uses JSX, which allows writing HTML tags inside JavaScript code."
+            },
+            {
+              "heading": "React Environment",
+              "content": "To use React in production, you need npm (included with Node.js) and a build tool. In this course, code is written directly via the FrontEndly live server during exercise sections."
+            },
+            {
+              "heading": "Modify the React App",
+              "content": "Inside a project folder (e.g. my-react-app), the src folder contains App.jsx — the main React component you modify to update the application."
+            }
+          ],
+          "keyTakeaways": [
+            "React is a JS library for building UI via reusable components.",
+            "React uses a Virtual DOM to optimize real DOM updates.",
+            "App.jsx in the src folder is the main component to edit."
+          ]
+        },
+        {
+          "lessonId": "m1_l2",
+          "order": 2,
+          "title": "Lesson 2: Rendering HTML in React",
+          "relatedExerciseIds": ["exercise_s2"],
+          "sections": [
+            {
+              "heading": "The Container",
+              "content": "React renders HTML into a web page via a container, typically a <div id=\"root\"></div> element inside index.html.",
+              "code": "<!doctype html>\n<html lang=\"en\">\n  <body>\n    <div id=\"root\"></div>\n    <script type=\"module\" src=\"/src/main.jsx\"></script>\n  </body>\n</html>"
+            },
+            {
+              "heading": "The createRoot Function",
+              "content": "createRoot() is a built-in function (from react-dom/client) used to create a root node for a React application. It takes one argument: an HTML element where a React component should be displayed.",
+              "code": "import { StrictMode } from 'react'\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n  <StrictMode>\n    <App />\n  </StrictMode>\n)"
+            },
+            {
+              "heading": "The render Method",
+              "content": "The render method defines what to render inside the HTML container. The result is displayed in the <div id=\"root\"> element.",
+              "code": "import { createRoot } from 'react-dom/client'\n\ncreateRoot(document.getElementById('root')).render(\n  <p>Welcome!</p>\n)"
+            },
+            {
+              "heading": "The Root Node",
+              "content": "The root node is the HTML element where you want React to display the result. It does NOT have to be a <div>, and it does NOT have to have id='root' — it can be named anything.",
+              "code": "// index.html\n<header id=\"sandy\"></header>\n\n// main.jsx\nimport { createRoot } from 'react-dom/client'\ncreateRoot(document.getElementById('sandy')).render(\n  <p>Welcome!</p>\n)"
+            }
+          ],
+          "keyTakeaways": [
+            "createRoot(element).render(jsx) is how React mounts an app.",
+            "The root node element can have any id/tag name, not just <div id='root'>."
+          ]
+        },
+        {
+          "lessonId": "m1_l3",
+          "order": 3,
+          "title": "Lesson 3: Introduction to JSX",
+          "relatedExerciseIds": ["exercise_s1", "exercise_s3", "exercise_s4"],
+          "sections": [
+            {
+              "heading": "What is JSX?",
+              "content": "JSX stands for JavaScript XML. It allows writing HTML in React and makes it easier to write and add HTML inside React code."
+            },
+            {
+              "heading": "Coding JSX",
+              "content": "JSX lets you write HTML elements in JavaScript and place them in the DOM without createElement() or appendChild(). JSX converts HTML tags into React elements. Using JSX is optional but recommended."
+            },
+            {
+              "heading": "Expressions in JSX",
+              "content": "You can write any valid JavaScript expression inside curly braces { }. JSX executes the expression and returns the result.",
+              "code": "const myElement = <h1>React is {5 + 5} times better with JSX</h1>;\n// Output: React is 10 times better with JSX"
+            },
+            {
+              "heading": "Elements Must be Closed",
+              "content": "JSX follows XML rules — HTML elements must be properly closed (e.g. <img />, <input />), or JSX throws an error."
+            },
+            {
+              "heading": "Attribute class = className",
+              "content": "class is a reserved word in JavaScript, so JSX uses className instead. When rendered, className is translated into the class attribute."
+            },
+            {
+              "heading": "Comments in JSX",
+              "content": "Comments inside JSX are written as {/* comment */}."
+            },
+            {
+              "heading": "JSX in React Components",
+              "content": "Components are independent, reusable bits of code, like JavaScript functions that return HTML. JSX works perfectly inside React components."
+            }
+          ],
+          "keyTakeaways": [
+            "JSX = JavaScript XML, syntax extension to write HTML inside JS.",
+            "Use className instead of class.",
+            "All JSX elements must be properly closed.",
+            "Embed JS expressions using { }."
+          ]
+        },
+        {
+          "lessonId": "m1_l4",
+          "order": 4,
+          "title": "Lesson 4: React JSX Expressions",
+          "relatedExerciseIds": ["exercise_s4"],
+          "sections": [
+            {
+              "heading": "Expressions",
+              "content": "Insert any valid JavaScript expression inside JSX by wrapping it in curly braces { }. React evaluates the expression and renders the result in the DOM.",
+              "code": "function Car() {\n  return (\n    <>\n      <h1>My car</h1>\n      <p>It has {218 * 1.36} horsepower</p>\n    </>\n  );\n}\n// Output: My car / It has 296.48 horsepower"
+            },
+            {
+              "heading": "Variables",
+              "content": "Variables are valid expressions and can be inserted into JSX using { }.",
+              "code": "function Car() {\n  const hp = 218 * 1.36;\n  return (\n    <>\n      <h1>My car</h1>\n      <p>It has {hp} horsepower</p>\n    </>\n  );\n}"
+            },
+            {
+              "heading": "Function Calls",
+              "content": "Function calls are valid expressions and can be inserted into JSX using { }.",
+              "code": "function kwtohp(kw) {\n  return kw * 1.36;\n}\nfunction Car() {\n  return (\n    <>\n      <h1>My car</h1>\n      <p>It has {kwtohp(218)} horsepower</p>\n    </>\n  );\n}"
+            },
+            {
+              "heading": "Object Properties",
+              "content": "Access object properties within JSX using dot notation inside { }.",
+              "code": "function Car() {\n  const myobj = { name: \"Fiat\", model: \"500\", color: \"white\" };\n  return <h1>My car is a {myobj.color} {myobj.name} {myobj.model}</h1>;\n}\n// Output: My car is a white Fiat 500"
+            }
+          ],
+          "keyTakeaways": [
+            "JSX expressions can be literals, variables, function calls, or object properties.",
+            "All must be wrapped inside single curly braces { }."
+          ]
+        }
+      ]
+    },
+    {
+      "milestoneId": "m2",
+      "title": "Milestone 2: Building React Interfaces",
+      "lessons": [
+        {
+          "lessonId": "m2_l1",
+          "order": 1,
+          "title": "Lesson 1: React JSX Attributes",
+          "relatedExerciseIds": ["exercise_s5"],
+          "sections": [
+            {
+              "heading": "class = className",
+              "content": "Since class is a reserved JS keyword, JSX uses className. When rendered, className is translated back into class."
+            },
+            {
+              "heading": "Expressions as Attributes",
+              "content": "You can use JavaScript expressions as attribute values. The value must NOT be wrapped in quotes when using an expression — quotes force JSX to treat it as a string literal instead of a JS expression."
+            },
+            {
+              "heading": "camelCase Event Attributes",
+              "content": "Event attributes in JSX are written in camelCase, e.g. onClick, onChange."
+            },
+            {
+              "heading": "Boolean Attributes",
+              "content": "If you pass no value for an attribute, JSX treats it as true. To pass false explicitly, you must specify it as an expression, e.g. disabled={false}."
+            },
+            {
+              "heading": "The style Attribute",
+              "content": "The style attribute only accepts a JavaScript object with camelCased CSS property names (e.g. fontSize instead of font-size), not a CSS string like in HTML."
+            }
+          ],
+          "keyTakeaways": [
+            "Use className, camelCase event handlers, and JS-object style attributes.",
+            "Expression attribute values are NOT quoted."
+          ]
+        },
+        {
+          "lessonId": "m2_l2",
+          "order": 2,
+          "title": "Lesson 2: Styling React Using CSS",
+          "relatedExerciseIds": ["exercise_s6"],
+          "sections": [
+            {
+              "heading": "Inline Styling",
+              "content": "To style with the inline style attribute, the value must be a JavaScript object. Since JSX expressions use { } and JS objects also use { }, inline styling ends up written with double curly braces {{ }}."
+            },
+            {
+              "heading": "camelCased Property Names",
+              "content": "CSS properties with hyphens (e.g. background-color) must be written in camelCase (backgroundColor) inside the style object."
+            },
+            {
+              "heading": "JavaScript Object",
+              "content": "You can define a style object separately and reference it in the style attribute, instead of inlining it."
+            },
+            {
+              "heading": "CSS Stylesheet",
+              "content": "You can write CSS in a separate .css file and import it into your component. Styles are only available to the component that imported the file.",
+              "code": "import { createRoot } from 'react-dom/client';\nimport './MyStylesheet.css';\nconst Header = () => (\n  <>\n    <h1>Hello Style!</h1>\n    <p>Add a little style!.</p>\n  </>\n);\ncreateRoot(document.getElementById('root')).render(<Header />);"
+            },
+            {
+              "heading": "CSS Modules",
+              "content": "CSS Modules (.module.css) scope styles locally to the importing component, avoiding name conflicts.",
+              "code": "import { createRoot } from 'react-dom/client';\nimport styles from './my-style.module.css';\n\nconst Car = () => <h1 className={styles.bigred}>Hello Car!</h1>;\ncreateRoot(document.getElementById('root')).render(<Car />);"
+            }
+          ],
+          "keyTakeaways": [
+            "Three styling approaches: inline style object, CSS stylesheet import, CSS Modules.",
+            "Inline style uses {{ }} with camelCase keys."
+          ]
+        },
+        {
+          "lessonId": "m2_l3",
+          "order": 3,
+          "title": "Lesson 3: React CSS Modules",
+          "relatedExerciseIds": ["exercise_s7"],
+          "sections": [
+            {
+              "heading": "What are CSS Modules?",
+              "content": "CSS Modules are CSS files (.module.css) where class names are scoped locally by default, preventing class name collisions across components."
+            },
+            {
+              "heading": "Creating a CSS Module",
+              "content": "Example: Button.module.css defines a .mybutton class.",
+              "code": ".mybutton {\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}"
+            },
+            {
+              "heading": "Using a CSS Module",
+              "content": "Import the styles object and access classes via dot notation, e.g. styles.mybutton. The actual rendered class name is uniquely generated (e.g. _mybutton_q1obu_1).",
+              "code": "import styles from './Button.module.css';\nfunction App() {\n  return (\n    <div>\n      <button className={styles.mybutton}>My Button</button>\n    </div>\n  );\n}"
+            },
+            {
+              "heading": "Composing Classes",
+              "content": "CSS Modules support combining classes via the composes keyword, letting one class inherit another's styles."
+            },
+            {
+              "heading": "Global Classes",
+              "content": "By default, CSS Module classes are scoped locally (prefixed with a unique hash). Use the :global(...) syntax to make a class available globally, unprefixed.",
+              "code": ":global(.myheader) {\n  padding: 10px 20px;\n  font-size: 50px;\n  color: white;\n  background-color: dodgerblue;\n}"
+            },
+            {
+              "heading": "Combine Global and Local Classes",
+              "content": "A single CSS Module file can contain both globally-scoped and locally-scoped classes together."
+            }
+          ],
+          "keyTakeaways": [
+            "CSS Modules auto-generate unique class names to avoid conflicts.",
+            "Use :global(...) to opt a class out of local scoping."
+          ]
+        },
+        {
+          "lessonId": "m2_l4",
+          "order": 4,
+          "title": "Lesson 4: React JSX If Statements",
+          "relatedExerciseIds": ["exercise_s8"],
+          "sections": [
+            {
+              "heading": "If statements are not allowed inside JSX",
+              "content": "React supports if statements, but NOT directly inside JSX markup. You must either place if logic outside the JSX, or use a ternary expression inline."
+            },
+            {
+              "heading": "Option 1: if outside JSX",
+              "content": "Compute the value before the return statement, then reference the variable inside JSX.",
+              "code": "function Fruit() {\n  const x = 5;\n  let y = \"Apple\";\n  if (x < 10) {\n    y = \"Banana\";\n  }\n  return <h1>{y}</h1>;\n}"
+            },
+            {
+              "heading": "Option 2: Ternary expression",
+              "content": "Use the ternary operator directly inside the JSX curly braces.",
+              "code": "function Fruit() {\n  const x = 5;\n  return <h1>{(x) < 10 ? \"Banana\" : \"Apple\"}</h1>;\n}"
+            }
+          ],
+          "keyTakeaways": [
+            "if/else cannot be written directly inside JSX braces.",
+            "Use either a precomputed variable, or a ternary operator inline."
+          ]
+        }
+      ]
+    },
+    {
+      "milestoneId": "m3",
+      "title": "Milestone 3: Component and State",
+      "lessons": [
+        {
+          "lessonId": "m3_l1",
+          "order": 1,
+          "title": "Lesson 1: React Components",
+          "relatedExerciseIds": ["exercise_s9"],
+          "sections": [
+            {
+              "heading": "React Components",
+              "content": "Components are independent, reusable bits of code that work like JavaScript functions but return HTML/JSX. There are Function components and Class components — this course focuses on Function components combined with Hooks (the modern recommended approach)."
+            },
+            {
+              "heading": "Create Your First Component",
+              "content": "A component's name MUST start with an uppercase letter and return JSX.",
+              "code": "function Car() {\n  return <h2>Hi, I am a Car!</h2>;\n}"
+            },
+            {
+              "heading": "Rendering a Component",
+              "content": "Use a component like an HTML tag: <Car />.",
+              "code": "createRoot(document.getElementById('root')).render(<Car />)"
+            },
+            {
+              "heading": "Components in Components",
+              "content": "Components can be referenced/nested inside other components, and can be rendered multiple times within a parent.",
+              "code": "function Car() {\n  return <h2>I am a Car!</h2>;\n}\nfunction Garage() {\n  return (\n    <>\n      <h1>Who lives in my Garage?</h1>\n      <Car />\n      <Car />\n    </>\n  );\n}"
+            },
+            {
+              "heading": "Components in Files",
+              "content": "Components are typically split into separate .jsx files (filename must start uppercase) and imported where needed, using export default / import."
+            }
+          ],
+          "keyTakeaways": [
+            "Component names start with an uppercase letter.",
+            "Function components return JSX and can be nested/reused.",
+            "Split components into separate files using export default."
+          ]
+        },
+        {
+          "lessonId": "m3_l2",
+          "order": 2,
+          "title": "Lesson 2: React Props",
+          "relatedExerciseIds": ["exercise_s10"],
+          "sections": [
+            {
+              "heading": "React Props",
+              "content": "Props (properties) are arguments passed into components via HTML-like attributes, similar to function arguments in JavaScript.",
+              "code": "createRoot(document.getElementById('root')).render(<Car brand=\"Ford\" />);\n\nfunction Car(props) {\n  return <h2>I am a {props.brand}!</h2>;\n}"
+            },
+            {
+              "heading": "Naming the props object",
+              "content": "The parameter name doesn't have to be 'props' — it can be called anything, e.g. myobj."
+            },
+            {
+              "heading": "Multiple Properties & Data Types",
+              "content": "You can pass as many props as needed. Props can be any data type: strings (in quotes), or numbers/variables/objects/arrays (wrapped in curly braces { })."
+            },
+            {
+              "heading": "Object and Array Props",
+              "content": "Object props are accessed via dot notation; array props via index notation."
+            },
+            {
+              "heading": "Props are Read-only",
+              "content": "Props passed from parent to child are read-only. Attempting to modify a prop's value directly inside the child throws an error."
+            }
+          ],
+          "keyTakeaways": [
+            "Props pass data from parent to child via attribute-like syntax.",
+            "Props are read-only and cannot be mutated by the child."
+          ]
+        },
+        {
+          "lessonId": "m3_l3",
+          "order": 3,
+          "title": "Lesson 3: React Destructuring Props",
+          "relatedExerciseIds": ["exercise_s11"],
+          "sections": [
+            {
+              "heading": "Destructuring Props",
+              "content": "Destructuring lets a component declare only the specific properties it needs from props, using curly braces.",
+              "code": "function Car(props) {\n  const { brand, model } = props;\n  return <h2>I love my {brand} {model}!</h2>;\n}"
+            },
+            {
+              "heading": "Destructuring ...rest",
+              "content": "When you don't know how many properties you'll receive, use the ...rest operator to capture remaining properties not explicitly named into a single object."
+            },
+            {
+              "heading": "Default Values",
+              "content": "With destructuring, you can assign default values for props; the default is used when no value is provided for that property.",
+              "code": "function Car({ color = \"blue\", brand }) {\n  return <h2>My {color} {brand}!</h2>;\n}\ncreateRoot(document.getElementById('root')).render(<Car brand=\"Ford\" />);"
+            }
+          ],
+          "keyTakeaways": [
+            "Destructure props directly in the function signature: function Car({ brand, model }).",
+            "...rest captures unspecified props.",
+            "Default values: function Car({ color = \"blue\" })."
+          ]
+        },
+        {
+          "lessonId": "m3_l4",
+          "order": 4,
+          "title": "Lesson 4: Hooks and React useState",
+          "relatedExerciseIds": ["exercise_s12"],
+          "sections": [
+            {
+              "heading": "What is a Hook?",
+              "content": "Hooks are functions that let you 'hook into' React state and lifecycle features from functional components, without using classes. They give a direct API to props, state, context, refs, and lifecycle."
+            },
+            {
+              "heading": "Hook Rules",
+              "content": "1) Hooks can only be called inside React function components. 2) Hooks can only be called at the top level of a component. 3) Hooks cannot be conditional. Hooks do not work in class components."
+            },
+            {
+              "heading": "Import & Initialize useState",
+              "content": "Import useState from 'react' and call it inside the component. useState accepts an initial state and returns an array of two values: the current state, and a function to update it.",
+              "code": "import { useState } from \"react\";\n\nfunction FavoriteColor() {\n  const [color, setColor] = useState(\"red\");\n}"
+            },
+            {
+              "heading": "Read State",
+              "content": "The current state value can be used anywhere inside the component's JSX.",
+              "code": "function FavoriteColor() {\n  const [color, setColor] = useState(\"red\");\n  return <h1>My favorite color is {color}!</h1>;\n}"
+            },
+            {
+              "heading": "Update State",
+              "content": "Use the updater function returned by useState to change state. Never mutate state directly (e.g. color = \"blue\" is NOT allowed).",
+              "code": "<button type=\"button\" onClick={() => setColor(\"blue\")}>Blue</button>"
+            },
+            {
+              "heading": "What Can State Hold?",
+              "content": "useState can track strings, numbers, booleans, arrays, objects, or any combination. You can use multiple useState calls for individual values, or a single useState holding an object."
+            },
+            {
+              "heading": "Updating Objects and Arrays in State (Immutability)",
+              "content": "When state updates, the entire state value is overwritten — calling setCar({color: \"blue\"}) alone would wipe out the other object properties. Use the spread operator with a functional update to preserve previous state while changing only what's needed.",
+              "code": "const updateColor = () => {\n  setCar(previousState => {\n    return { ...previousState, color: \"blue\" }\n  });\n}"
+            }
+          ],
+          "keyTakeaways": [
+            "useState returns [value, setterFn]; never mutate state directly.",
+            "Hooks: top-level only, inside function components only, never conditional.",
+            "Use functional updates + spread operator ({ ...prev, key: value }) to update part of an object/array state immutably."
+          ]
+        }
+      ]
+    }
+  ]
+}

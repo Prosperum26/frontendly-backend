@@ -1,0 +1,32 @@
+{
+  "description": "Bảng map chuẩn DUY NHẤT nối canonicalLessonId (theory.json) <-> exerciseId (lessons.json) <-> questionIds (entrance_test.json). Dùng làm nguồn sự thật (source of truth) cho PathBuilderService, tránh lệ thuộc vào 2 cách đặt tên lesson khác nhau giữa theory.json và entrance_test.json.",
+  "order": [
+    "m1_l1", "m1_l2", "m1_l3", "m1_l4",
+    "m2_l1", "m2_l2", "m2_l3", "m2_l4",
+    "m3_l1", "m3_l2", "m3_l3", "m3_l4"
+  ],
+  "map": {
+    "m1_l1": { "milestoneId": "m1", "title": "React Intro",                       "exerciseId": "exercise_s1",  "questionIds": [1, 2, 4, 6] },
+    "m1_l2": { "milestoneId": "m1", "title": "Rendering HTML in React",           "exerciseId": "exercise_s2",  "questionIds": [5] },
+    "m1_l3": { "milestoneId": "m1", "title": "Introduction to JSX",               "exerciseId": "exercise_s3",  "questionIds": [3] },
+    "m1_l4": { "milestoneId": "m1", "title": "React JSX Expressions",             "exerciseId": "exercise_s4",  "questionIds": [3] },
+    "m2_l1": { "milestoneId": "m2", "title": "React JSX Attributes",              "exerciseId": "exercise_s5",  "questionIds": [11] },
+    "m2_l2": { "milestoneId": "m2", "title": "Styling React Using CSS",           "exerciseId": "exercise_s6",  "questionIds": [7] },
+    "m2_l3": { "milestoneId": "m2", "title": "React CSS Modules",                 "exerciseId": "exercise_s7",  "questionIds": [8] },
+    "m2_l4": { "milestoneId": "m2", "title": "React JSX If Statements",           "exerciseId": "exercise_s8",  "questionIds": [9, 10] },
+    "m3_l1": { "milestoneId": "m3", "title": "React Components",                  "exerciseId": "exercise_s9",  "questionIds": [12] },
+    "m3_l2": { "milestoneId": "m3", "title": "React Props",                       "exerciseId": "exercise_s10", "questionIds": [13] },
+    "m3_l3": { "milestoneId": "m3", "title": "React Destructuring Props",         "exerciseId": "exercise_s11", "questionIds": [14] },
+    "m3_l4": { "milestoneId": "m3", "title": "Hooks and React useState",          "exerciseId": "exercise_s12", "questionIds": [15, 16, 17, 18, 19, 20] }
+  },
+  "milestoneToCriticalGate": {
+    "m1": ["gate_foundation"],
+    "m2": ["gate_foundation"],
+    "m3": ["gate_foundation", "gate_component", "gate_state"]
+  },
+  "notes": [
+    "m1_l3 và m1_l4 dùng chung questionId 3 vì cả 2 bài đều dạy JSX expressions ({ }) — câu hỏi 3 trong entrance test đủ đại diện cho cả hai, không tách riêng được do đề chỉ có 20 câu cho 12 bài.",
+    "PathBuilderService PHẢI duyệt theo thứ tự trong `order`, không random.",
+    "milestoneToCriticalGate dùng để kiểm tra điều kiện (4) trong personalizationRules: muốn auto-pass/unlock lesson thuộc milestone N, mọi gate liệt kê cho milestone N-1 trở về trước phải PASS."
+  ]
+}

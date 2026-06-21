@@ -1,0 +1,198 @@
+{
+  "test_id": "entrance_test_react_v1",
+  "title": "React Entrance Test - Personalized Path",
+
+  "questions": [
+    { "id": 1,  "competency": "foundation", "difficulty": "easy",   "topic": "JSX Basics",
+      "question": "What is the core nature of JSX in React?",
+      "options": { "A": "It is a new Backend programming language.", "B": "It is a CSS Framework designed specifically for React.", "C": "It is a syntax extension for JavaScript, allowing you to write HTML-like UI code inside a JS file.", "D": "It is a library that completely replaces JavaScript." },
+      "correctAnswer": "C" },
+    { "id": 2,  "competency": "foundation", "difficulty": "medium", "topic": "JSX Single Root Rule",
+      "question": "When a Component function returns a piece of JSX code, which mandatory rule must be followed?",
+      "options": { "A": "It must have the render keyword at the beginning.", "B": "It must return only one single parent element wrapping the entire content.", "C": "It is not allowed to use the <div> tag.", "D": "It strictly requires <header> and <footer> tags." },
+      "correctAnswer": "B" },
+    { "id": 3,  "competency": "foundation", "difficulty": "easy",   "topic": "JSX Expressions",
+      "question": "To embed a JavaScript variable or expression inside a JSX UI, which symbols do you use?",
+      "options": { "A": "[ ]", "B": "( )", "C": "{{ }}", "D": "{ }" },
+      "correctAnswer": "D" },
+    { "id": 4,  "competency": "foundation", "difficulty": "easy",   "topic": "Self-closing Tags",
+      "question": "What must you keep in mind when writing self-closing tags like <img> or <input> in JSX syntax to avoid a Compiler error?",
+      "options": { "A": "There is no difference compared to plain HTML.", "B": "A forward slash is strictly required at the end of the tag (e.g., <img />, <input />).", "C": "They must be written entirely in lowercase.", "D": "They must be wrapped in double quotes." },
+      "correctAnswer": "B" },
+    { "id": 5,  "competency": "foundation", "difficulty": "medium", "topic": "createRoot",
+      "question": "Which method is used to render the root Component of the application into the HTML file (usually the tag with id 'root')?",
+      "options": { "A": "ReactDOM.render()", "B": "React.mount()", "C": "ReactDOM.createRoot()", "D": "document.getElementById('root').append()" },
+      "correctAnswer": "C" },
+    { "id": 6,  "competency": "foundation", "difficulty": "easy",   "topic": "className",
+      "question": "To declare a class name for an HTML tag inside JSX, which attribute do you use?",
+      "options": { "A": "class", "B": "className", "C": "classList", "D": "css-class" },
+      "correctAnswer": "B" },
+
+    { "id": 7,  "competency": "styling", "difficulty": "medium", "topic": "Inline Styling Syntax",
+      "question": "Which of the following is the correct syntax for Inline CSS styling in JSX?",
+      "options": { "A": "<div style=\"background-color: red; font-size: 16px;\">", "B": "<div style={ backgroundColor: \"red\", fontSize: \"16px\" }>", "C": "<div style={{ backgroundColor: 'red', fontSize: '16px' }}>", "D": "<div style={['background-color': 'red']}>" },
+      "correctAnswer": "C" },
+    { "id": 8,  "competency": "styling", "difficulty": "easy",   "topic": "CSS Modules",
+      "question": "What is the biggest benefit of using CSS Modules (.module.css) in a React project?",
+      "options": { "A": "It helps CSS files load 50% faster.", "B": "It automatically adds prefixes for older browsers.", "C": "It locally scopes CSS by automatically generating unique class names to prevent style conflicts between Components.", "D": "It allows writing JavaScript code inside CSS files." },
+      "correctAnswer": "C" },
+    { "id": 9,  "competency": "styling", "difficulty": "medium", "topic": "Conditional Rendering Operators",
+      "question": "Which operator is commonly used to conditionally render UI as an alternative to if-else in JSX?",
+      "options": { "A": "Ternary operator (condition ? A : B)", "B": "Logical AND operator (condition && A)", "C": "Logical OR operator (condition || A)", "D": "if...else syntax written directly inside a <div> tag" },
+      "correctAnswer": "A" },
+    { "id": 10, "competency": "styling", "difficulty": "medium", "topic": "Ternary Operator Syntax",
+      "question": "Assuming the variable isLoggedIn = true. Which of the following code snippets uses the Ternary Operator with the correct JSX syntax?",
+      "options": { "A": "<div> {isLoggedIn ? \"Welcome\" : \"Please log in\"} </div>", "B": "<div> {if (isLoggedIn) \"Welcome\" else \"Please log in\"} </div>", "C": "<div> {isLoggedIn && \"Welcome\" || \"Please log in\"} </div>", "D": "<div> isLoggedIn ? \"Welcome\" : \"Please log in\" </div>" },
+      "correctAnswer": "A" },
+    { "id": 11, "competency": "styling", "difficulty": "medium", "topic": "Event Handlers",
+      "question": "How do you pass a click event handler function to a button in React?",
+      "options": { "A": "<button onclick=\"handleClick()\">Click</button>", "B": "<button onClick={handleClick()}>Click</button>", "C": "<button onClick={handleClick}>Click</button>", "D": "<button on-click={handleClick}>Click</button>" },
+      "correctAnswer": "C" },
+
+    { "id": 12, "competency": "component", "difficulty": "easy",   "topic": "Function Components",
+      "question": "What is the nature of a Function Component in React?",
+      "options": { "A": "It is an Object containing HTML attributes.", "B": "It is a standard JavaScript function that takes Props and returns UI code (JSX).", "C": "It is an HTML file wrapped in a JS function.", "D": "It is a Class inherited from React.Component." },
+      "correctAnswer": "B" },
+    { "id": 13, "competency": "component", "difficulty": "easy",   "topic": "Props Read-only",
+      "question": "What is the most important characteristic of Props in React?",
+      "options": { "A": "They can be freely modified inside the child Component.", "B": "They are only used to pass data from a Child Component up to a Parent Component.", "C": "They are \"Read-only\" data, passed from a Parent Component down to a Child Component and cannot be modified directly.", "D": "They are used to store the internal state of a Component." },
+      "correctAnswer": "C" },
+    { "id": 14, "competency": "component", "difficulty": "medium", "topic": "Props Destructuring",
+      "question": "Prop Destructuring makes the code more concise. Instead of writing function User(props) { return <p>{props.name}</p> }, what is the correct way to write it?",
+      "options": { "A": "function User(name) { return <p>{name}</p> }", "B": "function User({ name }) { return <p>{name}</p> }", "C": "function User[name] { return <p>{name}</p> }", "D": "function User({ props.name }) { return <p>{name}</p> }" },
+      "correctAnswer": "B" },
+
+    { "id": 15, "competency": "state", "difficulty": "easy", "topic": "useState Return Structure",
+      "question": "When called, the useState Hook returns data in what structure?",
+      "options": { "A": "An Object containing { state, setState }.", "B": "A String displaying the state.", "C": "An Array containing exactly 2 elements: [current state value, function to update that state].", "D": "A callback function to change the UI." },
+      "correctAnswer": "C" },
+    { "id": 16, "competency": "state", "difficulty": "medium", "topic": "State vs Variable",
+      "question": "What is the difference between a standard variable (let count = 0) and a state variable (const [count, setCount] = useState(0)) in a Component?",
+      "options": { "A": "There is no difference, it is just a shorter way of writing.", "B": "A standard variable cannot store decimal numbers.", "C": "When calling the setCount function to change the State value, React triggers a re-render to update the new data; whereas changing a standard variable leaves the UI unchanged.", "D": "A State variable can be accessed from any file in the project." },
+      "correctAnswer": "C" },
+    { "id": 17, "competency": "state", "difficulty": "hard", "topic": "Rules of Hooks",
+      "question": "According to the \"Rules of Hooks\", where are you STRICTLY FORBIDDEN to place a useState call?",
+      "options": { "A": "At the first line inside a Function Component.", "B": "Wrapped inside an if...else statement, a for loop, or a nested function.", "C": "Calling useState multiple times in the same Component.", "D": "Initializing useState with an Array as the value." },
+      "correctAnswer": "B" },
+    { "id": 18, "competency": "state", "difficulty": "hard", "topic": "Functional Updates",
+      "question": "When updating a State where the new value directly depends on the old value (e.g., incrementing a counter by 1), which of the following approaches is recommended by React as the safest?",
+      "options": { "A": "setCount(count + 1)", "B": "count = count + 1", "C": "setCount(count++)", "D": "setCount(prevCount => prevCount + 1)" },
+      "correctAnswer": "D" },
+    { "id": 19, "competency": "state", "difficulty": "hard", "topic": "Immutable State",
+      "question": "Immutability is very important in State. If user is an object { name: 'Alice', age: 20 }, which of the following is the CORRECT React standard way to update the name to 'Bob'?",
+      "options": { "A": "user.name = 'Bob'; setUser(user);", "B": "setUser({ name: 'Bob', age: 20 });", "C": "setUser({ ...user, name: 'Bob' });", "D": "Both B and C are correct." },
+      "correctAnswer": "D" },
+    { "id": 20, "competency": "state", "difficulty": "hard", "topic": "Async State Updates",
+      "question": "When you call a State update function (e.g., setCount(1)), what happens immediately on the very next line of code (console.log(count))?",
+      "options": { "A": "The count variable will print the new value, which is 1.", "B": "The count variable still prints the old value, because state updates in React are asynchronous (batched) and the Component has not yet re-rendered.", "C": "The browser fully refreshes the webpage.", "D": "React reports a compiler error." },
+      "correctAnswer": "B" }
+  ],
+
+  "questionMapping": {
+    "foundation": [1, 2, 3, 4, 5, 6],
+    "styling": [7, 8, 9, 10, 11],
+    "component": [12, 13, 14],
+    "state": [15, 16, 17, 18, 19, 20]
+  },
+
+  "difficultyWeight": {
+    "easy":   { "questions": [1, 3, 4, 6, 12, 13, 15],            "weight": 1 },
+    "medium": { "questions": [2, 5, 7, 9, 10, 11, 14, 16],        "weight": 2 },
+    "hard":   { "questions": [17, 18, 19, 20],                    "weight": 3 }
+  },
+
+  "lessonMapping": {
+    "1":  "Milestone 1 - Lesson 3",
+    "2":  "Milestone 1 - Lesson 3",
+    "3":  "Milestone 1 - Lesson 4",
+    "4":  "Milestone 1 - Lesson 3",
+    "5":  "Milestone 1 - Lesson 2",
+    "6":  "Milestone 1 - Lesson 3",
+    "7":  "Milestone 2 - Lesson 2",
+    "8":  "Milestone 2 - Lesson 3",
+    "9":  "Milestone 2 - Lesson 4",
+    "10": "Milestone 2 - Lesson 4",
+    "11": "Milestone 2 - Lesson 1",
+    "12": "Milestone 3 - Lesson 1",
+    "13": "Milestone 3 - Lesson 2",
+    "14": "Milestone 3 - Lesson 3",
+    "15": "Milestone 3 - Lesson 4",
+    "16": "Milestone 3 - Lesson 4",
+    "17": "Milestone 3 - Lesson 4",
+    "18": "Milestone 3 - Lesson 4",
+    "19": "Milestone 3 - Lesson 4",
+    "20": "Milestone 3 - Lesson 4"
+  },
+
+  "lessonToExerciseId": {
+    "Milestone 1 - Lesson 1": "exercise_s1",
+    "Milestone 1 - Lesson 2": "exercise_s2",
+    "Milestone 1 - Lesson 3": "exercise_s3",
+    "Milestone 1 - Lesson 4": "exercise_s4",
+    "Milestone 2 - Lesson 1": "exercise_s5",
+    "Milestone 2 - Lesson 2": "exercise_s5",
+    "Milestone 2 - Lesson 3": "exercise_s6",
+    "Milestone 2 - Lesson 4": "exercise_s7",
+    "Milestone 2 - Lesson 5": "exercise_s8",
+    "Milestone 3 - Lesson 1": "exercise_s9",
+    "Milestone 3 - Lesson 2": "exercise_s10",
+    "Milestone 3 - Lesson 3": "exercise_s11",
+    "Milestone 3 - Lesson 4": "exercise_s12"
+  },
+
+  "criticalGateRules": [
+    { "id": "gate_state",     "competency": "state",     "minPercentage": 50, "failReason": "Core React State knowledge is insufficient." },
+    { "id": "gate_foundation","competency": "foundation","minPercentage": 70, "failReason": "React fundamentals are not mastered." },
+    { "id": "gate_component", "competency": "component", "minPercentage": 60, "failReason": "Component and Props understanding is insufficient." }
+  ],
+
+  "advancementLevels": [
+    { "level": "A", "min": 0,  "max": 20,  "label": "Beginner",                  "action": "Repeat Milestone 1" },
+    { "level": "B", "min": 21, "max": 40,  "label": "Basic Awareness",           "action": "Review Milestone 1" },
+    { "level": "C", "min": 41, "max": 60,  "label": "Junior Beginner",           "action": "Unlock Milestone 2", "requiresCompetency": { "foundation": 70 } },
+    { "level": "D", "min": 61, "max": 80,  "label": "React Fundamentals Ready",  "action": "Unlock Milestone 3", "requiresAllGatesPass": true },
+    { "level": "E", "min": 81, "max": 100, "label": "Excellent",                 "action": "Fast Track",         "requiresAllGatesPass": true }
+  ],
+
+  "personalizationRules": {
+    "description": "Quy tắc auto-pass / skip bài học dựa trên kết quả entrance test. Một exercise được auto-pass (skip) cho user khi: (1) competency mastery của milestone chứa exercise đó >= ngưỡng tương ứng, VÀ (2) tất cả câu hỏi map tới đúng exercise đó đều được trả lời đúng (perQuestionCorrect), VÀ (3) không có critical gate nào của milestone thấp hơn bị fail.",
+    "competencyToMilestoneThreshold": {
+      "foundation": { "milestone": "Milestone 1", "autoPassThreshold": 80 },
+      "styling":    { "milestone": "Milestone 2 (Ex5-Ex6)", "autoPassThreshold": 80 },
+      "component":  { "milestone": "Milestone 3 (Ex9-Ex11)", "autoPassThreshold": 80 },
+      "state":      { "milestone": "Milestone 3 (Ex12 - useState)", "autoPassThreshold": 80 }
+    },
+    "perExerciseAutoPassAlgorithm": [
+      "Bước 1: Với mỗi exercise E trong lessons.json, tìm danh sách câu hỏi entrance test Q map tới E (qua lessonMapping + lessonToExerciseId).",
+      "Bước 2: Nếu không có câu hỏi nào map tới E -> E KHÔNG được auto-pass (không đủ dữ liệu đánh giá) -> user phải làm bình thường.",
+      "Bước 3: Nếu user trả lời đúng 100% các câu hỏi map tới E, VÀ competency mastery của nhóm chứa E >= 70%, VÀ tất cả Critical Gate Rules của các milestone <= milestone của E đều PASS -> auto-pass E (set status = 'skipped_via_placement', awarded_score = full).",
+      "Bước 4: Nếu E thuộc Milestone N nhưng Milestone N-1 chưa pass toàn bộ Critical Gate -> KHÔNG auto-pass E (phải học tuần tự, đảm bảo không có lỗ kiến thức nền)."
+    ],
+    "exampleMapping": {
+      "exercise_s1": { "relatedQuestions": [1, 2, 3, 4, 6], "note": "JSX basics, component, className" },
+      "exercise_s2": { "relatedQuestions": [5], "note": "createRoot" },
+      "exercise_s3": { "relatedQuestions": [1, 2, 4, 6], "note": "className + JSX" },
+      "exercise_s4": { "relatedQuestions": [3], "note": "JSX expressions" },
+      "exercise_s5": { "relatedQuestions": [11], "note": "event handler + inline style" },
+      "exercise_s6": { "relatedQuestions": [7], "note": "inline style object syntax" },
+      "exercise_s7": { "relatedQuestions": [8], "note": "CSS Modules" },
+      "exercise_s8": { "relatedQuestions": [9, 10], "note": "ternary conditional rendering" },
+      "exercise_s9": { "relatedQuestions": [12], "note": "function component basics" },
+      "exercise_s10": { "relatedQuestions": [13], "note": "props read-only" },
+      "exercise_s11": { "relatedQuestions": [14], "note": "props destructuring + default value" },
+      "exercise_s12": { "relatedQuestions": [15, 16, 17, 18, 19, 20], "note": "useState, immutability, async updates" }
+    }
+  },
+
+  "outputSchemaExample": {
+    "score": { "earned": 28, "max": 35, "percentage": 80 },
+    "competencies": { "foundation": 100, "styling": 80, "component": 67, "state": 33 },
+    "level": "React Fundamentals Ready",
+    "status": "FAIL",
+    "advancement": { "canAdvance": false, "nextMilestone": null },
+    "weakAreas": [],
+    "recommendedLessons": [],
+    "studyPlan": [],
+    "autoPassedExercises": []
+  }
+}

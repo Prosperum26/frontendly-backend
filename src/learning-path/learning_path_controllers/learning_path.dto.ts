@@ -57,10 +57,20 @@ export class PlacementTestDto {
   @IsNotEmpty()
   skipToMilestoneId!: string;
 
-  // Optional: which skill the placement test belongs to. Defaults to 'frontend'.
   @IsOptional()
   @IsString()
   skillId?: string;
+
+  @IsOptional()
+  learningPath?: Array<{
+    canonicalLessonId: string;
+    stageId?: string;
+    exerciseId: string;
+    status: 'auto_passed' | 'required' | 'locked';
+  }>;
+
+  @IsOptional()
+  studyPlan?: string[];
 }
 
 // ============================================================================

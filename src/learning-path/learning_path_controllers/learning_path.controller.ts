@@ -253,6 +253,8 @@ export class LearningContentController {
       body.skipToMilestoneId,
       userId,
       body.skillId ?? 'frontend',
+      body.learningPath,
+      body.studyPlan,
     );
     return {
       success: true,

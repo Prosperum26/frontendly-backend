@@ -1,6 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { ExerciseSchema } from '../../editor/db_schemas/exercise_schema';
+import {
+  CanonicalMap,
+  CanonicalMapSchema,
+} from '../../entrance-test/db_schemas/canonical-map.schema';
+import {
+  CourseTheory,
+  CourseTheorySchema,
+} from '../../entrance-test/db_schemas/course-theory.schema';
+import {
+  EntranceTest,
+  EntranceTestSchema,
+} from '../../entrance-test/db_schemas/entrance-test.schema';
 import {
   LpExerciseSchema,
   RoadmapSchema,
@@ -21,6 +34,7 @@ import {
   UserUtilsService,
 } from '../learning_path_service';
 import { LearningPathService } from '../learning_path_service/learning_path.service';
+import { PathBuilderService } from '../learning_path_service/path-builder.service';
 import { PlacementService } from '../learning_path_service/placement.service';
 import { PracticeService } from '../learning_path_service/practice.service';
 import { ProgressSummaryService } from '../learning_path_service/progress-summary.service';
@@ -38,6 +52,10 @@ import { UserModule } from '@/users/user.module';
       { name: 'LpExercise', schema: LpExerciseSchema },
       { name: 'Roadmap', schema: RoadmapSchema },
       { name: 'UserLearningProgress', schema: UserLearningProgressSchema },
+      { name: EntranceTest.name, schema: EntranceTestSchema },
+      { name: CanonicalMap.name, schema: CanonicalMapSchema },
+      { name: CourseTheory.name, schema: CourseTheorySchema },
+      { name: 'Exercise', schema: ExerciseSchema },
     ]),
     UserModule,
   ],
@@ -55,6 +73,7 @@ import { UserModule } from '@/users/user.module';
     VideoService,
     StageService,
     PlacementService,
+    PathBuilderService,
     ProgressSummaryService,
     XpService,
     StageContextService,
@@ -69,11 +88,13 @@ import { UserModule } from '@/users/user.module';
     VideoService,
     StageService,
     PlacementService,
+    PathBuilderService,
     ProgressSummaryService,
     XpService,
     StageContextService,
     ProgressService,
     UserUtilsService,
+    MongooseModule,
   ],
 })
 export class LearningPathModule {}

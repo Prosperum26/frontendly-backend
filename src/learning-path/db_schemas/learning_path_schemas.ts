@@ -143,6 +143,17 @@ export class UserLearningProgress {
   @Prop({ type: [UnlockedStageSchema], default: [] })
   unlockedStages!: UnlockedStage[];
 
+  @Prop({ type: [Object], default: [] })
+  personalizedLearningPath!: Array<{
+    canonicalLessonId: string;
+    stageId: string;
+    exerciseId: string;
+    status: 'auto_passed' | 'required' | 'locked';
+  }>;
+
+  @Prop({ type: [String], default: [] })
+  studyPlan!: string[];
+
   created_at!: Date;
   updated_at!: Date;
 }

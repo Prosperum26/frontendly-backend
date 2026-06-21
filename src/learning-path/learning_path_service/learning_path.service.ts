@@ -41,9 +41,20 @@ export class LearningPathService {
   }
 
   async unlockPractice(stageId: string, userId: string): Promise<unknown> {
-    // Automatically complete theory and award points immediately when user navigates to practice
-    await this.stageService.completeTheory(stageId, userId);
-    return this.practiceService.unlockPractice(stageId, userId);
+    const theoryResult = await this.stageService.completeTheory(
+      stageId,
+      userId,
+    );
+    const practiceResult = await this.practiceService.unlockPractice(
+      stageId,
+      userId,
+    );
+    return {
+      ...(typeof practiceResult === 'object' && practiceResult !== null
+        ? practiceResult
+        : { stageId }),
+      xpAwarded: theoryResult.xpEarned,
+    };
   }
 
   async getPractices(stageId: string, userId: string): Promise<unknown> {
@@ -132,11 +143,15 @@ export class LearningPathService {
     skipToMilestoneId: string,
     userId: string,
     skillId: string,
+    learningPath?: import('../../entrance-test/entrance-test.types').LearningPathLesson[],
+    studyPlan?: string[],
   ): Promise<unknown> {
     return this.placementService.syncPlacementTest(
       skipToMilestoneId,
       userId,
       skillId,
+      learningPath,
+      studyPlan,
     );
   }
 
