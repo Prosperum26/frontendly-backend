@@ -101,7 +101,11 @@ export class PracticeService {
   }
 
   async getPractices(stageId: string, userId: string): Promise<unknown> {
-    const dbProgress = await this.userProgressModel.findOne({ userId }).lean();
+    const { skillId } =
+      await this.stageContextService.findStageContext(stageId);
+    const dbProgress = await this.userProgressModel
+      .findOne({ userId, skillId })
+      .lean();
     if (dbProgress) {
       const stageEntry = dbProgress.unlockedStages.find(
         s => s.stageId === stageId,
@@ -190,8 +194,10 @@ export class PracticeService {
     }
 
     try {
+      const { skillId } =
+        await this.stageContextService.findStageContext(stageId);
       const dbProgress = await this.userProgressModel
-        .findOne({ userId })
+        .findOne({ userId, skillId })
         .lean();
       if (dbProgress) {
         const stageEntry = dbProgress.unlockedStages.find(
@@ -237,7 +243,7 @@ export class PracticeService {
         );
 
         await this.userProgressModel.updateOne(
-          { userId, ...stageUpdate.filter },
+          { userId, skillId, ...stageUpdate.filter },
           stageUpdate.update,
         );
 
