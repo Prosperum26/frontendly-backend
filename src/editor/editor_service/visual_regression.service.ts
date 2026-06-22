@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
@@ -7,6 +7,7 @@ import { PNG } from 'pngjs';
 
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
+import { CloudinaryService } from '../editor_service/cloudinary.service';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
 
 declare const Babel: {
@@ -20,7 +21,8 @@ declare const Babel: {
 export class VisualRegressionService {
   private targetImageCache = new Map<string, Buffer>(); // lưu screenshot của các bài tập
   constructor(
-    @Optional() private readonly puppeteerEvaluator: PuppeteerEvaluator | null,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly puppeteerEvaluator: PuppeteerEvaluator,
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
 
@@ -96,7 +98,6 @@ export class VisualRegressionService {
       .findOne({ id: exerciseId })
       .lean();
     const targetDesign = exercise?.target_design;
-
     if (!targetDesign) return [];
 
     // Nếu Puppeteer không khả dụng, trả về mảng rỗng (không làm lỗi)
@@ -149,7 +150,19 @@ export class VisualRegressionService {
             exerciseId,
             <Buffer>await targetPage.screenshot({ type: 'png' }),
           );
-          await targetPage.close(); // screenshot xong thì tắt tab luôn
+
+          // tránh tràn RAM nên xóa screenshot cũ nhất trong cache
+          const MAX_CACHE_SIZE = 50;
+          if (this.targetImageCache.size > MAX_CACHE_SIZE) {
+            const oldestExerciseId = <any>(
+              this.targetImageCache.keys().next().value
+            ); // xóa phần screenshot cũ nhất
+            this.targetImageCache.delete(oldestExerciseId);
+            console.log(
+              `[Visual Service] Cache clear the exercise ${oldestExerciseId}`,
+            );
+          }
+          await targetPage.close();
         }
 
         // user screenshot
@@ -201,15 +214,25 @@ export class VisualRegressionService {
         const totalPixels = width * height;
         const matchPercentage =
           ((totalPixels - mismatchedPixels) / totalPixels) * 100;
-        const isPassed = matchPercentage >= 95;
+        const isPassed = matchPercentage >= 99.99;
 
         let diffImageUrl = null;
         if (!isPassed) {
-          const buffer = PNG.sync.write(diff, {
-            deflateLevel: 9,
-            filterType: 4,
-          });
-          diffImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
+          const diffBuffer = PNG.sync.write(diff);
+          try {
+            const folderName = 'frontendly_diffImages';
+            const uploadDiffImage =
+              await this.cloudinaryService.uploadImageBuffer(
+                diffBuffer,
+                folderName,
+              );
+            diffImageUrl = uploadDiffImage.secure_url;
+          } catch (error: any) {
+            console.error(
+              `[Visual Service] Cannot upload the image on Cloudinary:`,
+              error.message,
+            );
+          }
         }
 
         return [
@@ -295,6 +318,7 @@ export class VisualRegressionService {
         );
 
         // Chờ component xuất hiện
+        await page.evaluate(() => console.log('Puppeteer running...'));
         await page.waitForSelector('#root > *', { timeout: 5000 });
       } else if (js?.trim()) {
         await page.addScriptTag({ content: js });

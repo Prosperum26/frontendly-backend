@@ -245,7 +245,7 @@ export default function App() {
         passed: false,
       }));
 
-      if (evalConfig.requirements && !hasLintError) {
+      if (evalConfig.requirements) {
         this.logger.debug(`[SubmitCode] Evaluating static requirements...`);
         const validReqs = reqList.filter(
           (req: any) => req.type_check !== 'behavior',
@@ -291,7 +291,7 @@ export default function App() {
       let visualResults: VisualEvaluationDto[] = [];
       let isVisualPassed = true;
       let visualScore = 100;
-      if (evalConfig.visual && !hasLintError) {
+      if (evalConfig.visual) {
         this.logger.debug(
           `[SubmitCode] Visual check enabled, evaluating visual...`,
         );
@@ -328,7 +328,7 @@ export default function App() {
       };
       let isBehaviorPassed = true;
 
-      if (evalConfig.behavior && !hasLintError) {
+      if (evalConfig.behavior) {
         this.logger.debug(`[SubmitCode] Evaluating ReactJS behavior...`);
 
         // eslint-disable-next-line sonarjs/no-gratuitous-expressions
@@ -367,7 +367,7 @@ export default function App() {
       let checksCount = 0;
 
       let isRequirementsPassed = true;
-      if (evalConfig.requirements && !hasLintError) {
+      if (evalConfig.requirements) {
         const countReq = requirementResults.length;
         const countPass = requirementResults.filter(
           (req: any) => req.passed,

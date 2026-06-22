@@ -3143,6 +3143,13 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
 
+"@types/streamifier@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@types/streamifier/-/streamifier-0.1.2.tgz#c60aa16e211de2191bba43658ee078654e9b1b18"
+  integrity sha512-W53GwxY5Tunz3JUoP1YWDidrAadenSZKOBKMRl6RO3yThOFd03w7yx3HypI8ABGuUCGDHCHUml/5e45FWRt1TQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/stylelint@^14.0.0":
   version "14.0.0"
   resolved "https://registry.yarnpkg.com/@types/stylelint/-/stylelint-14.0.0.tgz#496503f0a25cab7fc69aca92b329860a8fa93a1a"
@@ -9906,6 +9913,11 @@ stop-iteration-iterator@^1.1.0:
   dependencies:
     es-errors "^1.3.0"
     internal-slot "^1.1.0"
+
+streamifier@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/streamifier/-/streamifier-0.1.1.tgz#97e98d8fa4d105d62a2691d1dc07e820db8dfc4f"
+  integrity sha512-zDgl+muIlWzXNsXeyUfOk9dChMjlpkq0DRsxujtYPgyJ676yQ8jEm6zzaaWHFDg5BNcLuif0eD2MTyJdZqXpdg==
 
 streamsearch@^1.1.0:
   version "1.1.0"
