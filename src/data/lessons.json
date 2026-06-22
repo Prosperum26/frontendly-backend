@@ -25,19 +25,42 @@
           "width": 800,
           "height": 600
         },
-        "code_test": {
-          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
-          "js": "",
-          "jsx": "function Welcome() {\n  return (\n    <>\n      <h1>Welcome to React</h1>\n      <p>This is my first React application.</p>\n    </>\n  );\n}\n\nexport default function App() {\n  return <Welcome />;\n}"
-        },
+        "code_test": null,
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Component name must be Welcome." },
-          { "id": "req_2", "description": "Must render an h1 with text 'Welcome to React'." },
-          { "id": "req_3", "description": "Must render a paragraph with text 'This is my first React application.'" },
-          { "id": "req_4", "description": "App component must render Welcome." }
-        ],
+        {
+          "id": "req_1",
+          "text": "Component name must be Welcome.",
+          "selector": "Welcome",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must render an h1 with text 'Welcome to React'.",
+          "selector": "h1",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Welcome to React"
+        },
+        {
+          "id": "req_3",
+          "text": "Must render a paragraph with text 'This is my first React application.'",
+          "selector": "p",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "This is my first React application."
+        },
+        {
+          "id": "req_4",
+          "text": "App component must render Welcome.",
+          "selector": "Welcome",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        }
+      ],
         "navigation": {
           "prev": null,
           "next": { "type": "practice", "id": "exercise_s2", "milestoneId": "m1" },
@@ -70,18 +93,34 @@
           "width": 800,
           "height": 600
         },
-        "code_test": {
-          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
-          "js": "",
-          "jsx": "import { createRoot } from \"react-dom/client\";\n\ncreateRoot(document.getElementById(\"root\")).render(\n  <>\n    <h1>React Root Node</h1>\n    <p>Learning createRoot()</p>\n  </>\n);"
-        },
+        "code_test": null,
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Must use createRoot from react-dom/client." },
-          { "id": "req_2", "description": "Must render an h1 with text 'React Root Node'." },
-          { "id": "req_3", "description": "Must render a paragraph with text 'Learning createRoot()'." }
-        ],
+        {
+          "id": "req_1",
+          "text": "Must use createRoot from react-dom/client.",
+          "selector": "createRoot",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must render an h1 with text 'React Root Node'.",
+          "selector": "h1",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "React Root Node"
+        },
+        {
+          "id": "req_3",
+          "text": "Must render a paragraph with text 'Learning createRoot()'.",
+          "selector": "p",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Learning createRoot()"
+        }
+      ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s1", "milestoneId": "m1" },
           "next": { "type": "practice", "id": "exercise_s3", "milestoneId": "m1" },
@@ -114,18 +153,34 @@
           "width": 800,
           "height": 600
         },
-        "code_test": {
-          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
-          "js": "",
-          "jsx": "function Profile() {\n  return (\n    <>\n      <div className=\"profile\">\n        <h1>Frontend Developer</h1>\n        <p>Learning JSX</p>\n      </div>\n    </>\n  );\n}\n\nexport default function App() {\n  return <Profile />;\n}"
-        },
+        "code_test": null,
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Component name must be Profile." },
-          { "id": "req_2", "description": "Must use className=\"profile\" on the wrapping div." },
-          { "id": "req_3", "description": "Must display 'Frontend Developer' and 'Learning JSX'." }
-        ],
+        {
+          "id": "req_1",
+          "text": "Component name must be Profile.",
+          "selector": "Profile",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must use className=\"profile\" on the wrapping div.",
+          "selector": "div",
+          "type": "attribute",
+          "type_check": "others",
+          "expectedValue": "profile"
+        },
+        {
+          "id": "req_3",
+          "text": "Must display 'Frontend Developer' and 'Learning JSX'.",
+          "selector": "body",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Frontend Developer"
+        }
+      ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s2", "milestoneId": "m1" },
           "next": { "type": "practice", "id": "exercise_s4", "milestoneId": "m1" },
@@ -145,10 +200,15 @@
           "lint": true,
           "requirements": true,
           "visual": false,
-          "behavior": false
+          "behavior": true
         },
         "restrictions": [],
-        "tags": ["hard", "reactjs", "jsx-expressions", "milestone 1"],
+        "tags": [
+          "hard",
+          "reactjs",
+          "jsx-expressions",
+          "milestone 1"
+        ],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -158,21 +218,45 @@
           "width": 800,
           "height": 600
         },
-        "code_test": {
-          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
-          "js": "",
-          "jsx": "function Profile() {\n  const name = \"Alex\";\n  const age = 20;\n  return (\n    <>\n      <h1>{name}</h1>\n      <p>Age: {age}</p>\n      <p>Age Next Year: {age + 1}</p>\n    </>\n  );\n}\n\nexport default function App() {\n  return <Profile />;\n}"
-        },
-        "test_script": null,
+        "code_test": null,
+        "test_script": "import { render } from '@testing-library/react';\nimport App from './App';\n\ntest('Must display Age and Age Next Year', () => {\n  const { container } = render(<App />);\n  const text = container.textContent;\n  \n  // Dùng Regex để bắt xem học viên có in ra đúng format 'Age: [số]' và 'Age Next Year: [số]' không\n  expect(text).toMatch(/Age:\\s*\\d+/i);\n  expect(text).toMatch(/Age Next Year:\\s*\\d+/i);\n});",
         "requirements": [
-          { "id": "req_1", "description": "Must declare variables name and age." },
-          { "id": "req_2", "description": "Must use JSX expressions {} to embed variables." },
-          { "id": "req_3", "description": "Must display Age Next Year computed as age + 1." }
+          {
+            "id": "req_1",
+            "text": "Must declare variables name and age.",
+            "selector": "name",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use JSX expressions {} to embed variables.",
+            "selector": "{}",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must display Age Next Year computed as age + 1.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
         ],
         "navigation": {
-          "prev": { "type": "practice", "id": "exercise_s3", "milestoneId": "m1" },
-          "next": { "type": "practice", "id": "exercise_s5", "milestoneId": "m2" },
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s3",
+            "milestoneId": "m1"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s5",
+            "milestoneId": "m2"
+          },
           "currentMilestoneId": "m1"
         }
       }
@@ -192,7 +276,13 @@
           "behavior": true
         },
         "restrictions": [],
-        "tags": ["medium", "reactjs", "events", "inline-style", "milestone 2"],
+        "tags": [
+          "medium",
+          "reactjs",
+          "events",
+          "inline-style",
+          "milestone 2"
+        ],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -210,14 +300,42 @@
         },
         "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport ProfileCard from './ProfileCard';\n\ntest('Coming Soon button is disabled', () => {\n  render(<ProfileCard />);\n  expect(screen.getByText('Coming Soon')).toBeDisabled();\n});\n\ntest('Show Message button is enabled and clickable', () => {\n  render(<ProfileCard />);\n  expect(screen.getByText('Show Message')).not.toBeDisabled();\n});",
         "requirements": [
-          { "id": "req_1", "description": "Must use cardClass variable as className." },
-          { "id": "req_2", "description": "Show Message button must call alert('Hello React!') on click." },
-          { "id": "req_3", "description": "Coming Soon button must be disabled." },
-          { "id": "req_4", "description": "Heading must use a JS style object via inline style." }
+          {
+            "id": "req_1",
+            "text": "Must use cardClass variable as className.",
+            "selector": "div",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": "className"
+          },
+          {
+            "id": "req_2",
+            "text": "Show Message button must call alert('Hello React!') on click.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Coming Soon button must be disabled.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Heading must use a JS style object via inline style.",
+            "selector": "h1",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": "style"
+          }
         ],
         "navigation": {
-          "prev": { "type": "practice", "id": "exercise_s4", "milestoneId": "m1" },
-          "next": { "type": "practice", "id": "exercise_s6", "milestoneId": "m2" },
+          "prev": { "type": "practice", "id": "exercise_s4", "milestoneId": "m1"},
+          "next": { "type": "practice", "id": "exercise_s6", "milestoneId": "m2"},
           "currentMilestoneId": "m2"
         }
       }
@@ -237,7 +355,7 @@
           "behavior": false
         },
         "restrictions": [],
-        "tags": ["medium", "reactjs", "inline-style", "milestone 2"],
+        "tags": [ "medium", "reactjs", "inline-style", "milestone 2"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -255,12 +373,26 @@
         },
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Must define cardStyle and headingStyle objects with camelCase properties." },
-          { "id": "req_2", "description": "Must apply inline style={{ color: 'green', fontWeight: 'bold' }} directly on the paragraph." }
+          {
+            "id": "req_1",
+            "text": "Must define cardStyle and headingStyle objects with camelCase properties.",
+            "selector": "cardStyle",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must apply inline style={{ color: 'green', fontWeight: 'bold' }} directly on the paragraph.",
+            "selector": "p",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": "style"
+          }
         ],
         "navigation": {
-          "prev": { "type": "practice", "id": "exercise_s5", "milestoneId": "m2" },
-          "next": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2" },
+          "prev": { "type": "practice", "id": "exercise_s5", "milestoneId": "m2"},
+          "next": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2"},
           "currentMilestoneId": "m2"
         }
       }
@@ -279,13 +411,19 @@
           "visual": true,
           "behavior": false
         },
-        "restrictions": ["BANNED_INLINE_STYLE"],
-        "tags": ["medium", "reactjs", "css-modules", "milestone 2"],
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [ "medium", "reactjs", "css-modules", "milestone 2"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": {
           "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
           "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; font-family: sans-serif; } .mybutton { background-color: #4CAF50; color: #ffffff; padding: 15px 32px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; }",
@@ -294,14 +432,42 @@
         },
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Component name must be Button." },
-          { "id": "req_2", "description": "Must import styles from Button.module.css." },
-          { "id": "req_3", "description": "Must use the imported styles object (e.g., styles.mybutton) for the className." },
-          { "id": "req_4", "description": "Must return a button element with the text 'Click Me'." }
+          {
+            "id": "req_1",
+            "text": "Component name must be Button.",
+            "selector": "Button",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must import styles from Button.module.css.",
+            "selector": "import",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": "Button.module.css"
+          },
+          {
+            "id": "req_3",
+            "text": "Must use the imported styles object (e.g., styles.mybutton) for the className.",
+            "selector": "button",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": "className"
+          },
+          {
+            "id": "req_4",
+            "text": "Must return a button element with the text 'Click Me'.",
+            "selector": "button",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Click Me"
+          }
         ],
         "navigation": {
-          "prev": { "type": "practice", "id": "exercise_s6", "milestoneId": "m2" },
-          "next": { "type": "practice", "id": "exercise_s8", "milestoneId": "m2" },
+          "prev": { "type": "practice", "id": "exercise_s6", "milestoneId": "m2"},
+          "next": { "type": "practice", "id": "exercise_s8", "milestoneId": "m2"},
           "currentMilestoneId": "m2"
         }
       }
@@ -320,13 +486,19 @@
           "visual": true,
           "behavior": true
         },
-        "restrictions": ["BANNED_IF_STATEMENT"],
+        "restrictions": [
+          "BANNED_IF_STATEMENT"
+        ],
         "tags": ["hard", "reactjs", "conditional-rendering", "milestone 2", "ui-styling"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": {
           "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
           "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; font-family: sans-serif; } .badge-online { background-color: #4CAF50; color: #ffffff; padding: 8px 16px; font-size: 14px; border-radius: 20px; } .badge-offline { background-color: #9E9E9E; color: #ffffff; padding: 8px 16px; font-size: 14px; border-radius: 20px; }",
@@ -335,15 +507,43 @@
         },
         "test_script": "import { render, screen } from '@testing-library/react';\nimport StatusBadge from './StatusBadge';\n\ntest('renders Online with correct class when isOnline is true', () => {\n  const { container } = render(<StatusBadge isOnline={true} />);\n  const badge = screen.getByText('Online');\n  expect(badge).toBeInTheDocument();\n  expect(badge).toHaveClass('badge-online');\n});\n\ntest('renders Offline with correct class when isOnline is false', () => {\n  const { container } = render(<StatusBadge isOnline={false} />);\n  const badge = screen.getByText('Offline');\n  expect(badge).toBeInTheDocument();\n  expect(badge).toHaveClass('badge-offline');\n});",
         "requirements": [
-          { "id": "req_1", "description": "Create a React component named `StatusBadge`." },
-          { "id": "req_2", "description": "Add a boolean prop called `isOnline` to your component." },
-          { "id": "req_3", "description": "Use a ternary operator (`? :`) to change the `className` based on the `isOnline` status." },
-          { "id": "req_4", "description": "Use a ternary operator (`? :`) to display the text 'Online' or 'Offline'." }
+          {
+            "id": "req_1",
+            "text": "Create a React component named `StatusBadge`.",
+            "selector": "StatusBadge",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Add a boolean prop called `isOnline` to your component.",
+            "selector": "isOnline",
+            "type": "prop",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Use a ternary operator (`? :`) to change the `className` based on the `isOnline` status.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Use a ternary operator (`? :`) to display the text 'Online' or 'Offline'.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
         ],
-        "navigation": {
-          "prev": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2" },
-          "next": null,
-          "currentMilestoneId": "m2"
+        "navigation": { 
+          "prev": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2" }, 
+          "next": null, 
+          "currentMilestoneId": "m2" 
         }
       }
     },
@@ -361,19 +561,46 @@
           "visual": false,
           "behavior": false
         },
-        "restrictions": ["BANNED_ALL_HOOKS"],
-        "tags": ["easy", "reactjs", "components", "milestone 3"],
+        "restrictions": [
+          "BANNED_ALL_HOOKS"
+        ],
+        "tags": [ "easy", "reactjs", "components", "milestone 3"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": null,
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Component name must be Greeting." },
-          { "id": "req_2", "description": "Component must return an h1 element." },
-          { "id": "req_3", "description": "The h1 element must contain the text 'Hello, React!'." }
+          {
+            "id": "req_1",
+            "text": "Component name must be Greeting.",
+            "selector": "Greeting",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Component must return an h1 element.",
+            "selector": "h1",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "The h1 element must contain the text 'Hello, React!'.",
+            "selector": "h1",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Hello, React!"
+          }
         ],
         "navigation": {
           "prev": null,
@@ -396,20 +623,55 @@
           "visual": false,
           "behavior": false
         },
-        "restrictions": ["BANNED_ALL_HOOKS", "BANNED_PROPS_DESTRUCTURING"],
-        "tags": ["easy", "reactjs", "props", "milestone 3"],
+        "restrictions": [
+          "BANNED_ALL_HOOKS",
+          "BANNED_PROPS_DESTRUCTURING"
+        ],
+        "tags": [ "easy", "reactjs", "props", "milestone 3"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": null,
         "test_script": null,
         "requirements": [
-          { "id": "req_1", "description": "Component name must be UserCard." },
-          { "id": "req_2", "description": "Component must accept a prop named username." },
-          { "id": "req_3", "description": "Component must return an h3 element." },
-          { "id": "req_4", "description": "The h3 element must contain the text 'User: ' followed by the value of the username prop." }
+          {
+            "id": "req_1",
+            "text": "Component name must be UserCard.",
+            "selector": "UserCard",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Component must accept a prop named username.",
+            "selector": "username",
+            "type": "prop",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Component must return an h3 element.",
+            "selector": "h3",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "The h3 element must contain the text 'User: ' followed by the value of the username prop.",
+            "selector": "h3",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "User:"
+          }
         ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s9", "milestoneId": "m3" },
@@ -432,19 +694,48 @@
           "visual": false,
           "behavior": true
         },
-        "restrictions": ["BANNED_ALL_HOOKS", "REQUIRED_PROPS_DESTRUCTURING", "BANNED_CREATE_ELEMENT"],
-        "tags": ["medium", "reactjs", "destructuring", "props", "milestone 3"],
+        "restrictions": [
+          "BANNED_ALL_HOOKS",
+          "REQUIRED_PROPS_DESTRUCTURING",
+          "BANNED_CREATE_ELEMENT"
+        ],
+        "tags": [ "medium", "reactjs", "destructuring", "props", "milestone 3"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": null,
         "test_script": "import { render, screen } from '@testing-library/react';\nimport Product from './Product';\n\ntest('renders product with provided category', () => {\n  render(<Product name=\"Laptop\" price=\"1000\" category=\"Electronics\" />);\n  expect(screen.getByText('Laptop')).toBeInTheDocument();\n  expect(screen.getByText('1000')).toBeInTheDocument();\n  expect(screen.getByText('Electronics')).toBeInTheDocument();\n});\n\ntest('renders product with default category', () => {\n  render(<Product name=\"Book\" price=\"20\" />);\n  expect(screen.getByText('Book')).toBeInTheDocument();\n  expect(screen.getByText('20')).toBeInTheDocument();\n  expect(screen.getByText('General')).toBeInTheDocument();\n});",
         "requirements": [
-          { "id": "req_1", "description": "Component name must be Product." },
-          { "id": "req_2", "description": "Must use object destructuring for props." },
-          { "id": "req_3", "description": "Must set default value 'General' for category prop." }
+          {
+            "id": "req_1",
+            "text": "Component name must be Product.",
+            "selector": "Product",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use object destructuring for props.",
+            "selector": "{}",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must set default value 'General' for category prop.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
         ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s10", "milestoneId": "m3" },
@@ -467,13 +758,19 @@
           "visual": true,
           "behavior": true
         },
-        "restrictions": ["BANNED_INLINE_STYLE"],
-        "tags": ["hard", "reactjs", "useState", "hooks", "milestone 3", "ui-styling"],
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [ "hard", "reactjs", "useState", "hooks", "milestone 3", "ui-styling"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
         "jsx_content": "",
-        "target_design": { "deviceType": "desktop", "width": 800, "height": 600 },
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
         "code_test": {
           "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
           "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #edf2f7; font-family: 'Segoe UI', sans-serif; } .counter-container { background-color: #ffffff; padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); text-align: center; } h1 { color: #2d3748; font-size: 56px; margin: 0 0 24px 0; } button { background-color: #3182ce; color: #ffffff; padding: 12px 24px; border-radius: 8px; border: none; font-size: 18px; cursor: pointer; }",
@@ -482,10 +779,38 @@
         },
         "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Counter from './Counter';\n\ntest('increments count on button click', () => {\n  render(<Counter />);\n  const button = screen.getByText('Increment');\n  const heading = screen.getByRole('heading', { level: 1 });\n\n  expect(heading).toHaveTextContent('0');\n  fireEvent.click(button);\n  expect(heading).toHaveTextContent('1');\n});",
         "requirements": [
-          { "id": "req_1", "description": "Component name must be 'Counter'." },
-          { "id": "req_2", "description": "Must use useState hook." },
-          { "id": "req_3", "description": "Must display the count in an h1 element." },
-          { "id": "req_4", "description": "Must have a button to increment the count." }
+          {
+            "id": "req_1",
+            "text": "Component name must be 'Counter'.",
+            "selector": "Counter",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use useState hook.",
+            "selector": "useState",
+            "type": "hook",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must display the count in an h1 element.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Must have a button to increment the count.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
         ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s11", "milestoneId": "m3" },
