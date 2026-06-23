@@ -245,7 +245,7 @@ export default function App() {
         passed: false,
       }));
 
-      if (evalConfig.requirements) {
+      if (evalConfig.requirements && !hasLintError) {
         this.logger.debug(`[SubmitCode] Evaluating static requirements...`);
         const validReqs = reqList.filter(
           (req: any) => req.type_check !== 'behavior',
@@ -291,7 +291,7 @@ export default function App() {
       let visualResults: VisualEvaluationDto[] = [];
       let isVisualPassed = true;
       let visualScore = 100;
-      if (evalConfig.visual) {
+      if (evalConfig.visual && !hasLintError) {
         this.logger.debug(
           `[SubmitCode] Visual check enabled, evaluating visual...`,
         );
@@ -328,7 +328,7 @@ export default function App() {
       };
       let isBehaviorPassed = true;
 
-      if (evalConfig.behavior) {
+      if (evalConfig.behavior && !hasLintError) {
         this.logger.debug(`[SubmitCode] Evaluating ReactJS behavior...`);
 
         // eslint-disable-next-line sonarjs/no-gratuitous-expressions
@@ -338,7 +338,6 @@ export default function App() {
             exercise.test_script,
           );
 
-          // Đắp kết quả từ Jest vào mảng requirements tổng
           if (behaviorResult) {
             requirementResults.forEach((req: any) => {
               const behaviorCheck = reqList.find(
@@ -414,6 +413,7 @@ export default function App() {
 
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
 
+      console.log('[Jest Error Detail]:', behaviorResult.errors);
       this.logger.debug(
         `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
       );

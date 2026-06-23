@@ -62,7 +62,7 @@ export class BehaviorEvaluator {
         testEnvironment: 'jest-environment-jsdom',
         rootDir: '.',
         transform: {
-          '^.+\\.[tj]sx?$': [
+          '^.+\\.tsx?$': [
             'ts-jest',
             {
               isolatedModules: true,
@@ -70,8 +70,18 @@ export class BehaviorEvaluator {
               tsconfig: '<rootDir>/tsconfig.json',
             },
           ],
+          '^.+\\.jsx?$': [
+            'babel-jest',
+            {
+              presets: [
+                ['@babel/preset-env', { targets: { node: 'current' } }],
+                ['@babel/preset-react', { runtime: 'automatic' }],
+              ],
+            },
+          ],
         },
       };
+
       await fs.writeFile(
         path.join(tempDir, 'jest.config.json'),
         JSON.stringify(sandboxJestConfig),

@@ -254,8 +254,11 @@ const generateEditorExercises = (): any[] => {
       test_script: data.test_script,
       requirements: data.requirements.map((req: any) => ({
         id: req.id,
-        text: req.description,
-        type_check: 'others',
+        text: req.text,
+        type: req.type,
+        selector: req.selector,
+        type_check: req.type_check,
+        expectedValue: req.expectedValue,
       })),
       navigation: data.navigation,
       created_at: new Date(),

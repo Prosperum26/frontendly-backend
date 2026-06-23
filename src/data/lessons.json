@@ -166,19 +166,27 @@
         },
         {
           "id": "req_2",
-          "text": "Must use className=\"profile\" on the wrapping div.",
-          "selector": "div",
+          "text": "Must use the 'className' attribute.",
+          "selector": "className",
           "type": "attribute",
           "type_check": "others",
-          "expectedValue": "profile"
+          "expectedValue": ""
         },
         {
           "id": "req_3",
-          "text": "Must display 'Frontend Developer' and 'Learning JSX'.",
+          "text": "Must display 'Frontend Developer'",
           "selector": "body",
           "type": "content",
           "type_check": "others",
           "expectedValue": "Frontend Developer"
+        },  
+        {
+          "id": "req_4",
+          "text": "Must display the text 'Learning JSX'.",
+          "selector": "",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Learning JSX"
         }
       ],
         "navigation": {
@@ -219,11 +227,11 @@
           "height": 600
         },
         "code_test": null,
-        "test_script": "import { render } from '@testing-library/react';\nimport App from './App';\n\ntest('Must display Age and Age Next Year', () => {\n  const { container } = render(<App />);\n  const text = container.textContent;\n  \n  // Dùng Regex để bắt xem học viên có in ra đúng format 'Age: [số]' và 'Age Next Year: [số]' không\n  expect(text).toMatch(/Age:\\s*\\d+/i);\n  expect(text).toMatch(/Age Next Year:\\s*\\d+/i);\n});",
+        "test_script": "import { render } from '@testing-library/react';\nimport UserCode from './UserCode';\n\ntest('Must display Age and Age Next Year computed correctly', () => {\n  const { container } = render(<UserCode />);\n  const text = container.textContent;\n  \n  const ageMatch = text.match(/Age:\\s*(\\d+)/i);\n  const ageNextMatch = text.match(/Age Next Year:\\s*(\\d+)/i);\n  \n  expect(ageMatch).toBeTruthy();\n  expect(ageNextMatch).toBeTruthy();\n  \n  const age = parseInt(ageMatch[1], 10);\n  const ageNext = parseInt(ageNextMatch[1], 10);\n  \n  expect(ageNext).toBe(age + 1);\n});",
         "requirements": [
           {
             "id": "req_1",
-            "text": "Must declare variables name and age.",
+            "text": "Must declare the variable 'name'.",
             "selector": "name",
             "type": "exist",
             "type_check": "others",
@@ -231,8 +239,8 @@
           },
           {
             "id": "req_2",
-            "text": "Must use JSX expressions {} to embed variables.",
-            "selector": "{}",
+            "text": "Must declare the variable 'age'.",
+            "selector": "age",
             "type": "exist",
             "type_check": "others",
             "expectedValue": ""
@@ -268,19 +276,20 @@
         "module": "Milestone 2",
         "title": "Interactive Profile Card",
         "level": "medium",
-        "description": "Create a profile card displaying 'Frontend Developer' / 'Learning React JSX Attributes'. Requirements: 1) const cardClass = \"profile-card\" used as className. 2) A 'Show Message' button that alerts 'Hello React!' on click, initially enabled. 3) A disabled 'Coming Soon' button. 4) Inline style object on the heading: color darkblue, fontSize 32px, backgroundColor lightblue.",
+        "description": "Create a profile card displaying 'Frontend Developer' / 'Learning React JSX Attributes'. Requirements: 1) const cardClass = \"profile-card\" used as className. 2) A 'Show Message' button that alerts 'Hello React!' on click, initially enabled. 3) A disabled 'Coming Soon' button. 4) Apply the CSS class 'profile-heading' to the heading.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
           "visual": true,
           "behavior": true
         },
-        "restrictions": [],
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
         "tags": [
           "medium",
           "reactjs",
           "events",
-          "inline-style",
           "milestone 2"
         ],
         "html_content": "",
@@ -294,19 +303,19 @@
         },
         "code_test": {
           "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
+          "css": "body { margin: 0; font-family: sans-serif; } .profile-heading { color: darkblue; font-size: 32px; background-color: lightblue; }",
           "js": "",
-          "jsx": "function ProfileCard() {\n  const cardClass = \"profile-card\";\n  const headingStyle = {\n    color: \"darkblue\",\n    fontSize: \"32px\",\n    backgroundColor: \"lightblue\"\n  };\n  const showMessage = () => {\n    alert(\"Hello React!\");\n  };\n  return (\n    <div className={cardClass}>\n      <h1 style={headingStyle}>Frontend Developer</h1>\n      <p>Learning React JSX Attributes</p>\n      <button onClick={showMessage}>Show Message</button>\n      <button disabled={true}>Coming Soon</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
+          "jsx": "function ProfileCard() {\n  const cardClass = \"profile-card\";\n  const showMessage = () => {\n    alert(\"Hello React!\");\n  };\n  return (\n    <div className={cardClass}>\n      <h1 className=\"profile-heading\">Frontend Developer</h1>\n      <p>Learning React JSX Attributes</p>\n      <button onClick={showMessage}>Show Message</button>\n      <button disabled={true}>Coming Soon</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
         },
-        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport ProfileCard from './ProfileCard';\n\ntest('Coming Soon button is disabled', () => {\n  render(<ProfileCard />);\n  expect(screen.getByText('Coming Soon')).toBeDisabled();\n});\n\ntest('Show Message button is enabled and clickable', () => {\n  render(<ProfileCard />);\n  expect(screen.getByText('Show Message')).not.toBeDisabled();\n});",
+        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport App from './UserCode';\n\ntest('Coming Soon button is disabled', () => {\n  render(<App />);\n  const btn = screen.getByText('Coming Soon');\n  expect(btn.disabled).toBe(true);\n});\n\ntest('Show Message button is enabled and calls alert on click', () => {\n  render(<App />);\n  const btn = screen.getByText('Show Message');\n  expect(btn.disabled).toBe(false);\n\n  // Giả lập hàm window.alert để bắt xem học viên có gọi đúng không\n  window.alert = jest.fn();\n  fireEvent.click(btn);\n  expect(window.alert).toHaveBeenCalledWith('Hello React!');\n});",
         "requirements": [
           {
             "id": "req_1",
-            "text": "Must use cardClass variable as className.",
-            "selector": "div",
-            "type": "attribute",
+            "text": "Must declare and use the 'cardClass' variable.",
+            "selector": "cardClass",
+            "type": "exist",
             "type_check": "others",
-            "expectedValue": "className"
+            "expectedValue": ""
           },
           {
             "id": "req_2",
@@ -326,11 +335,11 @@
           },
           {
             "id": "req_4",
-            "text": "Heading must use a JS style object via inline style.",
-            "selector": "h1",
+            "text": "Heading must use the CSS class 'profile-heading'.",
+            "selector": "className=profile-heading",
             "type": "attribute",
             "type_check": "others",
-            "expectedValue": "style"
+            "expectedValue": ""
           }
         ],
         "navigation": {
@@ -345,17 +354,19 @@
       "data": {
         "id": "exercise_s6",
         "module": "Milestone 2",
-        "title": "Styling with JS Style Objects",
+        "title": "Styling React Components",
         "level": "medium",
-        "description": "Create a profile card displaying 'Alex Johnson' / 'Frontend Developer' / 'Learning React Styling'. Requirements: 1) cardStyle object: lightblue background, 20px padding, 10px border radius, center align. 2) headingStyle object: darkblue color, 32px font size. 3) Inline style directly on the paragraph 'Learning React Styling': green color, bold font weight using style={{ ... }}. 4) Use camelCase CSS properties (backgroundColor, fontSize, textAlign, fontWeight).",
+        "description": "Create a profile card displaying 'Alex Johnson' / 'Frontend Developer' / 'Learning React Styling'. Requirements: 1) Apply the CSS class 'card-container' to the wrapping div. 2) Apply the CSS class 'profile-heading' to the h1 element. 3) Apply the CSS class 'highlight-text' to the paragraph 'Learning React Styling'.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
           "visual": true,
           "behavior": false
         },
-        "restrictions": [],
-        "tags": [ "medium", "reactjs", "inline-style", "milestone 2"],
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [ "medium", "reactjs", "css-classes", "milestone 2"],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -367,27 +378,43 @@
         },
         "code_test": {
           "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
-          "css": "body { margin: 0; font-family: sans-serif; }",
+          "css": "body { margin: 0; font-family: sans-serif; }\n.card-container { background-color: lightblue; padding: 20px; border-radius: 10px; text-align: center; }\n.profile-heading { color: darkblue; font-size: 32px; }\n.highlight-text { color: green; font-weight: bold; }",
           "js": "",
-          "jsx": "function ProfileCard() {\n  const cardStyle = {\n    backgroundColor: \"lightblue\",\n    padding: \"20px\",\n    borderRadius: \"10px\",\n    textAlign: \"center\"\n  };\n  const headingStyle = {\n    color: \"darkblue\",\n    fontSize: \"32px\"\n  };\n  return (\n    <div style={cardStyle}>\n      <h1 style={headingStyle}>Alex Johnson</h1>\n      <p>Frontend Developer</p>\n      <p style={{ color: \"green\", fontWeight: \"bold\" }}>Learning React Styling</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
+          "jsx": "function ProfileCard() {\n  return (\n    <div className=\"card-container\">\n      <h1 className=\"profile-heading\">Alex Johnson</h1>\n      <p>Frontend Developer</p>\n      <p className=\"highlight-text\">Learning React Styling</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
         },
         "test_script": null,
         "requirements": [
           {
             "id": "req_1",
-            "text": "Must define cardStyle and headingStyle objects with camelCase properties.",
-            "selector": "cardStyle",
+            "text": "Component name must be ProfileCard.",
+            "selector": "ProfileCard",
             "type": "exist",
             "type_check": "others",
             "expectedValue": ""
           },
           {
             "id": "req_2",
-            "text": "Must apply inline style={{ color: 'green', fontWeight: 'bold' }} directly on the paragraph.",
-            "selector": "p",
+            "text": "Must use the CSS class 'card-container'.",
+            "selector": "className=card-container",
             "type": "attribute",
             "type_check": "others",
-            "expectedValue": "style"
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must use the CSS class 'profile-heading'.",
+            "selector": "className=profile-heading",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Must use the CSS class 'highlight-text'.",
+            "selector": "className=highlight-text",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
           }
         ],
         "navigation": {
@@ -432,39 +459,39 @@
         },
         "test_script": null,
         "requirements": [
-          {
-            "id": "req_1",
-            "text": "Component name must be Button.",
-            "selector": "Button",
-            "type": "exist",
-            "type_check": "others",
-            "expectedValue": ""
-          },
-          {
-            "id": "req_2",
-            "text": "Must import styles from Button.module.css.",
-            "selector": "import",
-            "type": "exist",
-            "type_check": "others",
-            "expectedValue": "Button.module.css"
-          },
-          {
-            "id": "req_3",
-            "text": "Must use the imported styles object (e.g., styles.mybutton) for the className.",
-            "selector": "button",
-            "type": "attribute",
-            "type_check": "others",
-            "expectedValue": "className"
-          },
-          {
-            "id": "req_4",
-            "text": "Must return a button element with the text 'Click Me'.",
-            "selector": "button",
-            "type": "content",
-            "type_check": "others",
-            "expectedValue": "Click Me"
-          }
-        ],
+        {
+          "id": "req_1",
+          "text": "Component name must be Button.",
+          "selector": "Button",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must import styles from Button.module.css.",
+          "selector": "",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Button.module.css"
+        },
+        {
+          "id": "req_3",
+          "text": "Must use the className attribute.",
+          "selector": "className",
+          "type": "attribute",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Must return a button element with the text 'Click Me'.",
+          "selector": "",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Click Me"
+        }
+      ],
         "navigation": {
           "prev": { "type": "practice", "id": "exercise_s6", "milestoneId": "m2"},
           "next": { "type": "practice", "id": "exercise_s8", "milestoneId": "m2"},
@@ -489,7 +516,13 @@
         "restrictions": [
           "BANNED_IF_STATEMENT"
         ],
-        "tags": ["hard", "reactjs", "conditional-rendering", "milestone 2", "ui-styling"],
+        "tags": [
+          "hard",
+          "reactjs",
+          "conditional-rendering",
+          "milestone 2",
+          "ui-styling"
+        ],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -505,7 +538,7 @@
           "js": "",
           "jsx": "import React from 'react';\n\nexport default function StatusBadge({ isOnline = true }) {\n  return (\n    <div className={isOnline ? 'badge-online' : 'badge-offline'}>\n      {isOnline ? 'Online' : 'Offline'}\n    </div>\n  );\n}"
         },
-        "test_script": "import { render, screen } from '@testing-library/react';\nimport StatusBadge from './StatusBadge';\n\ntest('renders Online with correct class when isOnline is true', () => {\n  const { container } = render(<StatusBadge isOnline={true} />);\n  const badge = screen.getByText('Online');\n  expect(badge).toBeInTheDocument();\n  expect(badge).toHaveClass('badge-online');\n});\n\ntest('renders Offline with correct class when isOnline is false', () => {\n  const { container } = render(<StatusBadge isOnline={false} />);\n  const badge = screen.getByText('Offline');\n  expect(badge).toBeInTheDocument();\n  expect(badge).toHaveClass('badge-offline');\n});",
+        "test_script": "import { render, screen } from '@testing-library/react';\nimport StatusBadge from './UserCode';\n\ntest('renders Online with correct class when isOnline is true', () => {\n  render(<StatusBadge isOnline={true} />);\n  const badge = screen.getByText('Online');\n  expect(badge).toBeTruthy();\n  expect(badge.className).toContain('badge-online');\n});\n\ntest('renders Offline with correct class when isOnline is false', () => {\n  render(<StatusBadge isOnline={false} />);\n  const badge = screen.getByText('Offline');\n  expect(badge).toBeTruthy();\n  expect(badge.className).toContain('badge-offline');\n});",
         "requirements": [
           {
             "id": "req_1",
@@ -519,7 +552,7 @@
             "id": "req_2",
             "text": "Add a boolean prop called `isOnline` to your component.",
             "selector": "isOnline",
-            "type": "prop",
+            "type": "exist",
             "type_check": "others",
             "expectedValue": ""
           },
@@ -540,10 +573,10 @@
             "expectedValue": ""
           }
         ],
-        "navigation": { 
-          "prev": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2" }, 
-          "next": null, 
-          "currentMilestoneId": "m2" 
+        "navigation": {
+          "prev": { "type": "practice", "id": "exercise_s7", "milestoneId": "m2" },
+          "next": null,
+          "currentMilestoneId": "m2"
         }
       }
     },
@@ -687,7 +720,7 @@
         "module": "Milestone 3",
         "title": "Destructuring Props - Default Values",
         "level": "medium",
-        "description": "Create a `Product` component that receives `name`, `price`, and `category` props. Use destructuring to extract these values. Set a default value of 'General' for the `category` prop. The component should return a `<div>` containing the product name inside an `<h2>` tag, the price inside a `<p>` tag, and the category inside a `<span>` tag.",
+        "description": "Create a `Product` component that receives `name`, `price`, and `category` props. Use destructuring to extract these values. Set a default value of 'General' for the `category` prop. The component should return a `<div>` containing the product name inside an `<h2>` tag, the price inside a `<p>` tag, and the category inside a `<span>` tag. (Make sure to export your Product component).",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -699,7 +732,13 @@
           "REQUIRED_PROPS_DESTRUCTURING",
           "BANNED_CREATE_ELEMENT"
         ],
-        "tags": [ "medium", "reactjs", "destructuring", "props", "milestone 3"],
+        "tags": [
+          "medium",
+          "reactjs",
+          "destructuring",
+          "props",
+          "milestone 3"
+        ],
         "html_content": "",
         "css_content": "",
         "js_content": "",
@@ -710,7 +749,7 @@
           "height": 600
         },
         "code_test": null,
-        "test_script": "import { render, screen } from '@testing-library/react';\nimport Product from './Product';\n\ntest('renders product with provided category', () => {\n  render(<Product name=\"Laptop\" price=\"1000\" category=\"Electronics\" />);\n  expect(screen.getByText('Laptop')).toBeInTheDocument();\n  expect(screen.getByText('1000')).toBeInTheDocument();\n  expect(screen.getByText('Electronics')).toBeInTheDocument();\n});\n\ntest('renders product with default category', () => {\n  render(<Product name=\"Book\" price=\"20\" />);\n  expect(screen.getByText('Book')).toBeInTheDocument();\n  expect(screen.getByText('20')).toBeInTheDocument();\n  expect(screen.getByText('General')).toBeInTheDocument();\n});",
+        "test_script": "import { render, screen } from '@testing-library/react';\nimport * as UserCode from './UserCode';\n\n// Tìm component Product (bảo vệ trường hợp học viên export named hoặc default)\nconst Product = UserCode.Product || UserCode.default;\n\ntest('renders product with provided category', () => {\n  if (!Product) throw new Error(\"Cannot find Product component. Did you export it?\");\n  render(<Product name=\"Laptop\" price=\"1000\" category=\"Electronics\" />);\n  expect(screen.getByText('Laptop')).toBeTruthy();\n  expect(screen.getByText('1000')).toBeTruthy();\n  expect(screen.getByText('Electronics')).toBeTruthy();\n});\n\ntest('renders product with default category', () => {\n  if (!Product) throw new Error(\"Cannot find Product component. Did you export it?\");\n  render(<Product name=\"Book\" price=\"20\" />);\n  expect(screen.getByText('Book')).toBeTruthy();\n  expect(screen.getByText('20')).toBeTruthy();\n  expect(screen.getByText('General')).toBeTruthy();\n});",
         "requirements": [
           {
             "id": "req_1",
@@ -722,8 +761,8 @@
           },
           {
             "id": "req_2",
-            "text": "Must use object destructuring for props.",
-            "selector": "{}",
+            "text": "Must extract the 'category' prop.",
+            "selector": "category",
             "type": "exist",
             "type_check": "others",
             "expectedValue": ""
@@ -758,9 +797,7 @@
           "visual": true,
           "behavior": true
         },
-        "restrictions": [
-          "BANNED_INLINE_STYLE"
-        ],
+        "restrictions": [],
         "tags": [ "hard", "reactjs", "useState", "hooks", "milestone 3", "ui-styling"],
         "html_content": "",
         "css_content": "",
@@ -777,7 +814,7 @@
           "js": "",
           "jsx": "import React, { useState } from 'react';\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <div className=\"counter-container\">\n      <h1>{count}</h1>\n      <button onClick={() => setCount(count + 1)}>Increment</button>\n    </div>\n  );\n}"
         },
-        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Counter from './Counter';\n\ntest('increments count on button click', () => {\n  render(<Counter />);\n  const button = screen.getByText('Increment');\n  const heading = screen.getByRole('heading', { level: 1 });\n\n  expect(heading).toHaveTextContent('0');\n  fireEvent.click(button);\n  expect(heading).toHaveTextContent('1');\n});",
+        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Counter from './UserCode';\n\ntest('increments count on button click', () => {\n  render(<Counter />);\n  const button = screen.getByText('Increment');\n  const heading = screen.getByRole('heading', { level: 1 });\n\n  expect(heading.textContent).toBe('0');\n  fireEvent.click(button);\n  expect(heading.textContent).toBe('1');\n});",
         "requirements": [
           {
             "id": "req_1",

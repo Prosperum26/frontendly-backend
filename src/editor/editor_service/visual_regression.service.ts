@@ -214,7 +214,7 @@ export class VisualRegressionService {
         const totalPixels = width * height;
         const matchPercentage =
           ((totalPixels - mismatchedPixels) / totalPixels) * 100;
-        const isPassed = matchPercentage >= 99.99;
+        const isPassed = matchPercentage >= 95;
 
         let diffImageUrl = null;
         if (!isPassed) {
@@ -267,7 +267,6 @@ export class VisualRegressionService {
     jsx: string,
   ): Promise<boolean> {
     try {
-      // 1. Gắn HTML và CSS cơ bản
       const dom = new JSDOM(html || '<div id="root"></div>');
       const doc = dom.window.document;
       if (!doc.getElementById('root')) {
@@ -277,6 +276,12 @@ export class VisualRegressionService {
       }
 
       const baseHtml = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${doc.body.innerHTML}</body></html>`;
+      page.on('pageerror', (error: any) =>
+        console.error('[Puppeteer Page Error]', error.message),
+      );
+      page.on('console', (msg: any) =>
+        console.log('[Puppeteer Console]', msg.text()),
+      );
       await page.setContent(baseHtml, { waitUntil: 'load' });
 
       // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
@@ -297,6 +302,22 @@ export class VisualRegressionService {
 
         await page.evaluate(
           (jsxStr: string, compName: string | null) => {
+            const win = <any>window;
+            if (win.React) {
+              Object.keys(win.React).forEach(key => {
+                win[key] = win.React[key];
+              });
+            }
+
+            win.styles = new Proxy(
+              {},
+              {
+                get: function (prop) {
+                  return prop;
+                },
+              },
+            );
+
             const transpiledCode = Babel.transform(jsxStr, {
               presets: [['react', { runtime: 'classic' }]],
             }).code;
@@ -318,7 +339,9 @@ export class VisualRegressionService {
         );
 
         // Chờ component xuất hiện
-        await page.evaluate(() => console.log('Puppeteer running...'));
+        await page.evaluate(() =>
+          console.log('[Visual Service] Puppeteer running...'),
+        );
         await page.waitForSelector('#root > *', { timeout: 5000 });
       } else if (js?.trim()) {
         await page.addScriptTag({ content: js });

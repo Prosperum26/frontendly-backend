@@ -131,8 +131,9 @@ export class RequirementEvaluator {
       const hooks = new Set<string>(); // tên các hook
 
       // quét cây cấu trúc AST của toàn bộ code
+      /* eslint-disable @typescript-eslint/naming-convention */
       traverse(ast, {
-        jsxOpeningElement(path: any) {
+        JSXOpeningElement(path: any) {
           // lấy các thẻ
           const nodeName = path.node.name;
           if (nodeName.type === 'JSXIdentifier') {
@@ -140,26 +141,33 @@ export class RequirementEvaluator {
             elementsCount[tagName] = (elementsCount[tagName] || 0) + 1;
           }
         },
-        jsxAttribute(path: any) {
-          // lấy các attribute
+        JSXAttribute(path: any) {
           const attrName = path.node.name;
           if (attrName.type === 'JSXIdentifier') {
             attributes.add(attrName.name);
+            if (path.node.value?.type === 'StringLiteral') {
+              attributes.add(
+                `${attrName.name}=${path.node.value.value.trim()}`,
+              );
+            }
           }
         },
-        jsxText(path: any) {
+        JSXText(path: any) {
           // lấy text
           if (path.node.value.trim()) {
             textContents.add(path.node.value.trim());
           }
         },
-        stringLiteral(path: any) {
+        StringLiteral(path: any) {
           // lấy text được gán vào biến
           if (path.node.value.trim()) {
             textContents.add(path.node.value.trim());
           }
         },
-        callExpression(path: any) {
+        Identifier(path: any) {
+          hooks.add(path.node.name);
+        },
+        CallExpression(path: any) {
           const callee = path.node.callee;
           if (callee.type === 'Identifier') {
             const hookName = callee.name;
@@ -202,7 +210,8 @@ export class RequirementEvaluator {
         let isPassed = false;
         switch (req.type) {
           case 'exist':
-            isPassed = (elementsCount[req.selector] || 0) > 0;
+            isPassed =
+              (elementsCount[req.selector] || 0) > 0 || hooks.has(req.selector);
             break;
 
           case 'count':
