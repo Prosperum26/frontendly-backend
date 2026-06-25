@@ -10,6 +10,7 @@ export enum ActivityType {
   CHALLENGE_WON = 'challenge_won',
   STREAK_ACHIEVED = 'streak_achieved',
   BADGE_EARNED = 'badge_earned',
+  PERFECT_VISUAL = 'perfect_visual',
 }
 
 @Schema({ timestamps: { createdAt: 'timestamp' } })

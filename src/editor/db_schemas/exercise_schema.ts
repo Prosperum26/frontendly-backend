@@ -131,6 +131,9 @@ export class Exercise {
   @Prop({ type: TargetDesignSchema, default: null })
   target_design!: TargetDesign;
 
+  @Prop({ trim: true, default: '' }) // test script để test behavior cho reactjs
+  target_url!: string;
+
   @Prop({ type: CodeTestSchema, default: null }) // code test mẫu để chạy visual regress
   code_test!: CodeTest | null;
 

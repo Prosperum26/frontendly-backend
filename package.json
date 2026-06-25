@@ -32,7 +32,8 @@
     "prepare": "husky",
     "infra": "docker compose -f docker/local/infra.yml up",
     "infra:integration": "docker compose -f docker/integration/infra.yml up",
-    "seed": "ts-node scripts/seed.ts"
+    "seed": "ts-node scripts/seed.ts",
+    "target": "ts-node -D 5103 -r tsconfig-paths/register --transpile-only scripts/uploadCodeTest.ts"
   },
   "dependencies": {
     "@babel/core": "^8.0.1",

@@ -108,6 +108,7 @@ export default function App() {
         },
         code_test: null,
         test_script: '',
+        target_url: '',
         restrictions: [],
         tags: [ExerciseTag.EASY],
         requirements: [
@@ -162,11 +163,6 @@ export default function App() {
     };
   }
 
-  async getTargetPreview(exerciseId: string): Promise<string | null> {
-    await this.getExerciseById(exerciseId);
-    return this.visualRegressionService.getTargetPreview(exerciseId);
-  }
-
   // Lấy bài tập
   async getExercise(exerciseId: string, userId: string): Promise<Exercise> {
     const rawExercise = await this.getExerciseById(exerciseId);
@@ -215,7 +211,7 @@ export default function App() {
         behavior: false,
       };
 
-      // 1. CHECK LINT
+      // lint
       let lintResult: any = {
         html_err: [],
         css_err: [],
@@ -245,6 +241,7 @@ export default function App() {
         passed: false,
       }));
 
+      // requirement
       if (evalConfig.requirements && !hasLintError) {
         this.logger.debug(`[SubmitCode] Evaluating static requirements...`);
         const validReqs = reqList.filter(
@@ -290,13 +287,14 @@ export default function App() {
       // visual regress
       let visualResults: VisualEvaluationDto[] = [];
       let isVisualPassed = true;
-      let visualScore = 100;
+      let visualScore = 0;
       if (evalConfig.visual && !hasLintError) {
         this.logger.debug(
           `[SubmitCode] Visual check enabled, evaluating visual...`,
         );
 
         visualResults = await this.visualRegressionService.evaluateVisual(
+          userId,
           exerciseId,
           html,
           css,
@@ -319,7 +317,7 @@ export default function App() {
         visualScore = 0;
       }
 
-      // check behavior
+      // behavior
       let behaviorResult = {
         passed: false,
         totalTests: 0,
@@ -359,6 +357,7 @@ export default function App() {
           isBehaviorPassed = false;
         }
       }
+
       // tính result
       let matchPercentage = 0;
       let isCompleted = false;

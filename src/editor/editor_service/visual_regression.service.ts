@@ -5,10 +5,12 @@ import { Model } from 'mongoose';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
+import { ActivityType } from '../../users/schemas/activity-log.schema';
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { CloudinaryService } from '../editor_service/cloudinary.service';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
+import { GamificationService } from '@/users/services/gamification.service';
 
 declare const Babel: {
   transform: (
@@ -23,71 +25,64 @@ export class VisualRegressionService {
   constructor(
     private readonly cloudinaryService: CloudinaryService,
     private readonly puppeteerEvaluator: PuppeteerEvaluator,
+    private readonly gamification: GamificationService,
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
-
-  async getTargetPreview(exerciseId: string): Promise<string | null> {
+  async uploadTargetUrls(): Promise<string> {
+    const exercises = await this.exerciseModel.find({
+      code_test: { $ne: null },
+    }); // lấy bài tập
     if (!this.puppeteerEvaluator) {
-      console.warn(
-        '[VisualRegression] Puppeteer not available - skipping target preview',
-      );
-      return null;
+      return '[Target Image] Puppeteer is not initialized!';
     }
-
-    const exercise = await this.exerciseModel
-      .findOne({ id: exerciseId })
-      .lean();
-    const targetDesign = exercise?.target_design;
-    const codeTest = exercise?.code_test;
-
-    if (!targetDesign || !codeTest) return null;
-
-    try {
-      const browser = this.puppeteerEvaluator.getBrowser();
+    const browser = this.puppeteerEvaluator.getBrowser();
+    for (const exercise of exercises) {
+      if (!exercise.code_test) continue;
       let page: any = null;
 
       try {
-        if (!this.targetImageCache.has(exerciseId)) {
-          page = await browser.newPage();
-          await page.setViewport({
-            width: targetDesign.width,
-            height: targetDesign.height,
-          });
+        page = await browser.newPage();
+        await page.setViewport({
+          width: exercise.target_design.width,
+          height: exercise.target_design.height,
+        });
 
-          const isReady = await this.renderPage(
-            page,
-            codeTest.html,
-            codeTest.css,
-            codeTest.js,
-            codeTest.jsx,
-          );
-          if (!isReady) return null;
+        const { html, css, js, jsx } = exercise.code_test;
+        const isReady = await this.renderPage(page, html, css, js, jsx);
 
-          this.targetImageCache.set(
-            exerciseId,
-            <Buffer>await page.screenshot({ type: 'png' }),
+        if (!isReady) {
+          console.error(
+            `[Target Image] Failed to render UI for ${exercise.id}`,
           );
+          continue;
         }
+        const screenshotBuffer = await page.screenshot({ type: 'png' }); // screenshot đưa về Buffer
+        const folderName = 'frontendly_codeTestImages';
+        const uploadResult = await this.cloudinaryService.uploadImageBuffer(
+          screenshotBuffer,
+          folderName,
+        );
 
-        const screenshot = this.targetImageCache.get(exerciseId);
-        if (!screenshot) return null;
-
-        return `data:image/png;base64,${screenshot.toString('base64')}`;
+        await this.exerciseModel.updateOne(
+          { id: exercise.id },
+          { $set: { target_url: uploadResult.secure_url } },
+        );
+        console.log(
+          `[Target Image] Success ${exercise.id} -> ${uploadResult.secure_url}`,
+        );
       } catch (error: any) {
-        console.error('[Target Preview Error]', error.message);
-        return null;
+        console.error(`[Target Image] Error on ${exercise.id}:`, error.message);
       } finally {
         if (page && !page.isClosed()) await page.close();
       }
-    } catch {
-      console.warn(
-        '[VisualRegression] Browser not available - skipping target preview',
-      );
-      return null;
     }
+    const resultMsg = `[Target Image] Done!`;
+    console.log(resultMsg);
+    return resultMsg;
   }
 
   async evaluateVisual(
+    userId: string,
     exerciseId: string,
     html: string,
     css: string,
@@ -100,7 +95,7 @@ export class VisualRegressionService {
     const targetDesign = exercise?.target_design;
     if (!targetDesign) return [];
 
-    // Nếu Puppeteer không khả dụng, trả về mảng rỗng (không làm lỗi)
+    // ko có puppeteer
     if (!this.puppeteerEvaluator) {
       console.warn(
         '[VisualRegression] Puppeteer not available - skipping visual evaluation',
@@ -215,6 +210,12 @@ export class VisualRegressionService {
         const matchPercentage =
           ((totalPixels - mismatchedPixels) / totalPixels) * 100;
         const isPassed = matchPercentage >= 95;
+        if (matchPercentage === 100)
+          void this.gamification.addXp(
+            userId,
+            ActivityType.PERFECT_VISUAL,
+            exerciseId,
+          );
 
         let diffImageUrl = null;
         if (!isPassed) {
@@ -306,6 +307,13 @@ export class VisualRegressionService {
             if (win.React) {
               Object.keys(win.React).forEach(key => {
                 win[key] = win.React[key];
+              });
+            }
+
+            if (win.ReactDOM) {
+              win.createRoot = win.ReactDOM.createRoot;
+              Object.keys(win.ReactDOM).forEach(key => {
+                if (!win[key]) win[key] = win.ReactDOM[key];
               });
             }
 

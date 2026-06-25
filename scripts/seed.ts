@@ -416,9 +416,13 @@ async function seed(): Promise<void> {
     console.log('🌱 Upserting Editor Exercises...');
     const editorExercises = generateEditorExercises();
     for (const exercise of editorExercises) {
+      const update = {
+        ...exercise,
+        target_url: '',
+      };
       await Exercise.updateOne(
         { id: exercise.id },
-        { $set: exercise },
+        { $set: update },
         { upsert: true },
       );
     }
