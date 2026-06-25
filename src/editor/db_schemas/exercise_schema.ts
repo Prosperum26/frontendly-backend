@@ -23,7 +23,7 @@ export class ExerciseRequirement {
   type?: string;
 
   @Prop({ required: true, default: 'others', enum: ['behavior', 'others'] })
-  type_check!: string;
+  type_check?: string;
 
   @Prop({ default: '' })
   expectedValue?: string;
@@ -106,7 +106,12 @@ export class Exercise {
 
   @Prop({
     type: EvaluationConfigSchema,
-    default: () => ({ lint: true, requirements: true, visual: false }),
+    default: () => ({
+      lint: true,
+      requirements: true,
+      visual: false,
+      behavior: false,
+    }),
   })
   evaluation_config!: EvaluationConfig;
 

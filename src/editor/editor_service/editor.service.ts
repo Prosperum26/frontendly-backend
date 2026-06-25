@@ -47,7 +47,6 @@ export class EditorService {
       .select('-_id')
       .lean();
     if (!exercise) {
-      // Create a fallback exercise if none exists
       const stageId = exerciseId.startsWith('exercise_')
         ? exerciseId.replace('exercise_', '')
         : 's1';
@@ -132,10 +131,20 @@ export default function App() {
       } catch (err) {
         this.logger.error('Failed to save default exercise:', err);
       }
-
       return defaultExercise;
     }
-    return exercise;
+    /* eslint-disable @typescript-eslint/naming-convention */
+    const result: Exercise = {
+      ...exercise,
+      code_test: null,
+      test_script: '',
+      requirements: exercise.requirements.map(({ id, text }) => ({
+        id,
+        text,
+      })),
+      restrictions: [],
+    };
+    return result;
   }
 
   // Lấy lần submit cuối
@@ -154,8 +163,16 @@ export default function App() {
     if (!lastExercise) {
       return exercise;
     }
+    /* eslint-disable @typescript-eslint/naming-convention */
     return {
       ...exercise,
+      code_test: null,
+      test_script: '',
+      restrictions: [],
+      requirements: exercise.requirements.map(({ id, text }) => ({
+        id,
+        text,
+      })),
       html_content: lastExercise.html_content,
       css_content: lastExercise.css_content,
       js_content: lastExercise.js_content,
