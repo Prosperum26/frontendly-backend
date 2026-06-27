@@ -94,6 +94,27 @@ export class GamificationService {
   }
 
   /**
+   * Deduct XP from user, handle level-down, return new level
+   */
+  async deductXp(
+    userId: string | Types.ObjectId,
+    amount: number,
+  ): Promise<{ newLevel: number }> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.xp = Math.max(0, user.xp - amount);
+    const newLevel = this.calculateLevel(user.xp);
+    user.level = newLevel;
+
+    await user.save();
+
+    return { newLevel };
+  }
+
+  /**
    * Update user's streak based on current date
    */
   async updateStreak(userId: string | Types.ObjectId): Promise<{

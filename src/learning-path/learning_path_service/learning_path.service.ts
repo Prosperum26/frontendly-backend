@@ -155,6 +155,13 @@ export class LearningPathService {
     );
   }
 
+  async resetPlacementProgress(
+    userId: string,
+    skillId: string,
+  ): Promise<boolean> {
+    return this.placementService.resetPlacementProgress(userId, skillId);
+  }
+
   async completeStage(
     stageId: string,
     userId: string,
