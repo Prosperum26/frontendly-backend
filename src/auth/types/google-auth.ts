@@ -4,4 +4,5 @@ export type GoogleAuthResult = {
   user: User;
   accessToken: string;
   refreshToken?: string;
+  isNewUser: boolean;
 };
