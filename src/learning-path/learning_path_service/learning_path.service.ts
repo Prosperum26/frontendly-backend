@@ -194,6 +194,7 @@ export class LearningPathService {
                 stageId: string;
                 theoryCompleted?: boolean;
                 earnedStars: number;
+                isAutoPassed?: boolean;
               }>;
             }
           >userProgress).unlockedStages
@@ -207,6 +208,7 @@ export class LearningPathService {
         theoryCompleted: stage.theoryCompleted || false,
         practiceCompleted: (stage.earnedStars || 0) >= 3,
         earnedStars: stage.earnedStars,
+        isAutoPassed: stage.isAutoPassed || false,
       })),
     };
   }

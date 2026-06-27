@@ -92,6 +92,9 @@ export class UnlockedStage {
 
   @Prop({ default: false })
   badgeEarned!: boolean;
+
+  @Prop({ default: false })
+  isAutoPassed!: boolean;
 }
 
 const UnlockedStageSchema = SchemaFactory.createForClass(UnlockedStage);

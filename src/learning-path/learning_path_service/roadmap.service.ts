@@ -67,6 +67,7 @@ export class RoadmapService {
           isPracticeUnlocked: us.isPracticeUnlocked,
           videoWatchPercentage: us.videoWatchPercentage,
           theoryCompleted: us.theoryCompleted,
+          isAutoPassed: us.isAutoPassed,
         },
       ]),
     );
@@ -93,6 +94,7 @@ export class RoadmapService {
           id: stage.id,
           title: stage.title,
           isCompleted,
+          isAutoPassed: prog?.isAutoPassed ?? false,
           earnedStars,
           stageProgressPercentage,
           placementStatus: placementStatus ?? null,

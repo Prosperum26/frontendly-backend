@@ -267,6 +267,7 @@ export class PlacementService {
             videoWatchPercentage: 100,
             videoSeekPercentage: 0,
             badgeEarned: false,
+            isAutoPassed: true,
           });
         } else if (lesson.status === 'required') {
           unlockedStages.push({
@@ -279,6 +280,7 @@ export class PlacementService {
             videoWatchPercentage: 0,
             videoSeekPercentage: 0,
             badgeEarned: false,
+            isAutoPassed: false,
           });
           break;
         }
