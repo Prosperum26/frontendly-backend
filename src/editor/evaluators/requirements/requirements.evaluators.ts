@@ -109,8 +109,18 @@ export class RequirementEvaluator {
   evaluateCodeReact(
     jsx: string,
     requirements: any[],
+    files?: { filename: string; language: string; content: string }[],
   ): RequirmentsEvaluationDto[] {
-    if (!jsx || jsx.trim() === '') {
+    // Handle multi-file submissions
+    let jsxToEvaluate = jsx;
+    if (files && files.length > 0) {
+      const jsxFile = files.find((f: any) => f.language === 'jsx');
+      if (jsxFile) {
+        jsxToEvaluate = jsxFile.content;
+      }
+    }
+
+    if (!jsxToEvaluate || jsxToEvaluate.trim() === '') {
       return requirements.map(req => ({
         requirementId: req.id,
         passed: false,
@@ -119,7 +129,7 @@ export class RequirementEvaluator {
 
     // tạo cấy cấu trúc AST
     try {
-      const ast = parser.parse(jsx, {
+      const ast = parser.parse(jsxToEvaluate, {
         sourceType: 'module',
         plugins: ['jsx'],
       });

@@ -250,6 +250,7 @@ export default function App() {
           js,
           jsx,
           exercise.restrictions,
+          files,
         );
         this.logger.debug(`[SubmitCode] Lint check completed`);
         hasLintError =
@@ -294,7 +295,11 @@ export default function App() {
             });
           }
           if (jsx && jsx.trim() !== '') {
-            const checkReact = this.reqCheck.evaluateCodeReact(jsx, validReqs);
+            const checkReact = this.reqCheck.evaluateCodeReact(
+              jsx,
+              validReqs,
+              files,
+            );
             checkReact.forEach((result: any) => {
               if (result.passed) mergedReqResults[result.requirementId] = true;
             });
