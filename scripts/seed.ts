@@ -302,12 +302,17 @@ const generateTheories = (): any[] => {
         `;
           })
           .join(''),
-        proTips: lesson.keyTakeaways.join(' • '),
+        proTips: lesson.keyTakeaways.map((t: string) => `• ${t}`).join('<br>'),
         videoUrl: '',
         referenceLinks: [
           {
             title: 'React Documentation',
             url: 'https://react.dev',
+            type: 'doc',
+          },
+          {
+            title: 'W3Schools React Tutorial',
+            url: 'https://www.w3schools.com/react/',
             type: 'doc',
           },
         ],
