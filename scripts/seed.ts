@@ -275,15 +275,32 @@ const generateTheories = (): any[] => {
         stageId,
         title: lesson.title,
         contentHtml: lesson.sections
-          .map(
-            (s: any) => `
+          .map((s: any) => {
+            let codeBlock = '';
+            if (s.code) {
+              let fileNameBlock = '';
+              if (s.fileName) {
+                fileNameBlock = `<div class="theory-code-filename">${s.fileName}</div>`;
+              }
+              const escapedCode = s.code
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              codeBlock = `
+            <div class="theory-code-container">
+              ${fileNameBlock}
+              <pre><code>${escapedCode}</code></pre>
+            </div>
+            `;
+            }
+
+            return `
           <section>
             <h2>${s.heading}</h2>
             <p>${s.content}</p>
-            ${s.code ? `<pre><code>${s.code}</code></pre>` : ''}
+            ${codeBlock}
           </section>
-        `,
-          )
+        `;
+          })
           .join(''),
         proTips: lesson.keyTakeaways.join(' • '),
         videoUrl: '',

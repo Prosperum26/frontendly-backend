@@ -51,21 +51,25 @@
             {
               "heading": "1. The Container",
               "content": "React uses a container to render HTML in a web page. Typically, this container is a <div id=\"root\"></div> element in the index.html file. You should have a file called index.html in the root directory of your project.",
-              "code": "<!doctype html>\n<html lang=\"en\">\n<body>\n<div id=\"root\"></div>\n<script type=\"module\" src=\"/src/main.jsx\"></script>\n</body>\n</html>"
+              "code": "<!doctype html>\n<html lang=\"en\">\n<body>\n<div id=\"root\"></div>\n<script type=\"module\" src=\"/src/main.jsx\"></script>\n</body>\n</html>",
+              "fileName": "index.html"
             },
             {
               "heading": "2. The createRoot Function",
               "content": "The createRoot function is located in the main.jsx file in the src folder, and is a built-in function that is used to create a root node for a React application.",
-              "code": "import { StrictMode } from 'react'\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n<StrictMode>\n<App />\n</StrictMode>\n)"
+              "code": "import { StrictMode } from 'react'\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n<StrictMode>\n<App />\n</StrictMode>\n)",
+              "fileName": "src/main.jsx"
             },
             {
               "heading": "3. The render Method",
               "content": "The render method defines what to render in the HTML container. The result is displayed in the <div id=\"root\"> element.",
-              "code": "import { createRoot } from 'react-dom/client'\ncreateRoot(document.getElementById('root')).render(\n<p>Welcome!</p>\n)"
+              "code": "import { createRoot } from 'react-dom/client'\ncreateRoot(document.getElementById('root')).render(\n<p>Welcome!</p>\n)",
+              "fileName": "main.jsx"
             },
             {
               "heading": "4. The Root Node",
-              "content": "The root node is the HTML element where you want to display the result. It is like a container for content, managed by React. It does NOT have to be a <div> element and it does NOT have to have the id='root'. Note: The root node can be called whatever you like."
+              "content": "The root node is the HTML element where you want to display the result. It is like a container for content, managed by React. It does NOT have to be a <div> element and it does NOT have to have the id='root'. Note: The root node can be called whatever you like.",
+              "fileName": "index.html"
             }
           ],
           "keyTakeaways": [
@@ -94,7 +98,8 @@
             {
               "heading": "3. Expressions in JSX",
               "content": "With JSX you can write expressions inside curly braces { }. The expression can be a React variable, or property, or any other valid JavaScript expression. JSX will execute the expression and return the result.",
-              "code": "const myElement = <h1>React is {5 + 5} times better with JSX</h1>;"
+              "code": "const myElement = <h1>React is {5 + 5} times better with JSX</h1>;",
+              "fileName": "main.jsx"
             },
             {
               "heading": "4. Elements Must be Closed",
@@ -221,7 +226,8 @@
             {
               "heading": "4. CSS Stylesheet",
               "content": "You can write your CSS styling in a separate file, just save the file with the .css file extension, and import it in your application.",
-              "code": "body {\nbackground-color: #282c34;\ncolor: white;\npadding: 40px;\nfont-family: Sans-Serif;\ntext-align: center;\n}"
+              "code": "body {\nbackground-color: #282c34;\ncolor: white;\npadding: 40px;\nfont-family: Sans-Serif;\ntext-align: center;\n}",
+              "fileName": "MyStylesheet.css"
             }
           ],
           "keyTakeaways": [
@@ -244,7 +250,8 @@
             {
               "heading": "2. Creating a CSS Module",
               "content": "Example snippet:",
-              "code": ".mybutton {\npadding: 10px 20px;\nborder: none;\nborder-radius: 4px;\ncursor: pointer;\n}"
+              "code": ".mybutton {\npadding: 10px 20px;\nborder: none;\nborder-radius: 4px;\ncursor: pointer;\n}",
+              "fileName": "Button.module.css"
             },
             {
               "heading": "3. Using a CSS Module",
@@ -258,7 +265,8 @@
             {
               "heading": "5. Global Classes",
               "content": "When using CSS Modules, the classes in the .module.css file can only be used in the component that imports them. This is done by prefixing the class name with a hash of the file name and a unique identifier. However, sometimes you want your classes to be available globally. You can do this with the :global syntax.",
-              "code": ":global(.myheader) {\npadding: 10px 20px;\nfont-size: 50px;\ncolor: white;\nbackground-color: dodgerblue;\n}"
+              "code": ":global(.myheader) {\npadding: 10px 20px;\nfont-size: 50px;\ncolor: white;\nbackground-color: dodgerblue;\n}",
+              "fileName": "BlueHeader.module.css"
             },
             {
               "heading": "6. Combine Global and Local Classes",
@@ -344,7 +352,8 @@
             {
               "heading": "7. Components in Files",
               "content": "React is all about re-using code, and it can be a good idea to split your components into separate files. To do that, create a new file in the src folder with a .jsx file extension. Note that the filename must start with an uppercase character.",
-              "code": "function Car() {\nreturn (<h2>Hi, I am a Car!</h2>);\n}\nexport default Car;"
+              "code": "function Car() {\nreturn (<h2>Hi, I am a Car!</h2>);\n}\nexport default Car;",
+              "fileName": "Vehicle.jsx"
             }
           ],
           "keyTakeaways": [
