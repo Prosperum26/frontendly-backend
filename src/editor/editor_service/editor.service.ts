@@ -463,7 +463,7 @@ export default function App() {
         match_percentage: finalMatchPercentage,
         lint_errors: lintResult,
         requirementResult: requirementResults,
-        visual_results: visualResults,
+        visual_results: visualResults ? [visualResults] : [],
         behavior_results: behaviorResult,
       };
     } catch (error: any) {
@@ -547,13 +547,18 @@ export default function App() {
         jsx_err: [],
       },
       requirementResult: resultData.requirementResult || [],
-      visual_results: (resultData.visual_results || []).map((vr: any) => ({
-        deviceType: vr.deviceType || 'unknown',
-        passed: !!vr.passed,
-        matchPercentage: vr.matchPercentage ?? 0,
-        level_of_complete: 'uncompleted',
-        diffImageUrl: vr.diffImageUrl || null,
-      })),
+      visual_results: resultData.visual_results
+        ? [
+            {
+              deviceType: resultData.visual_results.deviceType || 'unknown',
+              passed: !!resultData.visual_results.passed,
+              matchPercentage: resultData.visual_results.matchPercentage ?? 0,
+              level_of_complete:
+                resultData.visual_results.level_of_complete || 'uncompleted',
+              diffImageUrl: resultData.visual_results.diffImageUrl || null,
+            },
+          ]
+        : [],
       behavior_results: resultData.behavior_results || null,
     });
     try {
