@@ -9,9 +9,7 @@ import {
   GoogleAuthController,
   LogoutController,
   RefreshTokenController,
-  SessionController,
 } from './controllers';
-import { AuthGuard, JwtAuthGuard, RateLimitGuard } from './guards';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
 import { Session, SessionSchema } from './schemas/session.schema';
@@ -47,15 +45,11 @@ import { UserModule } from '@/users/user.module';
     GoogleAuthController,
     LogoutController,
     RefreshTokenController,
-    SessionController,
     AuthController,
   ],
   providers: [
     TokenService,
     GoogleAuthService,
-    AuthGuard,
-    JwtAuthGuard,
-    RateLimitGuard,
     {
       provide: OAuth2Client,
       inject: [authConfigObj.KEY],
