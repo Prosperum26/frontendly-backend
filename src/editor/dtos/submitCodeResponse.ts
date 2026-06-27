@@ -8,6 +8,6 @@ export class SubmitResponse {
   match_percentage!: number;
   lint_errors!: LintEvaluation;
   requirementResult!: RequirmentsEvaluationDto[];
-  visual_results?: VisualEvaluationDto[];
+  visual_results?: VisualEvaluationDto | null;
   behavior_results?: BehaviorEvaluationDto | null;
 }

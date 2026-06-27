@@ -88,30 +88,42 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
-  ): Promise<VisualEvaluationDto[]> {
+  ): Promise<VisualEvaluationDto> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
       .lean();
     const targetDesign = exercise?.target_design;
-    if (!targetDesign) return [];
+    if (!targetDesign)
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
 
     // ko có puppeteer
     if (!this.puppeteerEvaluator) {
       console.warn(
         '[VisualRegression] Puppeteer not available - skipping visual evaluation',
       );
-      return [];
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
 
     if (!html?.trim() && !css?.trim() && !js?.trim() && !jsx?.trim()) {
-      return [
-        {
-          deviceType: targetDesign.deviceType,
-          passed: false,
-          matchPercentage: 0,
-          diffImageUrl: null,
-        },
-      ];
+      return {
+        deviceType: targetDesign.deviceType,
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
 
     try {
@@ -175,14 +187,13 @@ export class VisualRegressionService {
           console.log(
             `[Visual Service] User code failed to render. Failing automatically.`,
           );
-          return [
-            {
-              deviceType: targetDesign.deviceType,
-              passed: false,
-              matchPercentage: 0,
-              diffImageUrl: null,
-            },
-          ];
+          return {
+            deviceType: targetDesign.deviceType,
+            passed: false,
+            matchPercentage: 0,
+            level_of_complete: 'uncompleted',
+            diffImageUrl: null,
+          };
         }
 
         const userScreenshot = await userPage.screenshot({ type: 'png' });
@@ -209,13 +220,23 @@ export class VisualRegressionService {
         const totalPixels = width * height;
         const matchPercentage =
           ((totalPixels - mismatchedPixels) / totalPixels) * 100;
-        const isPassed = matchPercentage >= 95;
-        if (matchPercentage === 100)
+        if (matchPercentage >= 95 && matchPercentage <= 100)
           void this.gamification.addXp(
             userId,
             ActivityType.PERFECT_VISUAL,
             exerciseId,
           );
+        let levelComplete = 'uncompleted';
+        if (matchPercentage >= 40 && matchPercentage < 60)
+          levelComplete = 'average';
+        else if (matchPercentage >= 60 && matchPercentage < 80)
+          levelComplete = 'good';
+        else if (matchPercentage >= 80 && matchPercentage <= 100)
+          levelComplete = 'excellent';
+
+        let isPassed = false;
+        if (levelComplete == 'good' || levelComplete == 'excellent')
+          isPassed = true;
 
         let diffImageUrl = null;
         if (!isPassed) {
@@ -236,17 +257,22 @@ export class VisualRegressionService {
           }
         }
 
-        return [
-          {
-            deviceType: targetDesign.deviceType,
-            passed: isPassed,
-            matchPercentage: parseFloat(matchPercentage.toFixed(2)),
-            diffImageUrl: diffImageUrl,
-          },
-        ];
+        return {
+          deviceType: targetDesign.deviceType,
+          passed: isPassed,
+          matchPercentage: parseFloat(matchPercentage.toFixed(2)),
+          level_of_complete: levelComplete,
+          diffImageUrl: diffImageUrl,
+        };
       } catch (error: any) {
         console.error('[Visual Evaluation Error]', error.message);
-        return []; // Trả về mảng rỗng thay vì throw lỗi
+        return {
+          deviceType: 'desktop',
+          passed: false,
+          matchPercentage: 0,
+          level_of_complete: 'uncompleted',
+          diffImageUrl: null,
+        }; // Trả về mảng rỗng thay vì throw lỗi
       } finally {
         if (targetPage && !targetPage.isClosed()) await targetPage.close();
         if (userPage && !userPage.isClosed()) await userPage.close();
@@ -255,7 +281,13 @@ export class VisualRegressionService {
       console.warn(
         '[VisualRegression] Browser not available - skipping visual evaluation',
       );
-      return [];
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
   }
 

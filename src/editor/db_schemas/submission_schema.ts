@@ -52,6 +52,12 @@ export class VisualTestResult {
   @Prop({ required: true, type: Number })
   matchPercentage!: number;
 
+  @Prop({
+    enum: ['uncompleted', 'average', 'good', 'excellent'],
+    default: 'uncompleted',
+  })
+  level_of_complete!: string;
+
   @Prop({ type: String, default: null })
   diffImageUrl!: string | null;
 }

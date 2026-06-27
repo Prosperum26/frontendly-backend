@@ -302,14 +302,11 @@ export default function App() {
       }
 
       // visual regress
-      let visualResults: VisualEvaluationDto[] = [];
-      let isVisualPassed = true;
+      let visualResults: VisualEvaluationDto | null = null;
+      let isVisualPassed = true; // Mặc định là true để nếu bài không yêu cầu visual thì nó pass qua luôn
       let visualScore = 0;
-      if (evalConfig.visual && !hasLintError) {
-        this.logger.debug(
-          `[SubmitCode] Visual check enabled, evaluating visual...`,
-        );
 
+      if (evalConfig.visual && !hasLintError) {
         visualResults = await this.visualRegressionService.evaluateVisual(
           userId,
           exerciseId,
@@ -318,18 +315,11 @@ export default function App() {
           js,
           jsx,
         );
-        isVisualPassed =
-          visualResults.length === 0 ||
-          visualResults.every(result => result.passed);
 
-        if (visualResults.length > 0) {
-          const totalVisualScore = visualResults.reduce(
-            (sum, current) => sum + current.matchPercentage,
-            0,
-          );
-          visualScore = totalVisualScore / visualResults.length;
-        }
+        isVisualPassed = visualResults.passed;
+        visualScore = visualResults.matchPercentage;
       } else {
+        // Nếu có yêu cầu chấm visual nhưng bị lỗi syntax/lint ngay từ đầu -> Đánh rớt thẳng
         isVisualPassed = false;
         visualScore = 0;
       }
@@ -391,8 +381,6 @@ export default function App() {
 
         totalScore += countReq > 0 ? (countPass / countReq) * 100 : 100;
         checksCount++;
-      } else if (hasLintError) {
-        isRequirementsPassed = false;
       }
 
       if (evalConfig.lint) {
@@ -430,11 +418,7 @@ export default function App() {
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
 
       console.log('[Jest Error Detail]:', behaviorResult.errors);
-      this.logger.debug(
-        `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
-      );
 
-      // Check if user already completed this exercise to prevent XP farming
       const previousSubmissions = await this.submissionModel
         .find({ userId, exerciseId, isCompleted: true })
         .lean();
@@ -539,7 +523,7 @@ export default function App() {
       match_percentage: number;
       lint_errors: any;
       requirementResult: any[];
-      visual_results: any[];
+      visual_results: any;
       behavior_results: any;
     },
   ): Promise<SubmissionDocument> {
@@ -563,10 +547,11 @@ export default function App() {
         jsx_err: [],
       },
       requirementResult: resultData.requirementResult || [],
-      visual_results: (resultData.visual_results || []).map(vr => ({
+      visual_results: (resultData.visual_results || []).map((vr: any) => ({
         deviceType: vr.deviceType || 'unknown',
         passed: !!vr.passed,
         matchPercentage: vr.matchPercentage ?? 0,
+        level_of_complete: 'uncompleted',
         diffImageUrl: vr.diffImageUrl || null,
       })),
       behavior_results: resultData.behavior_results || null,
