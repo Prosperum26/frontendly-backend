@@ -17,6 +17,7 @@ export class BehaviorEvaluator {
   async evaluateBehavior(
     jsxContent: string,
     testScript: string,
+    files?: { filename: string; language: string; content: string }[],
   ): Promise<BehaviorEvaluationDto> {
     if (!testScript || testScript.trim() === '') {
       return {
@@ -89,9 +90,25 @@ export class BehaviorEvaluator {
       );
 
       // ghi các code mẫu và usercode vào các file
-      const userCodePath = path.join(tempDir, 'UserCode.jsx');
+      // Handle multi-file submissions
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const filePath = path.join(tempDir, file.filename);
+          await fs.writeFile(filePath, file.content, this.ENCODING);
+        }
+        // Write the main JSX file as UserCode.jsx for compatibility
+        const jsxFile = files.find((f: any) => f.language === 'jsx');
+        const userCodePath = path.join(tempDir, 'UserCode.jsx');
+        await fs.writeFile(
+          userCodePath,
+          jsxFile ? jsxFile.content : jsxContent,
+          this.ENCODING,
+        );
+      } else {
+        const userCodePath = path.join(tempDir, 'UserCode.jsx');
+        await fs.writeFile(userCodePath, jsxContent, this.ENCODING);
+      }
       const testCodePath = path.join(tempDir, 'UserCode.test.jsx');
-      await fs.writeFile(userCodePath, jsxContent, this.ENCODING);
       await fs.writeFile(testCodePath, testScript, this.ENCODING);
 
       // chạy test bằng terminal

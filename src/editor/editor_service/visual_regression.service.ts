@@ -47,8 +47,8 @@ export class VisualRegressionService {
           height: exercise.target_design.height,
         });
 
-        const { html, css, js, jsx } = exercise.code_test;
-        const isReady = await this.renderPage(page, html, css, js, jsx);
+        const { html, css, js, jsx, files } = exercise.code_test;
+        const isReady = await this.renderPage(page, html, css, js, jsx, files);
 
         if (!isReady) {
           console.error(
@@ -88,6 +88,7 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
+    files?: any[],
   ): Promise<VisualEvaluationDto> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
@@ -149,6 +150,7 @@ export class VisualRegressionService {
             codeTest.css,
             codeTest.js,
             codeTest.jsx,
+            codeTest.files,
           );
           if (!isTargetReady)
             throw new Error(`Target render timeout when render ${exerciseId}.`);
@@ -182,7 +184,14 @@ export class VisualRegressionService {
           height: targetDesign.height,
         });
 
-        const isUserReady = await this.renderPage(userPage, html, css, js, jsx);
+        const isUserReady = await this.renderPage(
+          userPage,
+          html,
+          css,
+          js,
+          jsx,
+          files,
+        );
         if (!isUserReady) {
           console.log(
             `[Visual Service] User code failed to render. Failing automatically.`,
@@ -298,6 +307,7 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
+    files?: any[],
   ): Promise<boolean> {
     try {
       const dom = new JSDOM(html || '<div id="root"></div>');
@@ -318,7 +328,21 @@ export class VisualRegressionService {
       await page.setContent(baseHtml, { waitUntil: 'load' });
 
       // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
-      if (jsx?.trim()) {
+      // Handle multi-file JSX: if files array exists, use the JSX file content
+      let jsxToRender = jsx;
+      if (files && files.length > 0) {
+        const jsxFile = files.find((f: any) => f.language === 'jsx');
+        if (jsxFile) {
+          jsxToRender = jsxFile.content;
+        }
+        // Handle CSS modules by injecting CSS files
+        const cssFiles = files.filter((f: any) => f.language === 'css');
+        for (const cssFile of cssFiles) {
+          await page.addStyleTag({ content: cssFile.content });
+        }
+      }
+
+      if (jsxToRender?.trim()) {
         await Promise.all([
           page.addScriptTag({
             url: 'https://unpkg.com/react@18/umd/react.development.js',
@@ -331,7 +355,7 @@ export class VisualRegressionService {
           }),
         ]);
 
-        const { cleanJsx, componentName } = this.processJsx(jsx);
+        const { cleanJsx, componentName } = this.processJsx(jsxToRender);
 
         await page.evaluate(
           (jsxStr: string, compName: string | null) => {

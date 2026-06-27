@@ -62,6 +62,19 @@ export class EvaluationConfig {
 const EvaluationConfigSchema = SchemaFactory.createForClass(EvaluationConfig);
 
 @Schema({ _id: false })
+export class EditorFile {
+  @Prop({ required: true })
+  filename!: string;
+
+  @Prop({ required: true })
+  language!: string;
+
+  @Prop({ required: true })
+  content!: string;
+}
+const EditorFileSchema = SchemaFactory.createForClass(EditorFile);
+
+@Schema({ _id: false })
 export class CodeTest {
   @Prop({ trim: true, default: '' })
   html!: string;
@@ -74,6 +87,9 @@ export class CodeTest {
 
   @Prop({ trim: true, default: '' })
   jsx!: string;
+
+  @Prop({ type: [EditorFileSchema], default: [] })
+  files!: EditorFile[];
 }
 const CodeTestSchema = SchemaFactory.createForClass(CodeTest);
 
@@ -132,6 +148,9 @@ export class Exercise {
 
   @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   jsx_content!: string;
+
+  @Prop({ type: [EditorFileSchema], default: [] })
+  starter_files!: EditorFile[];
 
   @Prop({ type: TargetDesignSchema, default: null })
   target_design!: TargetDesign;

@@ -100,6 +100,7 @@ export default function App() {
     </div>
   );
 }`,
+        starter_files: [],
         target_design: {
           deviceType: 'desktop',
           width: 1920,
@@ -217,7 +218,13 @@ export default function App() {
         throw new Error('Missing editorContent in request body');
       }
 
-      const { html = '', css = '', js = '', jsx = '' } = editorContent;
+      const {
+        html = '',
+        css = '',
+        js = '',
+        jsx = '',
+        files = [],
+      } = editorContent;
       const exercise = await this.getExerciseById(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
@@ -314,6 +321,7 @@ export default function App() {
           css,
           js,
           jsx,
+          files,
         );
 
         isVisualPassed = visualResults.passed;
@@ -341,6 +349,7 @@ export default function App() {
           behaviorResult = await this.behaviorEvaluator.evaluateBehavior(
             jsx,
             exercise.test_script,
+            files,
           );
 
           if (behaviorResult) {
