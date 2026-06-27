@@ -1,13 +1,13 @@
 import { Expose } from 'class-transformer';
-import { IsString, IsOptional } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class GoogleLoginRequestDto {
   @IsString()
   idToken: string;
 
-  @IsString()
+  @IsBoolean()
   @IsOptional()
-  redirectUrl?: string;
+  rememberMe?: boolean;
 }
 
 export class GoogleLoginResponseDto {

@@ -21,6 +21,7 @@ export class GoogleAuthService {
   public async authenticate(
     idToken: string,
     res: Response,
+    rememberMe: boolean = false,
   ): Promise<GoogleAuthResult> {
     const ticket = await this.oauth2Client.verifyIdToken({
       idToken,
@@ -57,6 +58,7 @@ export class GoogleAuthService {
     const { refreshToken, expiresAt } = await this.tokenService.createSession(
       user._id,
       userAgent,
+      rememberMe,
     );
 
     // Set refresh token in HttpOnly cookie

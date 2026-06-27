@@ -90,10 +90,14 @@ export class TokenService {
   public async createSession(
     userId: Types.ObjectId,
     deviceInfo: string,
+    rememberMe: boolean = false,
   ): Promise<{ refreshToken: string; expiresAt: Date }> {
     const refreshToken = this.generateRefreshToken();
     const refreshTokenHash = this.hashRefreshToken(refreshToken);
-    const expiresAt = dayjs().add(7, 'day').toDate();
+    // If remember me is true, extend expiration to 30 days, otherwise 7 days
+    const expiresAt = rememberMe
+      ? dayjs().add(30, 'day').toDate()
+      : dayjs().add(7, 'day').toDate();
 
     await this.sessionModel.create({
       user_id: userId,
@@ -135,9 +139,12 @@ export class TokenService {
     const accessToken = await this.signAccessToken(token);
 
     // Create new session with new refresh token
+    // Preserve remember me setting from original session by checking expiration time
+    const wasRememberMe = dayjs(session.expires_at).diff(dayjs(), 'day') > 14;
     const { refreshToken, expiresAt } = await this.createSession(
       session.user_id,
       session.device_info,
+      wasRememberMe,
     );
 
     // Set new refresh token in HttpOnly cookie

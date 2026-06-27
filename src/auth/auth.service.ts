@@ -62,7 +62,7 @@ export class AuthService {
     refreshToken: string;
     user: any;
   }> {
-    const { email, password } = body;
+    const { email, password, rememberMe } = body;
 
     const user = await this.userModel
       .findOne({ email })
@@ -85,6 +85,7 @@ export class AuthService {
     const { refreshToken, expiresAt } = await this.tokenService.createSession(
       <Types.ObjectId>userDoc._id,
       this.getDeviceInfo(res),
+      rememberMe,
     );
 
     this.setRefreshCookie(res, refreshToken, expiresAt);

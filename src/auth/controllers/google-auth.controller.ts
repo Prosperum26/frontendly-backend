@@ -31,7 +31,11 @@ export class GoogleAuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginResponseDto> {
     const { accessToken, refreshToken, user, isNewUser } =
-      await this.googleAuthService.authenticate(dto.idToken, res);
+      await this.googleAuthService.authenticate(
+        dto.idToken,
+        res,
+        dto.rememberMe || false,
+      );
 
     return new GoogleLoginResponseDto(
       accessToken,
