@@ -14,7 +14,7 @@ type CommonConfigType = z.infer<typeof commonConfigSchema>;
 
 export const commonConfigObj = registerAs('common', () => {
   const config: CommonConfigType = {
-    nodeEnv: <NodeEnv>process.env.NODE_ENV,
+    nodeEnv: <NodeEnv>(process.env.NODE_ENV || 'local'),
     port: parseInt(process.env.PORT!, 10),
     dbUri: process.env.DB_URI!,
     corsOrigins: (process.env.CORS_ORIGINS || '').split(','),
