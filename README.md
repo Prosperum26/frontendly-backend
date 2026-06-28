@@ -173,7 +173,7 @@ yarn seed
 yarn lint:check  ✅
 yarn build       ✅
 yarn seed        ✅ (cần MongoDB local)
-yarn test        ⚠️  một số test cũ fail (Jest ESM)
+yarn test        ✅ 28/28 unit tests passed
 ```
 
 ## Tech stack
