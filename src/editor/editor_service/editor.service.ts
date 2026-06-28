@@ -143,6 +143,10 @@ export default function App() {
     userId: string,
     exercise: Exercise,
   ): Promise<Exercise> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return exercise;
+    }
+
     const lastExercise = await this.submissionModel
       .findOne({
         exerciseId: exerciseId,
@@ -418,20 +422,24 @@ export default function App() {
         `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
       );
 
-      // Check if user already completed this exercise to prevent XP farming
-      const previousSubmissions = await this.submissionModel
-        .find({ userId, exerciseId, isCompleted: true })
-        .lean();
-      const alreadyCompleted = previousSubmissions.length > 0;
+      const alreadyCompleted =
+        !this.userUtilsService.isGuestUser(userId) &&
+        (
+          await this.submissionModel
+            .find({ userId, exerciseId, isCompleted: true })
+            .lean()
+        ).length > 0;
 
-      await this.saveSubmission(userId, exerciseId, editorContent, {
-        isCompleted,
-        match_percentage: finalMatchPercentage,
-        lint_errors: lintResult,
-        requirementResult: requirementResults,
-        visual_results: visualResults,
-        behavior_results: behaviorResult,
-      });
+      if (!this.userUtilsService.isGuestUser(userId)) {
+        await this.saveSubmission(userId, exerciseId, editorContent, {
+          isCompleted,
+          match_percentage: finalMatchPercentage,
+          lint_errors: lintResult,
+          requirementResult: requirementResults,
+          visual_results: visualResults,
+          behavior_results: behaviorResult,
+        });
+      }
 
       if (
         isCompleted &&
