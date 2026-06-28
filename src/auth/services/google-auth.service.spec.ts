@@ -9,6 +9,7 @@ import { authConfigObj } from '@/common/config';
 import { ConfigMock } from '@/common/config/mocks';
 import { MockUserBuilder } from '@/users/mocks';
 import { UserService } from '@/users/services';
+import { GamificationService } from '@/users/services/gamification.service';
 
 const mockUser = new MockUserBuilder().build();
 const mockResponse = {
@@ -21,12 +22,14 @@ describe('GoogleAuthService', () => {
   let userService: DeepMocked<UserService>;
   let tokenService: DeepMocked<TokenService>;
   let oauth2Client: DeepMocked<OAuth2Client>;
+  let gamificationService: DeepMocked<GamificationService>;
   let googleAuthService: GoogleAuthService;
 
   beforeEach(async () => {
     userService = createMock<UserService>();
     tokenService = createMock<TokenService>();
     oauth2Client = createMock<OAuth2Client>();
+    gamificationService = createMock<GamificationService>();
     const mod = await Test.createTestingModule({
       providers: [
         GoogleAuthService,
@@ -37,6 +40,7 @@ describe('GoogleAuthService', () => {
         { provide: UserService, useValue: userService },
         { provide: TokenService, useValue: tokenService },
         { provide: OAuth2Client, useValue: oauth2Client },
+        { provide: GamificationService, useValue: gamificationService },
       ],
     }).compile();
     googleAuthService = mod.get(GoogleAuthService);
@@ -69,6 +73,11 @@ describe('GoogleAuthService', () => {
       tokenService.createSession.mockResolvedValueOnce({
         refreshToken: 'refresh-token',
         expiresAt: new Date(),
+      });
+      gamificationService.dailyCheckIn.mockResolvedValueOnce({
+        checkedIn: false,
+        xpEarned: 0,
+        currentStreak: 0,
       });
 
       await googleAuthService.authenticate(idToken, response);

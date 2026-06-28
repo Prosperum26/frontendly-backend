@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { authConfigObj } from '@/common/config';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -12,7 +13,11 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useValue: {}, // Cung cấp một mock service rỗng để vượt qua test khởi tạo
+          useValue: {},
+        },
+        {
+          provide: authConfigObj.KEY,
+          useValue: { bcryptSaltRounds: 10, passwordResetExpiresInMinutes: 15 },
         },
       ],
     }).compile();
