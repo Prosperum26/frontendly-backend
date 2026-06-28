@@ -223,12 +223,10 @@ export class RequirementEvaluator {
             isPassed =
               (elementsCount[req.selector] || 0) > 0 || hooks.has(req.selector);
             break;
-
           case 'count':
             const expectedCount = parseInt(req.expectedValue);
             isPassed = (elementsCount[req.selector] || 0) === expectedCount;
             break;
-
           case 'content':
             const expectedContent = req.expectedValue?.trim();
             if (expectedContent) {
@@ -237,16 +235,13 @@ export class RequirementEvaluator {
               );
             }
             break;
-
           case 'attribute':
           case 'prop':
             isPassed = attributes.has(req.selector || req.expectedValue);
             break;
-
           case 'hook':
             isPassed = hooks.has(req.selector);
             break;
-
           default:
             isPassed = false;
         }

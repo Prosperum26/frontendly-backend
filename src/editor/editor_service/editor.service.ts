@@ -203,6 +203,100 @@ export default function App() {
     }
   }
 
+  async getExerciseForBackend(exerciseId: string): Promise<Exercise> {
+    const exercise = await this.exerciseModel
+      .findOne({ id: exerciseId })
+      .select('-_id')
+      .lean();
+    if (!exercise) {
+      const stageId = exerciseId.startsWith('exercise_')
+        ? exerciseId.replace('exercise_', '')
+        : 's1';
+
+      const defaultExercise: Exercise = {
+        id: exerciseId,
+        module: `frontend:${stageId}`,
+        title: `Practice for ${stageId}`,
+        level: 'easy',
+        description:
+          'Complete this practice exercise to reinforce your learning.',
+        evaluation_config: {
+          lint: true,
+          requirements: true,
+          visual: false,
+          behavior: false,
+        },
+        html_content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Start coding here!</p>
+</body>
+</html>`,
+        css_content: `body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    color: #333;
+}`,
+        js_content: `// Start writing your JavaScript here!
+console.log('Hello from practice!');`,
+        jsx_content: `import React, { useState } from 'react';
+export default function App() {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="practice-app">
+      <h1>Hello from React!</h1>
+      <p>Start building your component here.</p>
+      <button onClick={() => setCount(count + 1)}>
+        Clicked {count} times
+      </button>
+    </div>
+  );
+}`,
+        starter_files: [],
+        target_design: {
+          deviceType: 'desktop',
+          width: 1920,
+          height: 780,
+        },
+        code_test: null,
+        test_script: '',
+        target_url: '',
+        restrictions: [],
+        tags: [ExerciseTag.EASY],
+        requirements: [
+          {
+            id: 'req-1',
+            text: 'Page must have an h1 element',
+            selector: 'h1',
+            type: 'exist',
+            type_check: 'others',
+            expectedValue: '',
+          },
+        ],
+        navigation: { prev: null, next: null },
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+      try {
+        await this.exerciseModel.create(defaultExercise);
+      } catch (err) {
+        this.logger.error('Failed to save default exercise:', err);
+      }
+      return defaultExercise;
+    }
+    return exercise;
+  }
+
   // Evaluate Code khi user submit
   async submitCode(
     userId: string,
@@ -225,7 +319,7 @@ export default function App() {
         jsx = '',
         files = [],
       } = editorContent;
-      const exercise = await this.getExerciseById(exerciseId);
+      const exercise = await this.getExerciseForBackend(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
       const evalConfig = exercise.evaluation_config || {
@@ -294,6 +388,7 @@ export default function App() {
               if (result.passed) mergedReqResults[result.requirementId] = true;
             });
           }
+
           if (jsx && jsx.trim() !== '') {
             const checkReact = this.reqCheck.evaluateCodeReact(
               jsx,
@@ -304,7 +399,6 @@ export default function App() {
               if (result.passed) mergedReqResults[result.requirementId] = true;
             });
           }
-
           requirementResults.forEach(req => {
             if (validReqs.find((v: any) => v.id === req.requirementId)) {
               req.passed = mergedReqResults[req.requirementId] || false;
@@ -312,7 +406,6 @@ export default function App() {
           });
         }
       }
-
       // visual regress
       let visualResults: VisualEvaluationDto | null = null;
       let isVisualPassed = true; // Mặc định là true để nếu bài không yêu cầu visual thì nó pass qua luôn
@@ -430,8 +523,6 @@ export default function App() {
       }
 
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
-
-      console.log('[Jest Error Detail]:', behaviorResult.errors);
 
       const previousSubmissions = await this.submissionModel
         .find({ userId, exerciseId, isCompleted: true })
