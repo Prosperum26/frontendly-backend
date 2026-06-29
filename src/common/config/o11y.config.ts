@@ -10,7 +10,7 @@ const observabilityConfigSchema = z.object({
 export const observabilityConfigObj = registerAs('o11y', () => {
   return observabilityConfigSchema.parse({
     mem: {
-      heapThresholdBytes: process.env.O11Y_HEAP_THRESHOLD_BYTES || 1073741824,
+      heapThresholdBytes: process.env.O11Y_HEAP_THRESHOLD_BYTES,
     },
   });
 });
