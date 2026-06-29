@@ -47,7 +47,6 @@ export class EditorService {
       .select('-_id')
       .lean();
     if (!exercise) {
-      // Create a fallback exercise if none exists
       const stageId = exerciseId.startsWith('exercise_')
         ? exerciseId.replace('exercise_', '')
         : 's1';
@@ -101,6 +100,7 @@ export default function App() {
     </div>
   );
 }`,
+        starter_files: [],
         target_design: {
           deviceType: 'desktop',
           width: 1920,
@@ -108,6 +108,7 @@ export default function App() {
         },
         code_test: null,
         test_script: '',
+        target_url: '',
         restrictions: [],
         tags: [ExerciseTag.EASY],
         requirements: [
@@ -131,10 +132,20 @@ export default function App() {
       } catch (err) {
         this.logger.error('Failed to save default exercise:', err);
       }
-
       return defaultExercise;
     }
-    return exercise;
+    /* eslint-disable @typescript-eslint/naming-convention */
+    const result: Exercise = {
+      ...exercise,
+      code_test: null,
+      test_script: '',
+      requirements: exercise.requirements.map(({ id, text }) => ({
+        id,
+        text,
+      })),
+      restrictions: [],
+    };
+    return result;
   }
 
   // Lấy lần submit cuối
@@ -153,18 +164,21 @@ export default function App() {
     if (!lastExercise) {
       return exercise;
     }
+    /* eslint-disable @typescript-eslint/naming-convention */
     return {
       ...exercise,
+      code_test: null,
+      test_script: '',
+      restrictions: [],
+      requirements: exercise.requirements.map(({ id, text }) => ({
+        id,
+        text,
+      })),
       html_content: lastExercise.html_content,
       css_content: lastExercise.css_content,
       js_content: lastExercise.js_content,
       jsx_content: lastExercise.jsx_content,
     };
-  }
-
-  async getTargetPreview(exerciseId: string): Promise<string | null> {
-    await this.getExerciseById(exerciseId);
-    return this.visualRegressionService.getTargetPreview(exerciseId);
   }
 
   // Lấy bài tập
@@ -189,6 +203,100 @@ export default function App() {
     }
   }
 
+  async getExerciseForBackend(exerciseId: string): Promise<Exercise> {
+    const exercise = await this.exerciseModel
+      .findOne({ id: exerciseId })
+      .select('-_id')
+      .lean();
+    if (!exercise) {
+      const stageId = exerciseId.startsWith('exercise_')
+        ? exerciseId.replace('exercise_', '')
+        : 's1';
+
+      const defaultExercise: Exercise = {
+        id: exerciseId,
+        module: `frontend:${stageId}`,
+        title: `Practice for ${stageId}`,
+        level: 'easy',
+        description:
+          'Complete this practice exercise to reinforce your learning.',
+        evaluation_config: {
+          lint: true,
+          requirements: true,
+          visual: false,
+          behavior: false,
+        },
+        html_content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Start coding here!</p>
+</body>
+</html>`,
+        css_content: `body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    color: #333;
+}`,
+        js_content: `// Start writing your JavaScript here!
+console.log('Hello from practice!');`,
+        jsx_content: `import React, { useState } from 'react';
+export default function App() {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="practice-app">
+      <h1>Hello from React!</h1>
+      <p>Start building your component here.</p>
+      <button onClick={() => setCount(count + 1)}>
+        Clicked {count} times
+      </button>
+    </div>
+  );
+}`,
+        starter_files: [],
+        target_design: {
+          deviceType: 'desktop',
+          width: 1920,
+          height: 780,
+        },
+        code_test: null,
+        test_script: '',
+        target_url: '',
+        restrictions: [],
+        tags: [ExerciseTag.EASY],
+        requirements: [
+          {
+            id: 'req-1',
+            text: 'Page must have an h1 element',
+            selector: 'h1',
+            type: 'exist',
+            type_check: 'others',
+            expectedValue: '',
+          },
+        ],
+        navigation: { prev: null, next: null },
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+      try {
+        await this.exerciseModel.create(defaultExercise);
+      } catch (err) {
+        this.logger.error('Failed to save default exercise:', err);
+      }
+      return defaultExercise;
+    }
+    return exercise;
+  }
+
   // Evaluate Code khi user submit
   async submitCode(
     userId: string,
@@ -204,8 +312,14 @@ export default function App() {
         throw new Error('Missing editorContent in request body');
       }
 
-      const { html = '', css = '', js = '', jsx = '' } = editorContent;
-      const exercise = await this.getExerciseById(exerciseId);
+      const {
+        html = '',
+        css = '',
+        js = '',
+        jsx = '',
+        files = [],
+      } = editorContent;
+      const exercise = await this.getExerciseForBackend(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
       const evalConfig = exercise.evaluation_config || {
@@ -215,7 +329,7 @@ export default function App() {
         behavior: false,
       };
 
-      // 1. CHECK LINT
+      // lint
       let lintResult: any = {
         html_err: [],
         css_err: [],
@@ -230,6 +344,7 @@ export default function App() {
           js,
           jsx,
           exercise.restrictions,
+          files,
         );
         this.logger.debug(`[SubmitCode] Lint check completed`);
         hasLintError =
@@ -245,6 +360,7 @@ export default function App() {
         passed: false,
       }));
 
+      // requirement
       if (evalConfig.requirements && !hasLintError) {
         this.logger.debug(`[SubmitCode] Evaluating static requirements...`);
         const validReqs = reqList.filter(
@@ -272,13 +388,17 @@ export default function App() {
               if (result.passed) mergedReqResults[result.requirementId] = true;
             });
           }
+
           if (jsx && jsx.trim() !== '') {
-            const checkReact = this.reqCheck.evaluateCodeReact(jsx, validReqs);
+            const checkReact = this.reqCheck.evaluateCodeReact(
+              jsx,
+              validReqs,
+              files,
+            );
             checkReact.forEach((result: any) => {
               if (result.passed) mergedReqResults[result.requirementId] = true;
             });
           }
-
           requirementResults.forEach(req => {
             if (validReqs.find((v: any) => v.id === req.requirementId)) {
               req.passed = mergedReqResults[req.requirementId] || false;
@@ -286,40 +406,31 @@ export default function App() {
           });
         }
       }
-
       // visual regress
-      let visualResults: VisualEvaluationDto[] = [];
-      let isVisualPassed = true;
-      let visualScore = 100;
-      if (evalConfig.visual && !hasLintError) {
-        this.logger.debug(
-          `[SubmitCode] Visual check enabled, evaluating visual...`,
-        );
+      let visualResults: VisualEvaluationDto | null = null;
+      let isVisualPassed = true; // Mặc định là true để nếu bài không yêu cầu visual thì nó pass qua luôn
+      let visualScore = 0;
 
+      if (evalConfig.visual && !hasLintError) {
         visualResults = await this.visualRegressionService.evaluateVisual(
+          userId,
           exerciseId,
           html,
           css,
           js,
           jsx,
+          files,
         );
-        isVisualPassed =
-          visualResults.length === 0 ||
-          visualResults.every(result => result.passed);
 
-        if (visualResults.length > 0) {
-          const totalVisualScore = visualResults.reduce(
-            (sum, current) => sum + current.matchPercentage,
-            0,
-          );
-          visualScore = totalVisualScore / visualResults.length;
-        }
+        isVisualPassed = visualResults.passed;
+        visualScore = visualResults.matchPercentage;
       } else {
+        // Nếu có yêu cầu chấm visual nhưng bị lỗi syntax/lint ngay từ đầu -> Đánh rớt thẳng
         isVisualPassed = false;
         visualScore = 0;
       }
 
-      // check behavior
+      // behavior
       let behaviorResult = {
         passed: false,
         totalTests: 0,
@@ -336,9 +447,9 @@ export default function App() {
           behaviorResult = await this.behaviorEvaluator.evaluateBehavior(
             jsx,
             exercise.test_script,
+            files,
           );
 
-          // Đắp kết quả từ Jest vào mảng requirements tổng
           if (behaviorResult) {
             requirementResults.forEach((req: any) => {
               const behaviorCheck = reqList.find(
@@ -360,6 +471,7 @@ export default function App() {
           isBehaviorPassed = false;
         }
       }
+
       // tính result
       let matchPercentage = 0;
       let isCompleted = false;
@@ -367,7 +479,7 @@ export default function App() {
       let checksCount = 0;
 
       let isRequirementsPassed = true;
-      if (evalConfig.requirements && !hasLintError) {
+      if (evalConfig.requirements) {
         const countReq = requirementResults.length;
         const countPass = requirementResults.filter(
           (req: any) => req.passed,
@@ -376,8 +488,6 @@ export default function App() {
 
         totalScore += countReq > 0 ? (countPass / countReq) * 100 : 100;
         checksCount++;
-      } else if (hasLintError) {
-        isRequirementsPassed = false;
       }
 
       if (evalConfig.lint) {
@@ -414,11 +524,6 @@ export default function App() {
 
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
 
-      this.logger.debug(
-        `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
-      );
-
-      // Check if user already completed this exercise to prevent XP farming
       const previousSubmissions = await this.submissionModel
         .find({ userId, exerciseId, isCompleted: true })
         .lean();
@@ -463,7 +568,7 @@ export default function App() {
         match_percentage: finalMatchPercentage,
         lint_errors: lintResult,
         requirementResult: requirementResults,
-        visual_results: visualResults,
+        visual_results: visualResults ? [visualResults] : [],
         behavior_results: behaviorResult,
       };
     } catch (error: any) {
@@ -523,7 +628,7 @@ export default function App() {
       match_percentage: number;
       lint_errors: any;
       requirementResult: any[];
-      visual_results: any[];
+      visual_results: any;
       behavior_results: any;
     },
   ): Promise<SubmissionDocument> {
@@ -547,12 +652,18 @@ export default function App() {
         jsx_err: [],
       },
       requirementResult: resultData.requirementResult || [],
-      visual_results: (resultData.visual_results || []).map(vr => ({
-        deviceType: vr.deviceType || 'unknown',
-        passed: !!vr.passed,
-        matchPercentage: vr.matchPercentage ?? 0,
-        diffImageUrl: vr.diffImageUrl || null,
-      })),
+      visual_results: resultData.visual_results
+        ? [
+            {
+              deviceType: resultData.visual_results.deviceType || 'unknown',
+              passed: !!resultData.visual_results.passed,
+              matchPercentage: resultData.visual_results.matchPercentage ?? 0,
+              level_of_complete:
+                resultData.visual_results.level_of_complete || 'uncompleted',
+              diffImageUrl: resultData.visual_results.diffImageUrl || null,
+            },
+          ]
+        : [],
       behavior_results: resultData.behavior_results || null,
     });
     try {

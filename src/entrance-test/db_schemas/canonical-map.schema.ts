@@ -4,16 +4,16 @@ import { Document } from 'mongoose';
 @Schema()
 class CanonicalMapEntry {
   @Prop({ required: true })
-  milestoneId: string;
+  milestoneId!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  exerciseId: string;
+  exerciseId!: string;
 
   @Prop({ type: [Number], required: true })
-  questionIds: number[];
+  questionIds!: number[];
 }
 
 export type CanonicalMapDocument = CanonicalMap & Document;
@@ -21,19 +21,19 @@ export type CanonicalMapDocument = CanonicalMap & Document;
 @Schema({ timestamps: true })
 export class CanonicalMap {
   @Prop({ required: true })
-  description: string;
+  description!: string;
 
   @Prop({ type: [String], required: true })
-  order: string[];
+  order!: string[];
 
   @Prop({ type: Object, required: true })
-  map: Record<string, CanonicalMapEntry>;
+  map!: Record<string, CanonicalMapEntry>;
 
   @Prop({ type: Object, required: true })
-  milestoneToCriticalGate: Record<string, string[]>;
+  milestoneToCriticalGate!: Record<string, string[]>;
 
   @Prop({ type: [String], required: true })
-  notes: string[];
+  notes!: string[];
 }
 
 export const CanonicalMapSchema = SchemaFactory.createForClass(CanonicalMap);

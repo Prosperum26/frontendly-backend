@@ -8,8 +8,18 @@ export class CheckLintReact {
   async checkReact(
     jsxContent: string,
     restrictions: any[] = [],
+    files?: { filename: string; language: string; content: string }[],
   ): Promise<{ line: number; message: string }[]> {
-    if (!jsxContent || jsxContent.trim() === '') return [];
+    // Handle multi-file submissions
+    let jsxToLint = jsxContent;
+    if (files && files.length > 0) {
+      const jsxFile = files.find((f: any) => f.language === 'jsx');
+      if (jsxFile) {
+        jsxToLint = jsxFile.content;
+      }
+    }
+
+    if (!jsxToLint || jsxToLint.trim() === '') return [];
 
     const restrictedSyntaxes: any[] = [];
     restrictions.forEach(restriction => {
@@ -62,7 +72,7 @@ export class CheckLintReact {
 
     // 3. THỰC THI CHẤM ĐIỂM
     try {
-      const result = await eslint.lintText(jsxContent);
+      const result = await eslint.lintText(jsxToLint);
 
       const lintResult = result[0].messages.map((err: any) => {
         return {

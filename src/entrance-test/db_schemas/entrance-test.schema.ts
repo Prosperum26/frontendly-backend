@@ -4,73 +4,73 @@ import { Document } from 'mongoose';
 @Schema()
 class Question {
   @Prop({ required: true })
-  id: number;
+  id!: number;
 
   @Prop({
     required: true,
     enum: ['foundation', 'styling', 'component', 'state'],
   })
-  competency: 'foundation' | 'styling' | 'component' | 'state';
+  competency!: 'foundation' | 'styling' | 'component' | 'state';
 
   @Prop({ required: true, enum: ['easy', 'medium', 'hard'] })
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty!: 'easy' | 'medium' | 'hard';
 
   @Prop({ required: true })
-  topic: string;
+  topic!: string;
 
   @Prop({ required: true })
-  question: string;
+  question!: string;
 
   @Prop({ type: Object, required: true })
-  options: Record<string, string>;
+  options!: Record<string, string>;
 
   @Prop({ required: true })
-  correctAnswer: string;
+  correctAnswer!: string;
 }
 
 @Schema()
 class DifficultyWeight {
   @Prop({ type: [Number], required: true })
-  questions: number[];
+  questions!: number[];
 
   @Prop({ required: true })
-  weight: number;
+  weight!: number;
 }
 
 @Schema()
 class CriticalGateRule {
   @Prop({ required: true })
-  id: string;
+  id!: string;
 
   @Prop({
     required: true,
     enum: ['foundation', 'styling', 'component', 'state'],
   })
-  competency: 'foundation' | 'styling' | 'component' | 'state';
+  competency!: 'foundation' | 'styling' | 'component' | 'state';
 
   @Prop({ required: true })
-  minPercentage: number;
+  minPercentage!: number;
 
   @Prop({ required: true })
-  failReason: string;
+  failReason!: string;
 }
 
 @Schema()
 class AdvancementLevel {
   @Prop({ required: true, enum: ['A', 'B', 'C', 'D', 'E'] })
-  level: 'A' | 'B' | 'C' | 'D' | 'E';
+  level!: 'A' | 'B' | 'C' | 'D' | 'E';
 
   @Prop({ required: true })
-  min: number;
+  min!: number;
 
   @Prop({ required: true })
-  max: number;
+  max!: number;
 
   @Prop({ required: true })
-  label: string;
+  label!: string;
 
   @Prop({ required: true })
-  action: string;
+  action!: string;
 
   @Prop({ type: Object })
   requiresCompetency?: Record<string, number>;
@@ -82,28 +82,28 @@ class AdvancementLevel {
 @Schema()
 class ExampleMapping {
   @Prop({ type: [Number], required: true })
-  relatedQuestions: number[];
+  relatedQuestions!: number[];
 
   @Prop({ required: true })
-  note: string;
+  note!: string;
 }
 
 @Schema()
 class PersonalizationRules {
   @Prop({ required: true })
-  description: string;
+  description!: string;
 
   @Prop({ type: Object, required: true })
-  competencyToMilestoneThreshold: Record<
+  competencyToMilestoneThreshold!: Record<
     string,
     { milestone: string; autoPassThreshold: number }
   >;
 
   @Prop({ type: [String], required: true })
-  perExerciseAutoPassAlgorithm: string[];
+  perExerciseAutoPassAlgorithm!: string[];
 
   @Prop({ type: Object, required: true })
-  exampleMapping: Record<string, ExampleMapping>;
+  exampleMapping!: Record<string, ExampleMapping>;
 }
 
 export type EntranceTestDocument = EntranceTest & Document;
@@ -111,43 +111,43 @@ export type EntranceTestDocument = EntranceTest & Document;
 @Schema({ timestamps: true })
 export class EntranceTest {
   @Prop({ required: true })
-  test_id: string;
+  test_id!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ type: [SchemaFactory.createForClass(Question)], required: true })
-  questions: Question[];
+  questions!: Question[];
 
   @Prop({ type: Object, required: true })
-  questionMapping: Record<string, number[]>;
+  questionMapping!: Record<string, number[]>;
 
   @Prop({ type: Object, required: true })
-  difficultyWeight: Record<string, DifficultyWeight>;
+  difficultyWeight!: Record<string, DifficultyWeight>;
 
   @Prop({ type: Object, required: true })
-  lessonMapping: Record<string, string>;
+  lessonMapping!: Record<string, string>;
 
   @Prop({ type: Object, required: true })
-  lessonToExerciseId: Record<string, string>;
+  lessonToExerciseId!: Record<string, string>;
 
   @Prop({
     type: [SchemaFactory.createForClass(CriticalGateRule)],
     required: true,
   })
-  criticalGateRules: CriticalGateRule[];
+  criticalGateRules!: CriticalGateRule[];
 
   @Prop({
     type: [SchemaFactory.createForClass(AdvancementLevel)],
     required: true,
   })
-  advancementLevels: AdvancementLevel[];
+  advancementLevels!: AdvancementLevel[];
 
   @Prop({
     type: SchemaFactory.createForClass(PersonalizationRules),
     required: true,
   })
-  personalizationRules: PersonalizationRules;
+  personalizationRules!: PersonalizationRules;
 
   @Prop({ type: Object })
   outputSchemaExample?: any;

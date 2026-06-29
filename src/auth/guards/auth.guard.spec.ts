@@ -1,6 +1,7 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { Request } from 'express';
 
@@ -9,6 +10,7 @@ import { MockTokenBuilder } from '../mocks';
 import { TokenService } from '../services';
 import { AuthOption } from '../types';
 import { MockUserBuilder } from '@/users/mocks';
+import { StageProgress } from '@/users/schemas/stage-progress.schema';
 
 const mockUser = new MockUserBuilder().build();
 
@@ -41,6 +43,10 @@ describe('AuthGuard', () => {
         {
           provide: TokenService,
           useValue: tokenService,
+        },
+        {
+          provide: getModelToken(StageProgress.name),
+          useValue: { findOne: () => ({ lean: () => ({ exec: () => null }) }) },
         },
       ],
     }).compile();

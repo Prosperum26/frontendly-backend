@@ -14,6 +14,7 @@ const XP_VALUES: Record<ActivityType, number> = {
   [ActivityType.CHALLENGE_WON]: 100,
   [ActivityType.STREAK_ACHIEVED]: 50,
   [ActivityType.BADGE_EARNED]: 75,
+  [ActivityType.PERFECT_VISUAL]: 30,
 };
 
 @Injectable()

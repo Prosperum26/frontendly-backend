@@ -23,7 +23,7 @@ export class ExerciseRequirement {
   type?: string;
 
   @Prop({ required: true, default: 'others', enum: ['behavior', 'others'] })
-  type_check!: string;
+  type_check?: string;
 
   @Prop({ default: '' })
   expectedValue?: string;
@@ -62,6 +62,19 @@ export class EvaluationConfig {
 const EvaluationConfigSchema = SchemaFactory.createForClass(EvaluationConfig);
 
 @Schema({ _id: false })
+export class EditorFile {
+  @Prop({ required: true })
+  filename!: string;
+
+  @Prop({ required: true })
+  language!: string;
+
+  @Prop({ required: true })
+  content!: string;
+}
+const EditorFileSchema = SchemaFactory.createForClass(EditorFile);
+
+@Schema({ _id: false })
 export class CodeTest {
   @Prop({ trim: true, default: '' })
   html!: string;
@@ -74,6 +87,9 @@ export class CodeTest {
 
   @Prop({ trim: true, default: '' })
   jsx!: string;
+
+  @Prop({ type: [EditorFileSchema], default: [] })
+  files!: EditorFile[];
 }
 const CodeTestSchema = SchemaFactory.createForClass(CodeTest);
 
@@ -106,7 +122,12 @@ export class Exercise {
 
   @Prop({
     type: EvaluationConfigSchema,
-    default: () => ({ lint: true, requirements: true, visual: false }),
+    default: () => ({
+      lint: true,
+      requirements: true,
+      visual: false,
+      behavior: false,
+    }),
   })
   evaluation_config!: EvaluationConfig;
 
@@ -128,8 +149,14 @@ export class Exercise {
   @Prop({ trim: true, default: '', maxlength: 100000 }) // lưu phần code gần nhất
   jsx_content!: string;
 
+  @Prop({ type: [EditorFileSchema], default: [] })
+  starter_files!: EditorFile[];
+
   @Prop({ type: TargetDesignSchema, default: null })
   target_design!: TargetDesign;
+
+  @Prop({ trim: true, default: '' }) // test script để test behavior cho reactjs
+  target_url!: string;
 
   @Prop({ type: CodeTestSchema, default: null }) // code test mẫu để chạy visual regress
   code_test!: CodeTest | null;

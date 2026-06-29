@@ -103,10 +103,12 @@ export class TheoryService {
     for (const milestone of theoryData.milestones) {
       for (const lesson of milestone.lessons) {
         if (lesson.lessonId === lessonId) {
-          const relatedExercises = <ExerciseData[]>await this.exerciseModel
-            .find({ id: { $in: lesson.relatedExerciseIds } })
-            .lean()
-            .exec();
+          const relatedExercises = <ExerciseData[]>(
+            (<unknown>await this.exerciseModel
+              .find({ id: { $in: lesson.relatedExerciseIds } })
+              .lean()
+              .exec())
+          );
           return { lesson, relatedExercises };
         }
       }
