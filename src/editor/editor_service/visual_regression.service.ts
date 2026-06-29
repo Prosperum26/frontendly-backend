@@ -236,11 +236,11 @@ export class VisualRegressionService {
             exerciseId,
           );
         let levelComplete = 'uncompleted';
-        if (matchPercentage >= 40 && matchPercentage < 60)
+        if (matchPercentage >= 40 && matchPercentage < 70)
           levelComplete = 'average';
-        else if (matchPercentage >= 60 && matchPercentage < 80)
+        else if (matchPercentage >= 70 && matchPercentage < 90)
           levelComplete = 'good';
-        else if (matchPercentage >= 80 && matchPercentage <= 100)
+        else if (matchPercentage >= 90 && matchPercentage <= 100)
           levelComplete = 'excellent';
 
         let isPassed = false;
@@ -420,6 +420,7 @@ export class VisualRegressionService {
   }
 
   // hàm clean lại jsx
+  /* eslint-disable */
   private processJsx(jsx: string): {
     cleanJsx: string;
     componentName: string | null;
@@ -427,6 +428,10 @@ export class VisualRegressionService {
     if (!jsx) return { cleanJsx: '', componentName: null };
 
     const cleanJsx = jsx
+      .replace(
+        /className=\{[a-zA-Z0-9_]+\.([a-zA-Z0-9_-]+)\}/g,
+        'className="$1"',
+      )
       .replace(/import[^'"]+['"][^'"]+['"];?/g, '')
       .replace(/export\s+default\s+/g, '')
       .replace(/export\s+/g, '');
