@@ -356,8 +356,13 @@ export class GamificationService {
       };
     }
 
-    // Add daily login XP
-    const xpResult = await this.addXp(userId, ActivityType.DAILY_LOGIN);
+    // Add daily login XP (use today's date as activityId for duplicate check)
+    const todayKey = today.toISOString().split('T')[0];
+    const xpResult = await this.addXp(
+      userId,
+      ActivityType.DAILY_LOGIN,
+      todayKey,
+    );
 
     // Update streak
     const streakResult = await this.updateStreak(userId);
