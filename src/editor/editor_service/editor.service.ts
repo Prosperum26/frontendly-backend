@@ -667,16 +667,18 @@ export default function App() {
       behavior_results: resultData.behavior_results || null,
     });
     try {
-      await newSubmit.save();
-      const oldest = await this.submissionModel
-        .find({ userId, exerciseId })
-        .sort({ created_at: -1 })
-        .skip(5)
-        .select('_id')
-        .lean();
-      if (oldest.length > 0) {
-        const idDelete = oldest.map(sub => sub._id);
-        await this.submissionModel.deleteMany({ _id: { $in: idDelete } });
+      if (userId !== 'guest') {
+        await newSubmit.save();
+        const oldest = await this.submissionModel
+          .find({ userId, exerciseId })
+          .sort({ created_at: -1 })
+          .skip(5)
+          .select('_id')
+          .lean();
+        if (oldest.length > 0) {
+          const idDelete = oldest.map(sub => sub._id);
+          await this.submissionModel.deleteMany({ _id: { $in: idDelete } });
+        }
       }
     } catch (dbError: any) {
       this.logger.error(`Database Error saving submission: ${dbError.message}`);
