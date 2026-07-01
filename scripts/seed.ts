@@ -245,6 +245,8 @@ const generateEditorExercises = (): any[] => {
       evaluation_config: data.evaluation_config,
       restrictions,
       tags: [levelTag, ExerciseTag.REACTJS],
+      // Use starter_files if available, otherwise fallback to old fields
+      starter_files: data.starter_files || [],
       html_content: data.html_content,
       css_content: data.css_content,
       js_content: data.js_content,

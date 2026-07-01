@@ -136,7 +136,14 @@ export class RequirementEvaluator {
       }
     }
 
+    console.log(
+      '[evaluateCodeReact] jsxToEvaluate:',
+      jsxToEvaluate?.substring(0, 200),
+    );
+    console.log('[evaluateCodeReact] requirements:', requirements);
+
     if (!jsxToEvaluate || jsxToEvaluate.trim() === '') {
+      console.log('[evaluateCodeReact] Empty JSX, returning all failed');
       return requirements.map(req => ({
         requirementId: req.id,
         passed: false,
@@ -262,6 +269,20 @@ export class RequirementEvaluator {
           if (path?.node?.declaration?.type === 'FunctionDeclaration') {
             const funcName = path.node.declaration.id.name; // Lấy ra chữ 'Product'
             exportsSet.add(`export function ${funcName}`);
+          }
+        },
+        FunctionDeclaration(path: any) {
+          // Check function declarations (not exported)
+          if (path.node.id) {
+            const funcName = path.node.id.name;
+            hooks.add(funcName); // Add to hooks set for component name checking
+          }
+        },
+        FunctionExpression(path: any) {
+          // Check function expressions (arrow functions, etc.)
+          if (path.node.id) {
+            const funcName = path.node.id.name;
+            hooks.add(funcName);
           }
         },
       });

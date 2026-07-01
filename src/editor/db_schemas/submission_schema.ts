@@ -123,6 +123,12 @@ export class Submission {
   @Prop({ trim: true, maxlength: 100000, default: '' })
   jsx_content!: string;
 
+  @Prop({ type: Object, default: {} })
+  files!: Record<
+    string,
+    { filename: string; language: string; content: string }
+  >;
+
   created_at!: Date;
   updated_at!: Date;
 }
