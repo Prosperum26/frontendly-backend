@@ -59,6 +59,7 @@ export class GoogleAuthService {
     const { refreshToken, expiresAt } = await this.tokenService.createSession(
       user._id,
       userAgent,
+      7, // Default 7 days for Google auth
     );
 
     // Set refresh token in HttpOnly cookie
