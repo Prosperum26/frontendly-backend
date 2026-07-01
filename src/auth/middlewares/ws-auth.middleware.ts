@@ -3,18 +3,14 @@ import { WsException } from '@nestjs/websockets';
 import { Types } from 'mongoose';
 import { ExtendedError, Socket } from 'socket.io';
 
-import { Token } from '../schemas';
 import { TokenService } from '../services';
-import { User } from '@/users/schemas';
+import { AuthenticatedHttpUser } from '@/common/typings/global';
 
 /**
  * Local type extending Socket to include the authenticated user data
  */
 interface AuthenticatedSocket extends Socket {
-  user?: {
-    token: Token;
-    profile: User;
-  };
+  user?: AuthenticatedHttpUser;
 }
 
 /**
@@ -76,6 +72,9 @@ export class WsAuthMiddleware {
 
       // Attach the user to the socket object
       socket.user = {
+        userId: user._id.toString(),
+        username: user.username,
+        role: user.role,
         token,
         profile: user,
       };

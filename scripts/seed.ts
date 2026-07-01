@@ -360,7 +360,7 @@ const generateLpExercises = (): any[] => {
 
 // ── Runner ────────────────────────────────────────────────────────────────────
 
-async function seed(): Promise<void> {
+export async function seed(): Promise<void> {
   try {
     console.log(`🚀 Connecting to MongoDB...`);
     await mongoose.connect(MONGO_URI!);
@@ -453,11 +453,15 @@ async function seed(): Promise<void> {
     );
 
     console.log('\n✨ Seeding complete! Project is ready for production.');
-    process.exit(0);
   } catch (err: unknown) {
     console.error('\n❌ Seed failed:', err);
-    process.exit(1);
+    throw err;
   }
 }
 
-void seed();
+// Run seed if called directly
+if (require.main === module) {
+  seed()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}

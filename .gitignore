@@ -72,3 +72,4 @@ eslint-report.json
 
 # Jest-junit reports
 /reports
+AUTH_FEATURE_SETUP.md

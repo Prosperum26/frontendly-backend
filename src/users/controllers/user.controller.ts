@@ -24,6 +24,7 @@ import { User } from '../schemas';
 import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
+import { AuthenticatedHttpUser } from '@/common/typings/global';
 
 @ApiTags('Users')
 @Controller({
@@ -40,7 +41,7 @@ export class UserController {
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
   public async myProfile(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
   ): Promise<{ success: boolean; data: MyProfileResponse }> {
     const user = await this.userModel.findById(authUser.userId).lean();
 
@@ -64,7 +65,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Validation error or invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateProfile(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @Body() body: UpdateProfileDto,
   ): Promise<{ success: boolean; message: string; data: User }> {
     const profile = <Record<string, string>>(<unknown>authUser.profile);
@@ -92,7 +93,7 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async changePassword(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @Body() body: ChangePasswordDto,
   ): Promise<{ message: string }> {
     const profile = <Record<string, string>>(<unknown>authUser.profile);
@@ -148,7 +149,7 @@ export class UserController {
   @ApiOperation({ summary: 'Upload avatar' })
   @UseInterceptors(FileInterceptor('file'))
   public async uploadAvatar(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
     console.log('--- FILE NHẬN ĐƯỢC ---', file);

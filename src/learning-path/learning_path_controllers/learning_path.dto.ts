@@ -65,6 +65,8 @@ export class PlacementTestDto {
   learningPath?: Array<{
     canonicalLessonId: string;
     stageId?: string;
+    milestoneId: string;
+    title: string;
     exerciseId: string;
     status: 'auto_passed' | 'required' | 'locked';
   }>;
