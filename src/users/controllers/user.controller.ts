@@ -24,7 +24,7 @@ import { User } from '../schemas';
 import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
-import { AuthenticatedHttpUser } from '@/common/typings/global';
+import { AuthenticatedHttpUser } from '@/common/types/auth.types';
 
 @ApiTags('Users')
 @Controller({

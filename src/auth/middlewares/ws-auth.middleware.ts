@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { ExtendedError, Socket } from 'socket.io';
 
 import { TokenService } from '../services';
-import { AuthenticatedHttpUser } from '@/common/typings/global';
+import { AuthenticatedHttpUser } from '@/common/types/auth.types';
 
 /**
  * Local type extending Socket to include the authenticated user data
