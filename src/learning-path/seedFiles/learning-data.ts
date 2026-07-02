@@ -1,9 +1,9 @@
 import { XpRewards } from '../types/learning-path.types';
 
 export const XP_REWARDS: XpRewards = {
-  easy: 50,
-  medium: 100,
-  hard: 150,
-  theory: 25,
+  easy: 10,
+  medium: 20,
+  hard: 30,
+  theory: 5,
   videoIntro: 30,
 };

@@ -6,6 +6,7 @@ export class UserUtilsService {
 
   isGuestUser(userId: string): boolean {
     return (
+      !userId ||
       userId === 'guest' ||
       userId.startsWith('guest-') ||
       userId.startsWith('dummy-user') ||

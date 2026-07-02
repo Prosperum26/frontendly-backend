@@ -67,6 +67,9 @@ describe('WsAuthMiddleware', () => {
     expect(socket.user).toEqual({
       token: validToken,
       profile: mockUser,
+      role: 'user',
+      userId: mockUser._id.toString(),
+      username: mockUser.username,
     });
   });
 });
