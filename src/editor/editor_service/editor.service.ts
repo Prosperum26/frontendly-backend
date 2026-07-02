@@ -154,6 +154,10 @@ export default function App() {
     userId: string,
     exercise: Exercise,
   ): Promise<Exercise> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return exercise;
+    }
+
     const lastExercise = await this.submissionModel
       .findOne({
         exerciseId: exerciseId,
@@ -572,19 +576,28 @@ export default function App() {
 
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
 
-      const previousSubmissions = await this.submissionModel
-        .find({ userId, exerciseId, isCompleted: true })
-        .lean();
-      const alreadyCompleted = previousSubmissions.length > 0;
+      this.logger.debug(
+        `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
+      );
 
-      await this.saveSubmission(userId, exerciseId, editorContent, {
-        isCompleted,
-        match_percentage: finalMatchPercentage,
-        lint_errors: lintResult,
-        requirementResult: requirementResults,
-        visual_results: visualResults,
-        behavior_results: behaviorResult,
-      });
+      const alreadyCompleted =
+        !this.userUtilsService.isGuestUser(userId) &&
+        (
+          await this.submissionModel
+            .find({ userId, exerciseId, isCompleted: true })
+            .lean()
+        ).length > 0;
+
+      if (!this.userUtilsService.isGuestUser(userId)) {
+        await this.saveSubmission(userId, exerciseId, editorContent, {
+          isCompleted,
+          match_percentage: finalMatchPercentage,
+          lint_errors: lintResult,
+          requirementResult: requirementResults,
+          visual_results: visualResults,
+          behavior_results: behaviorResult,
+        });
+      }
 
       if (
         isCompleted &&

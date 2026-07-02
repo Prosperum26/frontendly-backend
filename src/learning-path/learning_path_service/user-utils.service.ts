@@ -4,12 +4,9 @@ import { Injectable, Logger } from '@nestjs/common';
 export class UserUtilsService {
   private readonly logger: Logger = new Logger(UserUtilsService.name);
 
-  /**
-   * Check if user is a guest (not authenticated)
-   * Guest users have IDs starting with 'guest-' or 'dummy-user'
-   */
   isGuestUser(userId: string): boolean {
     return (
+      userId === 'guest' ||
       userId.startsWith('guest-') ||
       userId.startsWith('dummy-user') ||
       userId === 'anonymous'
