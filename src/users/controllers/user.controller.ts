@@ -105,6 +105,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get XP / level / streak progress for the sidebar' })
   public async getProgress(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: this.userService.getProgress('') };
+    }
     const data = await this.userService.getProgress(userId);
     return { success: true, data };
   }
@@ -114,6 +117,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get earned badges for the sidebar' })
   public async getBadges(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: { earned: [], unearned: [] } };
+    }
     const data = await this.userService.getBadges(userId);
     return { success: true, data };
   }
@@ -123,6 +129,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get user activity logs' })
   public async getActivity(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: [] };
+    }
     const data = await this.userService.getActivity(userId);
     return { success: true, data };
   }
@@ -132,6 +141,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get user activity stats for heatmap' })
   public async getActivityStats(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: [] };
+    }
     const data = await this.gamificationService.getActivityHeatmap(userId);
     return { success: true, data };
   }
@@ -141,6 +153,9 @@ export class UserController {
   @ApiOperation({ summary: 'Update user streak for today' })
   public async updateStreak(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: null };
+    }
     const data = await this.gamificationService.updateStreak(userId);
     return { success: true, data };
   }
@@ -173,6 +188,18 @@ export class UserController {
   })
   public async getLearningProgress(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return {
+        success: true,
+        data: {
+          totalLessons: 0,
+          completedLessons: 0,
+          completionPercentage: 0,
+          currentMilestone: 'Starting your journey',
+          isUnlocked: false,
+        },
+      };
+    }
     const data = await this.userService.getLearningProgress(userId);
     return { success: true, data };
   }
