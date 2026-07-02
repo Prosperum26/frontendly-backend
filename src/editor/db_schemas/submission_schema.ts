@@ -52,6 +52,12 @@ export class VisualTestResult {
   @Prop({ required: true, type: Number })
   matchPercentage!: number;
 
+  @Prop({
+    enum: ['uncompleted', 'average', 'good', 'excellent'],
+    default: 'uncompleted',
+  })
+  level_of_complete!: string;
+
   @Prop({ type: String, default: null })
   diffImageUrl!: string | null;
 }
@@ -116,6 +122,12 @@ export class Submission {
 
   @Prop({ trim: true, maxlength: 100000, default: '' })
   jsx_content!: string;
+
+  @Prop({ type: Object, default: {} })
+  files!: Record<
+    string,
+    { filename: string; language: string; content: string }
+  >;
 
   created_at!: Date;
   updated_at!: Date;

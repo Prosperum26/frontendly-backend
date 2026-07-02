@@ -197,6 +197,9 @@ const lessonsData = JSON.parse(
 const theoryData = JSON.parse(
   fs.readFileSync(path.join(basePath, 'theory.json'), 'utf-8'),
 );
+const challengesData = JSON.parse(
+  fs.readFileSync(path.join(basePath, 'challenges.json'), 'utf-8'),
+);
 
 const RESTRICTION_KEY_MAP: Record<string, JsxRestriction> = {
   BANNED_INLINE_STYLE: JsxRestriction.BANNED_INLINE_STYLE,
@@ -245,6 +248,8 @@ const generateEditorExercises = (): any[] => {
       evaluation_config: data.evaluation_config,
       restrictions,
       tags: [levelTag, ExerciseTag.REACTJS],
+      // Use starter_files if available, otherwise fallback to old fields
+      starter_files: data.starter_files || [],
       html_content: data.html_content,
       css_content: data.css_content,
       js_content: data.js_content,
@@ -254,8 +259,11 @@ const generateEditorExercises = (): any[] => {
       test_script: data.test_script,
       requirements: data.requirements.map((req: any) => ({
         id: req.id,
-        text: req.description,
-        type_check: 'others',
+        text: req.text,
+        type: req.type,
+        selector: req.selector,
+        type_check: req.type_check,
+        expectedValue: req.expectedValue,
       })),
       navigation: data.navigation,
       created_at: new Date(),
@@ -275,22 +283,44 @@ const generateTheories = (): any[] => {
         stageId,
         title: lesson.title,
         contentHtml: lesson.sections
-          .map(
-            (s: any) => `
+          .map((s: any) => {
+            let codeBlock = '';
+            if (s.code) {
+              let fileNameBlock = '';
+              if (s.fileName) {
+                fileNameBlock = `<div class="theory-code-filename">${s.fileName}</div>`;
+              }
+              const escapedCode = s.code
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              codeBlock = `
+            <div class="theory-code-container">
+              ${fileNameBlock}
+              <pre><code>${escapedCode}</code></pre>
+            </div>
+            `;
+            }
+
+            return `
           <section>
             <h2>${s.heading}</h2>
             <p>${s.content}</p>
-            ${s.code ? `<pre><code>${s.code}</code></pre>` : ''}
+            ${codeBlock}
           </section>
-        `,
-          )
+        `;
+          })
           .join(''),
-        proTips: lesson.keyTakeaways.join(' • '),
+        proTips: lesson.keyTakeaways.map((t: string) => `• ${t}`).join('<br>'),
         videoUrl: '',
         referenceLinks: [
           {
             title: 'React Documentation',
             url: 'https://react.dev',
+            type: 'doc',
+          },
+          {
+            title: 'W3Schools React Tutorial',
+            url: 'https://www.w3schools.com/react/',
             type: 'doc',
           },
         ],
@@ -333,15 +363,56 @@ const generateLpExercises = (): any[] => {
   return exercises;
 };
 
+const generateChallenges = (): any[] => {
+  return challengesData.challenges.map((challenge: any) => {
+    let levelTag: ExerciseTag;
+    if (challenge.level === 'easy') levelTag = ExerciseTag.EASY;
+    else if (challenge.level === 'medium') levelTag = ExerciseTag.MEDIUM;
+    else levelTag = ExerciseTag.HARD;
+
+    return {
+      id: challenge.id,
+      module: challenge.module,
+      title: challenge.title,
+      level: challenge.level,
+      description: challenge.description,
+      evaluation_config: challenge.evaluation_config,
+      restrictions: challenge.restrictions || [],
+      tags: [levelTag, ExerciseTag.REACTJS, ...(challenge.tags || [])],
+      html_content: challenge.html_content || '',
+      css_content: challenge.css_content || '',
+      js_content: challenge.js_content || '',
+      jsx_content: challenge.jsx_content || '',
+      starter_files: challenge.starter_files || [],
+      target_design: challenge.target_design,
+      code_test: challenge.code_test,
+      test_script: challenge.test_script || '',
+      requirements: challenge.requirements || [],
+      navigation: challenge.navigation || null,
+      target_url: challenge.target_url || '',
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  });
+};
+
 // ── Runner ────────────────────────────────────────────────────────────────────
 
-async function seed(): Promise<void> {
+export async function seed(): Promise<void> {
   try {
     console.log(`🚀 Connecting to MongoDB...`);
     await mongoose.connect(MONGO_URI!);
     console.log('✅ Connected.\n');
 
-    console.log('🔄 Upserting data (keeping user data)...\n');
+    console.log('🔄 Clearing all collections and reseeding...\n');
+
+    // Clear all collections to remove old guest users
+    console.log('🗑️  Clearing all collections...');
+    const db = mongoose.connection.db;
+    if (db) {
+      await db.dropDatabase();
+    }
+    console.log('✅ Database cleared.\n');
 
     console.log('🌱 Upserting Entrance Test Data...');
     await EntranceTest.deleteMany({}); // Xóa và tạo lại vì đây là dữ liệu test cố định
@@ -413,9 +484,13 @@ async function seed(): Promise<void> {
     console.log('🌱 Upserting Editor Exercises...');
     const editorExercises = generateEditorExercises();
     for (const exercise of editorExercises) {
+      const update = {
+        ...exercise,
+        target_url: '',
+      };
       await Exercise.updateOne(
         { id: exercise.id },
-        { $set: exercise },
+        { $set: update },
         { upsert: true },
       );
     }
@@ -423,12 +498,27 @@ async function seed(): Promise<void> {
       `✅ Upserted ${editorExercises.length} coding workspace exercises.`,
     );
 
+    console.log('🌱 Upserting Challenges...');
+    const challenges = generateChallenges();
+    for (const challenge of challenges) {
+      await Exercise.updateOne(
+        { id: challenge.id },
+        { $set: challenge },
+        { upsert: true },
+      );
+    }
+    console.log(`✅ Upserted ${challenges.length} challenges.`);
+
     console.log('\n✨ Seeding complete! Project is ready for production.');
-    process.exit(0);
   } catch (err: unknown) {
     console.error('\n❌ Seed failed:', err);
-    process.exit(1);
+    throw err;
   }
 }
 
-void seed();
+// Run seed if called directly
+if (require.main === module) {
+  seed()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}

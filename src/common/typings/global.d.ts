@@ -1,5 +1,7 @@
 import { Token } from '@/auth/schemas';
 import { User } from '@/users/schemas';
+import { Socket as SocketIOSocket } from 'socket.io';
+import { AuthenticatedHttpUser } from '@/common/types/auth.types';
 
 declare global {
   namespace NodeJS {
@@ -21,15 +23,11 @@ declare global {
     interface Request {
       user?: AuthenticatedHttpUser;
     }
-
-    interface AuthenticatedHttpUser {
-      userId: string;
-      username: string;
-      role: string;
-      token: Token;
-      profile: User;
-    }
   }
 }
 
-export { };
+declare module 'socket.io' {
+  interface Socket {
+    user?: AuthenticatedHttpUser;
+  }
+}

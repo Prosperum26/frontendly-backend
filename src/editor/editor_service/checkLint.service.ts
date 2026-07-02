@@ -25,6 +25,7 @@ export class CheckLint {
     javascript: string,
     jsx: string,
     restrictions: any[] = [],
+    files?: { filename: string; language: string; content: string }[],
   ): Promise<LintEvaluation> {
     try {
       const htmlCheck = this.checkLintHtml.checkHtml(html);
@@ -33,6 +34,7 @@ export class CheckLint {
       const reactCheck = await this.checkLintReact.checkReact(
         jsx,
         restrictions,
+        files,
       );
 
       let HtmlErr = [...htmlCheck];

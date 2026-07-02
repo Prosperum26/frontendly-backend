@@ -92,6 +92,9 @@ export class UnlockedStage {
 
   @Prop({ default: false })
   badgeEarned!: boolean;
+
+  @Prop({ default: false })
+  isAutoPassed!: boolean;
 }
 
 const UnlockedStageSchema = SchemaFactory.createForClass(UnlockedStage);
@@ -118,6 +121,24 @@ export class UserLearningProgress {
 
   @Prop({ type: [String], default: [] })
   badges!: string[];
+
+  @Prop({ type: [Object], default: [] })
+  earnedBadges!: Array<{
+    badgeId: string;
+    name: string;
+    icon: string;
+    earnedAt: Date;
+  }>;
+
+  @Prop({ type: [Object], default: [] })
+  completedMilestones!: Array<{
+    milestoneId: string;
+    completedAt: Date;
+    badgeId: string;
+  }>;
+
+  @Prop({ default: 0 })
+  totalCompletedStages!: number;
 
   @Prop({ type: String, default: null })
   lastActiveStageId!: string | null;

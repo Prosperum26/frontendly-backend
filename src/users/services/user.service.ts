@@ -316,8 +316,10 @@ export class UserService {
     });
   }
 
-  async getUserRank(userId: string): Promise<number> {
-    const user = await this.userModel.findById(userId).select('xp').lean();
+  async getUserRank(userId: string | Record<string, unknown>): Promise<number> {
+    // Handle case where userId might be an object
+    const userIdStr = typeof userId === 'string' ? userId : String(userId);
+    const user = await this.userModel.findById(userIdStr).select('xp').lean();
     if (!user) return -1;
 
     const count = await this.userModel.countDocuments({
@@ -325,7 +327,7 @@ export class UserService {
       isBanned: { $ne: true },
       $or: [
         { xp: { $gt: user.xp } },
-        { xp: user.xp, _id: { $lt: new Types.ObjectId(userId) } },
+        { xp: user.xp, _id: { $lt: new Types.ObjectId(userIdStr) } },
       ],
     });
 
@@ -390,22 +392,47 @@ export class UserService {
         .findOne({ userId })
         .lean();
 
-      const totalLessons = await this.milestoneModel.countDocuments();
+      if (!userProgress) {
+        return {
+          totalLessons: 0,
+          completedLessons: 0,
+          completionPercentage: 0,
+          currentMilestone: 'Starting your journey',
+          isUnlocked: false,
+        };
+      }
 
-      const completedLessons = (<any>userProgress)?.completedLessonsCount || 0;
+      // Get all milestones to calculate total stages
+      const milestones = await this.milestoneModel.find().lean();
+      const totalStages = milestones.reduce(
+        (sum, m) => sum + m.stages.length,
+        0,
+      );
+
+      // Count completed stages (earnedStars >= 3)
+      const completedStages = userProgress.unlockedStages.filter(
+        s => s.earnedStars >= 3,
+      ).length;
 
       const completionPercentage =
-        totalLessons > 0
-          ? Math.round((completedLessons / totalLessons) * 100)
-          : 0;
+        totalStages > 0 ? Math.round((completedStages / totalStages) * 100) : 0;
 
-      const currentMilestone =
-        (<any>userProgress)?.currentMilestoneName || 'Beginner';
-      const isUnlocked = (<any>userProgress)?.isUnlocked ?? true;
+      // Get current milestone name from lastActiveMilestoneId
+      let currentMilestone = 'Starting your journey';
+      if (userProgress.lastActiveMilestoneId) {
+        const activeMilestone = milestones.find(
+          m => m.id === userProgress.lastActiveMilestoneId,
+        );
+        if (activeMilestone) {
+          currentMilestone = activeMilestone.title;
+        }
+      }
+
+      const isUnlocked = userProgress.unlockedStages.length > 0;
 
       return {
-        totalLessons,
-        completedLessons,
+        totalLessons: totalStages,
+        completedLessons: completedStages,
         completionPercentage,
         currentMilestone,
         isUnlocked,

@@ -12,7 +12,8 @@ export function stageIdToCanonicalLessonId(
   stageId: string,
   canonicalData: CanonicalMapData,
 ): string | null {
-  const match = stageId.match(/^s(\d+)$/);
+  const regex = /^s(\d+)$/;
+  const match = regex.exec(stageId);
   if (!match) return null;
   const index = Number(match[1]) - 1;
   return canonicalData.order[index] ?? null;

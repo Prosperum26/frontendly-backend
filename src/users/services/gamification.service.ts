@@ -14,6 +14,7 @@ const XP_VALUES: Record<ActivityType, number> = {
   [ActivityType.CHALLENGE_WON]: 100,
   [ActivityType.STREAK_ACHIEVED]: 50,
   [ActivityType.BADGE_EARNED]: 75,
+  [ActivityType.PERFECT_VISUAL]: 30,
 };
 
 @Injectable()
@@ -91,6 +92,27 @@ export class GamificationService {
       xpEarned,
       leveledUp: newLevel > oldLevel,
     };
+  }
+
+  /**
+   * Deduct XP from user, handle level-down, return new level
+   */
+  async deductXp(
+    userId: string | Types.ObjectId,
+    amount: number,
+  ): Promise<{ newLevel: number }> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.xp = Math.max(0, user.xp - amount);
+    const newLevel = this.calculateLevel(user.xp);
+    user.level = newLevel;
+
+    await user.save();
+
+    return { newLevel };
   }
 
   /**
@@ -334,8 +356,13 @@ export class GamificationService {
       };
     }
 
-    // Add daily login XP
-    const xpResult = await this.addXp(userId, ActivityType.DAILY_LOGIN);
+    // Add daily login XP (use today's date as activityId for duplicate check)
+    const todayKey = today.toISOString().split('T')[0];
+    const xpResult = await this.addXp(
+      userId,
+      ActivityType.DAILY_LOGIN,
+      todayKey,
+    );
 
     // Update streak
     const streakResult = await this.updateStreak(userId);

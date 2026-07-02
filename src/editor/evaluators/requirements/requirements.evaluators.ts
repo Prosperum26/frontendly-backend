@@ -66,17 +66,33 @@ export class RequirementEvaluator {
             } else isPassed = false;
             break;
 
+          // Tìm đến case 'content' trong evaluateCodeHtmlCssJs và sửa thành:
           case 'content':
-            const selectorContent = container.querySelector(req.selector);
-            if (selectorContent) {
-              const expectedContent = req.expectedValue;
-              if (expectedContent) {
-                const hasContent = selectorContent.textContent
-                  ?.trim()
-                  .includes(expectedContent.trim());
-                if (hasContent) isPassed = true;
+            const expectedContentHtml = req.expectedValue?.trim();
+            if (!expectedContentHtml) {
+              isPassed = false;
+              break;
+            }
+            if (
+              !req.selector ||
+              req.selector.trim() === '' ||
+              req.selector === 'body'
+            ) {
+              isPassed =
+                container.textContent?.trim().includes(expectedContentHtml) ||
+                false;
+            } else {
+              try {
+                const selectorContent = container.querySelector(req.selector);
+                isPassed =
+                  selectorContent?.textContent
+                    ?.trim()
+                    .includes(expectedContentHtml) || false;
+              } catch (error: any) {
+                isPassed = false;
+                console.error('Content test error: ', error);
               }
-            } else isPassed = false;
+            }
             break;
 
           case 'attribute':
@@ -109,8 +125,25 @@ export class RequirementEvaluator {
   evaluateCodeReact(
     jsx: string,
     requirements: any[],
+    files?: { filename: string; language: string; content: string }[],
   ): RequirmentsEvaluationDto[] {
-    if (!jsx || jsx.trim() === '') {
+    // Handle multi-file submissions
+    let jsxToEvaluate = jsx;
+    if (files && files.length > 0) {
+      const jsxFile = files.find((f: any) => f.language === 'jsx');
+      if (jsxFile) {
+        jsxToEvaluate = jsxFile.content;
+      }
+    }
+
+    console.log(
+      '[evaluateCodeReact] jsxToEvaluate:',
+      jsxToEvaluate?.substring(0, 200),
+    );
+    console.log('[evaluateCodeReact] requirements:', requirements);
+
+    if (!jsxToEvaluate || jsxToEvaluate.trim() === '') {
+      console.log('[evaluateCodeReact] Empty JSX, returning all failed');
       return requirements.map(req => ({
         requirementId: req.id,
         passed: false,
@@ -119,7 +152,7 @@ export class RequirementEvaluator {
 
     // tạo cấy cấu trúc AST
     try {
-      const ast = parser.parse(jsx, {
+      const ast = parser.parse(jsxToEvaluate, {
         sourceType: 'module',
         plugins: ['jsx'],
       });
@@ -129,10 +162,15 @@ export class RequirementEvaluator {
       const textContents = new Set<string>(); // các đoạn text
       const attributes = new Set<string>(); // tên các props/attributes
       const hooks = new Set<string>(); // tên các hook
+      const imports = new Set<string>();
+      const exportsSet = new Set<string>();
 
       // quét cây cấu trúc AST của toàn bộ code
+      /* eslint-disable @typescript-eslint/naming-convention */
+      const elementTextContents: Record<string, Set<string>> = {};
+
       traverse(ast, {
-        jsxOpeningElement(path: any) {
+        JSXOpeningElement(path: any) {
           // lấy các thẻ
           const nodeName = path.node.name;
           if (nodeName.type === 'JSXIdentifier') {
@@ -140,26 +178,44 @@ export class RequirementEvaluator {
             elementsCount[tagName] = (elementsCount[tagName] || 0) + 1;
           }
         },
-        jsxAttribute(path: any) {
-          // lấy các attribute
+        JSXAttribute(path: any) {
           const attrName = path.node.name;
           if (attrName.type === 'JSXIdentifier') {
             attributes.add(attrName.name);
+            if (path.node.value?.type === 'StringLiteral') {
+              attributes.add(
+                `${attrName.name}=${path.node.value.value.trim()}`,
+              );
+            }
           }
         },
-        jsxText(path: any) {
-          // lấy text
-          if (path.node.value.trim()) {
-            textContents.add(path.node.value.trim());
+        JSXText(path: any) {
+          const textValue = path.node.value.trim();
+          if (textValue) {
+            textContents.add(textValue);
+            const parent = path.parent;
+            if (
+              parent.type === 'JSXElement' &&
+              parent.openingElement.name.type === 'JSXIdentifier'
+            ) {
+              const tagName = parent.openingElement.name.name;
+              if (!elementTextContents[tagName]) {
+                elementTextContents[tagName] = new Set();
+              }
+              elementTextContents[tagName].add(textValue);
+            }
           }
         },
-        stringLiteral(path: any) {
+        StringLiteral(path: any) {
           // lấy text được gán vào biến
           if (path.node.value.trim()) {
             textContents.add(path.node.value.trim());
           }
         },
-        callExpression(path: any) {
+        Identifier(path: any) {
+          hooks.add(path.node.name);
+        },
+        CallExpression(path: any) {
           const callee = path.node.callee;
           if (callee.type === 'Identifier') {
             const hookName = callee.name;
@@ -197,12 +253,50 @@ export class RequirementEvaluator {
             }
           }
         },
+        ImportDeclaration(path: any) {
+          // check các phần import
+          const defaultSpecifier = path.node.specifiers.find(
+            (s: any) => s.type === 'ImportDefaultSpecifier',
+          );
+
+          if (defaultSpecifier) {
+            const importName = defaultSpecifier.local.name;
+            imports.add(`import ${importName}`);
+          }
+        },
+        ExportNamedDeclaration(path: any) {
+          // Kiểm tra xem đây có phải là dạng: export function TênHàm()
+          if (path?.node?.declaration?.type === 'FunctionDeclaration') {
+            const funcName = path.node.declaration.id.name; // Lấy ra chữ 'Product'
+            exportsSet.add(`export function ${funcName}`);
+          }
+        },
+        FunctionDeclaration(path: any) {
+          // Check function declarations (not exported)
+          if (path.node.id) {
+            const funcName = path.node.id.name;
+            hooks.add(funcName); // Add to hooks set for component name checking
+          }
+        },
+        FunctionExpression(path: any) {
+          // Check function expressions (arrow functions, etc.)
+          if (path.node.id) {
+            const funcName = path.node.id.name;
+            hooks.add(funcName);
+          }
+        },
       });
+
+      /* eslint-disable */
       return requirements.map(req => {
         let isPassed = false;
         switch (req.type) {
           case 'exist':
-            isPassed = (elementsCount[req.selector] || 0) > 0;
+            isPassed =
+              (elementsCount[req.selector] || 0) > 0 ||
+              hooks.has(req.selector) ||
+              imports.has(req.selector) ||
+              exportsSet.has(req.selector);
             break;
 
           case 'count':
@@ -211,11 +305,26 @@ export class RequirementEvaluator {
             break;
 
           case 'content':
-            const expectedContent = req.expectedValue?.trim();
-            if (expectedContent) {
-              isPassed = Array.from(textContents).some(text =>
-                text.includes(expectedContent),
-              );
+            const expectedContentReact = req.expectedValue?.trim();
+            if (expectedContentReact) {
+              if (
+                !req.selector ||
+                req.selector === 'body' ||
+                req.selector === 'root'
+              ) {
+                isPassed = Array.from(textContents).some(text =>
+                  text.includes(expectedContentReact),
+                );
+              } else if (
+                elementTextContents &&
+                elementTextContents[req.selector]
+              ) {
+                isPassed = Array.from(elementTextContents[req.selector]).some(
+                  text => text.includes(expectedContentReact),
+                );
+              } else {
+                isPassed = false;
+              }
             }
             break;
 
@@ -227,7 +336,6 @@ export class RequirementEvaluator {
           case 'hook':
             isPassed = hooks.has(req.selector);
             break;
-
           default:
             isPassed = false;
         }

@@ -15,7 +15,7 @@ export class PuppeteerEvaluator implements OnModuleInit, OnModuleDestroy {
     // Start trình duyệt ngầm trên server 1 lần và dùng hoài
     try {
       this.browser = await puppeteer.launch({
-        headless: 'new',
+        headless: true,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',

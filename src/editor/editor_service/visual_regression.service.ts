@@ -1,13 +1,16 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JSDOM } from 'jsdom';
 import { Model } from 'mongoose';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
+import { ActivityType } from '../../users/schemas/activity-log.schema';
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
+import { CloudinaryService } from '../editor_service/cloudinary.service';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
+import { GamificationService } from '@/users/services/gamification.service';
 
 declare const Babel: {
   transform: (
@@ -20,102 +23,108 @@ declare const Babel: {
 export class VisualRegressionService {
   private targetImageCache = new Map<string, Buffer>(); // lưu screenshot của các bài tập
   constructor(
-    @Optional() private readonly puppeteerEvaluator: PuppeteerEvaluator | null,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly puppeteerEvaluator: PuppeteerEvaluator,
+    private readonly gamification: GamificationService,
     @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
   ) {}
-
-  async getTargetPreview(exerciseId: string): Promise<string | null> {
+  async uploadTargetUrls(): Promise<string> {
+    const exercises = await this.exerciseModel.find({
+      code_test: { $ne: null },
+    }); // lấy bài tập
     if (!this.puppeteerEvaluator) {
-      console.warn(
-        '[VisualRegression] Puppeteer not available - skipping target preview',
-      );
-      return null;
+      return '[Target Image] Puppeteer is not initialized!';
     }
-
-    const exercise = await this.exerciseModel
-      .findOne({ id: exerciseId })
-      .lean();
-    const targetDesign = exercise?.target_design;
-    const codeTest = exercise?.code_test;
-
-    if (!targetDesign || !codeTest) return null;
-
-    try {
-      const browser = this.puppeteerEvaluator.getBrowser();
+    const browser = this.puppeteerEvaluator.getBrowser();
+    for (const exercise of exercises) {
+      if (!exercise.code_test) continue;
       let page: any = null;
 
       try {
-        if (!this.targetImageCache.has(exerciseId)) {
-          page = await browser.newPage();
-          await page.setViewport({
-            width: targetDesign.width,
-            height: targetDesign.height,
-          });
+        page = await browser.newPage();
+        await page.setViewport({
+          width: exercise.target_design.width,
+          height: exercise.target_design.height,
+        });
 
-          const isReady = await this.renderPage(
-            page,
-            codeTest.html,
-            codeTest.css,
-            codeTest.js,
-            codeTest.jsx,
-          );
-          if (!isReady) return null;
+        const { html, css, js, jsx, files } = exercise.code_test;
+        const isReady = await this.renderPage(page, html, css, js, jsx, files);
 
-          this.targetImageCache.set(
-            exerciseId,
-            <Buffer>await page.screenshot({ type: 'png' }),
+        if (!isReady) {
+          console.error(
+            `[Target Image] Failed to render UI for ${exercise.id}`,
           );
+          continue;
         }
+        const screenshotBuffer = await page.screenshot({ type: 'png' }); // screenshot đưa về Buffer
+        const folderName = 'frontendly_codeTestImages';
+        const uploadResult = await this.cloudinaryService.uploadImageBuffer(
+          screenshotBuffer,
+          folderName,
+        );
 
-        const screenshot = this.targetImageCache.get(exerciseId);
-        if (!screenshot) return null;
-
-        return `data:image/png;base64,${screenshot.toString('base64')}`;
+        await this.exerciseModel.updateOne(
+          { id: exercise.id },
+          { $set: { target_url: uploadResult.secure_url } },
+        );
+        console.log(
+          `[Target Image] Success ${exercise.id} -> ${uploadResult.secure_url}`,
+        );
       } catch (error: any) {
-        console.error('[Target Preview Error]', error.message);
-        return null;
+        console.error(`[Target Image] Error on ${exercise.id}:`, error.message);
       } finally {
         if (page && !page.isClosed()) await page.close();
       }
-    } catch {
-      console.warn(
-        '[VisualRegression] Browser not available - skipping target preview',
-      );
-      return null;
     }
+    const resultMsg = `[Target Image] Done!`;
+    console.log(resultMsg);
+    return resultMsg;
   }
 
   async evaluateVisual(
+    userId: string,
     exerciseId: string,
     html: string,
     css: string,
     js: string,
     jsx: string,
-  ): Promise<VisualEvaluationDto[]> {
+    files?: any[],
+  ): Promise<VisualEvaluationDto> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
       .lean();
     const targetDesign = exercise?.target_design;
+    if (!targetDesign)
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
 
-    if (!targetDesign) return [];
-
-    // Nếu Puppeteer không khả dụng, trả về mảng rỗng (không làm lỗi)
+    // ko có puppeteer
     if (!this.puppeteerEvaluator) {
       console.warn(
         '[VisualRegression] Puppeteer not available - skipping visual evaluation',
       );
-      return [];
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
 
     if (!html?.trim() && !css?.trim() && !js?.trim() && !jsx?.trim()) {
-      return [
-        {
-          deviceType: targetDesign.deviceType,
-          passed: false,
-          matchPercentage: 0,
-          diffImageUrl: null,
-        },
-      ];
+      return {
+        deviceType: targetDesign.deviceType,
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
 
     try {
@@ -141,6 +150,7 @@ export class VisualRegressionService {
             codeTest.css,
             codeTest.js,
             codeTest.jsx,
+            codeTest.files,
           );
           if (!isTargetReady)
             throw new Error(`Target render timeout when render ${exerciseId}.`);
@@ -149,7 +159,19 @@ export class VisualRegressionService {
             exerciseId,
             <Buffer>await targetPage.screenshot({ type: 'png' }),
           );
-          await targetPage.close(); // screenshot xong thì tắt tab luôn
+
+          // tránh tràn RAM nên xóa screenshot cũ nhất trong cache
+          const MAX_CACHE_SIZE = 50;
+          if (this.targetImageCache.size > MAX_CACHE_SIZE) {
+            const oldestExerciseId = <any>(
+              this.targetImageCache.keys().next().value
+            ); // xóa phần screenshot cũ nhất
+            this.targetImageCache.delete(oldestExerciseId);
+            console.log(
+              `[Visual Service] Cache clear the exercise ${oldestExerciseId}`,
+            );
+          }
+          await targetPage.close();
         }
 
         // user screenshot
@@ -162,19 +184,25 @@ export class VisualRegressionService {
           height: targetDesign.height,
         });
 
-        const isUserReady = await this.renderPage(userPage, html, css, js, jsx);
+        const isUserReady = await this.renderPage(
+          userPage,
+          html,
+          css,
+          js,
+          jsx,
+          files,
+        );
         if (!isUserReady) {
           console.log(
             `[Visual Service] User code failed to render. Failing automatically.`,
           );
-          return [
-            {
-              deviceType: targetDesign.deviceType,
-              passed: false,
-              matchPercentage: 0,
-              diffImageUrl: null,
-            },
-          ];
+          return {
+            deviceType: targetDesign.deviceType,
+            passed: false,
+            matchPercentage: 0,
+            level_of_complete: 'uncompleted',
+            diffImageUrl: null,
+          };
         }
 
         const userScreenshot = await userPage.screenshot({ type: 'png' });
@@ -201,28 +229,59 @@ export class VisualRegressionService {
         const totalPixels = width * height;
         const matchPercentage =
           ((totalPixels - mismatchedPixels) / totalPixels) * 100;
-        const isPassed = matchPercentage >= 95;
+        if (matchPercentage >= 95 && matchPercentage <= 100)
+          void this.gamification.addXp(
+            userId,
+            ActivityType.PERFECT_VISUAL,
+            exerciseId,
+          );
+        let levelComplete = 'uncompleted';
+        if (matchPercentage >= 40 && matchPercentage < 70)
+          levelComplete = 'average';
+        else if (matchPercentage >= 70 && matchPercentage < 90)
+          levelComplete = 'good';
+        else if (matchPercentage >= 90 && matchPercentage <= 100)
+          levelComplete = 'excellent';
+
+        let isPassed = false;
+        if (levelComplete == 'good' || levelComplete == 'excellent')
+          isPassed = true;
 
         let diffImageUrl = null;
         if (!isPassed) {
-          const buffer = PNG.sync.write(diff, {
-            deflateLevel: 9,
-            filterType: 4,
-          });
-          diffImageUrl = `data:image/png;base64,${buffer.toString('base64')}`;
+          const diffBuffer = PNG.sync.write(diff);
+          try {
+            const folderName = 'frontendly_diffImages';
+            const uploadDiffImage =
+              await this.cloudinaryService.uploadImageBuffer(
+                diffBuffer,
+                folderName,
+              );
+            diffImageUrl = uploadDiffImage.secure_url;
+          } catch (error: any) {
+            console.error(
+              `[Visual Service] Cannot upload the image on Cloudinary:`,
+              error.message,
+            );
+          }
         }
 
-        return [
-          {
-            deviceType: targetDesign.deviceType,
-            passed: isPassed,
-            matchPercentage: parseFloat(matchPercentage.toFixed(2)),
-            diffImageUrl: diffImageUrl,
-          },
-        ];
+        return {
+          deviceType: targetDesign.deviceType,
+          passed: isPassed,
+          matchPercentage: parseFloat(matchPercentage.toFixed(2)),
+          level_of_complete: levelComplete,
+          diffImageUrl: diffImageUrl,
+        };
       } catch (error: any) {
         console.error('[Visual Evaluation Error]', error.message);
-        return []; // Trả về mảng rỗng thay vì throw lỗi
+        return {
+          deviceType: 'desktop',
+          passed: false,
+          matchPercentage: 0,
+          level_of_complete: 'uncompleted',
+          diffImageUrl: null,
+        }; // Trả về mảng rỗng thay vì throw lỗi
       } finally {
         if (targetPage && !targetPage.isClosed()) await targetPage.close();
         if (userPage && !userPage.isClosed()) await userPage.close();
@@ -231,7 +290,13 @@ export class VisualRegressionService {
       console.warn(
         '[VisualRegression] Browser not available - skipping visual evaluation',
       );
-      return [];
+      return {
+        deviceType: 'desktop',
+        passed: false,
+        matchPercentage: 0,
+        level_of_complete: 'uncompleted',
+        diffImageUrl: null,
+      };
     }
   }
 
@@ -242,9 +307,9 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
+    files?: any[],
   ): Promise<boolean> {
     try {
-      // 1. Gắn HTML và CSS cơ bản
       const dom = new JSDOM(html || '<div id="root"></div>');
       const doc = dom.window.document;
       if (!doc.getElementById('root')) {
@@ -254,10 +319,30 @@ export class VisualRegressionService {
       }
 
       const baseHtml = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${doc.body.innerHTML}</body></html>`;
+      page.on('pageerror', (error: any) =>
+        console.error('[Puppeteer Page Error]', error.message),
+      );
+      page.on('console', (msg: any) =>
+        console.log('[Puppeteer Console]', msg.text()),
+      );
       await page.setContent(baseHtml, { waitUntil: 'load' });
 
       // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
-      if (jsx?.trim()) {
+      // Handle multi-file JSX: if files array exists, use the JSX file content
+      let jsxToRender = jsx;
+      if (files && files.length > 0) {
+        const jsxFile = files.find((f: any) => f.language === 'jsx');
+        if (jsxFile) {
+          jsxToRender = jsxFile.content;
+        }
+        // Handle CSS modules by injecting CSS files
+        const cssFiles = files.filter((f: any) => f.language === 'css');
+        for (const cssFile of cssFiles) {
+          await page.addStyleTag({ content: cssFile.content });
+        }
+      }
+
+      if (jsxToRender?.trim()) {
         await Promise.all([
           page.addScriptTag({
             url: 'https://unpkg.com/react@18/umd/react.development.js',
@@ -270,10 +355,33 @@ export class VisualRegressionService {
           }),
         ]);
 
-        const { cleanJsx, componentName } = this.processJsx(jsx);
+        const { cleanJsx, componentName } = this.processJsx(jsxToRender);
 
         await page.evaluate(
           (jsxStr: string, compName: string | null) => {
+            const win = <any>window;
+            if (win.React) {
+              Object.keys(win.React).forEach(key => {
+                win[key] = win.React[key];
+              });
+            }
+
+            if (win.ReactDOM) {
+              win.createRoot = win.ReactDOM.createRoot;
+              Object.keys(win.ReactDOM).forEach(key => {
+                if (!win[key]) win[key] = win.ReactDOM[key];
+              });
+            }
+
+            win.styles = new Proxy(
+              {},
+              {
+                get: function (prop) {
+                  return prop;
+                },
+              },
+            );
+
             const transpiledCode = Babel.transform(jsxStr, {
               presets: [['react', { runtime: 'classic' }]],
             }).code;
@@ -295,6 +403,9 @@ export class VisualRegressionService {
         );
 
         // Chờ component xuất hiện
+        await page.evaluate(() =>
+          console.log('[Visual Service] Puppeteer running...'),
+        );
         await page.waitForSelector('#root > *', { timeout: 5000 });
       } else if (js?.trim()) {
         await page.addScriptTag({ content: js });
@@ -309,6 +420,7 @@ export class VisualRegressionService {
   }
 
   // hàm clean lại jsx
+  /* eslint-disable */
   private processJsx(jsx: string): {
     cleanJsx: string;
     componentName: string | null;
@@ -316,6 +428,10 @@ export class VisualRegressionService {
     if (!jsx) return { cleanJsx: '', componentName: null };
 
     const cleanJsx = jsx
+      .replace(
+        /className=\{[a-zA-Z0-9_]+\.([a-zA-Z0-9_-]+)\}/g,
+        'className="$1"',
+      )
       .replace(/import[^'"]+['"][^'"]+['"];?/g, '')
       .replace(/export\s+default\s+/g, '')
       .replace(/export\s+/g, '');

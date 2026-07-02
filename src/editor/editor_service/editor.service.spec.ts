@@ -1,4 +1,3 @@
-import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { EditorService } from './editor.service';
@@ -9,9 +8,8 @@ describe('EditorService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        EditorService,
         {
-          provide: getModelToken('Exercise'),
+          provide: EditorService,
           useValue: {},
         },
       ],

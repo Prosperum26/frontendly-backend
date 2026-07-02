@@ -1,5 +1,17 @@
 import { Type } from 'class-transformer';
-import { IsString, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, ValidateNested, IsOptional, IsArray } from 'class-validator';
+
+export class EditorFileDto {
+  @IsString()
+  filename!: string;
+
+  @IsString()
+  language!: string;
+
+  @IsString()
+  content!: string;
+}
+
 export class EditorContentDto {
   // lấy code của user từ API
   @IsString()
@@ -17,7 +29,13 @@ export class EditorContentDto {
   @IsString()
   @IsOptional()
   jsx!: string;
+
+  @IsArray()
+  @IsOptional()
+  @Type(() => EditorFileDto)
+  files!: EditorFileDto[];
 }
+
 export class SubmitCodeDto {
   @ValidateNested()
   @Type(() => EditorContentDto)
