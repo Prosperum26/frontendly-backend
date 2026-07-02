@@ -197,6 +197,9 @@ const lessonsData = JSON.parse(
 const theoryData = JSON.parse(
   fs.readFileSync(path.join(basePath, 'theory.json'), 'utf-8'),
 );
+const challengesData = JSON.parse(
+  fs.readFileSync(path.join(basePath, 'challenges.json'), 'utf-8'),
+);
 
 const RESTRICTION_KEY_MAP: Record<string, JsxRestriction> = {
   BANNED_INLINE_STYLE: JsxRestriction.BANNED_INLINE_STYLE,
@@ -360,6 +363,39 @@ const generateLpExercises = (): any[] => {
   return exercises;
 };
 
+const generateChallenges = (): any[] => {
+  return challengesData.challenges.map((challenge: any) => {
+    let levelTag: ExerciseTag;
+    if (challenge.level === 'easy') levelTag = ExerciseTag.EASY;
+    else if (challenge.level === 'medium') levelTag = ExerciseTag.MEDIUM;
+    else levelTag = ExerciseTag.HARD;
+
+    return {
+      id: challenge.id,
+      module: challenge.module,
+      title: challenge.title,
+      level: challenge.level,
+      description: challenge.description,
+      evaluation_config: challenge.evaluation_config,
+      restrictions: challenge.restrictions || [],
+      tags: [levelTag, ExerciseTag.REACTJS, ...(challenge.tags || [])],
+      html_content: challenge.html_content || '',
+      css_content: challenge.css_content || '',
+      js_content: challenge.js_content || '',
+      jsx_content: challenge.jsx_content || '',
+      starter_files: challenge.starter_files || [],
+      target_design: challenge.target_design,
+      code_test: challenge.code_test,
+      test_script: challenge.test_script || '',
+      requirements: challenge.requirements || [],
+      navigation: challenge.navigation || null,
+      target_url: challenge.target_url || '',
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  });
+};
+
 // ── Runner ────────────────────────────────────────────────────────────────────
 
 export async function seed(): Promise<void> {
@@ -453,6 +489,17 @@ export async function seed(): Promise<void> {
     console.log(
       `✅ Upserted ${editorExercises.length} coding workspace exercises.`,
     );
+
+    console.log('🌱 Upserting Challenges...');
+    const challenges = generateChallenges();
+    for (const challenge of challenges) {
+      await Exercise.updateOne(
+        { id: challenge.id },
+        { $set: challenge },
+        { upsert: true },
+      );
+    }
+    console.log(`✅ Upserted ${challenges.length} challenges.`);
 
     console.log('\n✨ Seeding complete! Project is ready for production.');
   } catch (err: unknown) {
