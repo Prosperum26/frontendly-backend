@@ -34,6 +34,7 @@
     "infra:integration": "docker compose -f docker/integration/infra.yml up",
     "seed": "ts-node -r tsconfig-paths/register scripts/seed.ts",
     "seed:only": "ts-node -r tsconfig-paths/register scripts/seed.ts",
+    "seed:prod": "ts-node -r tsconfig-paths/register scripts/seed.ts",
     "upload:targets": "ts-node -r tsconfig-paths/register scripts/uploadCodeTest.ts"
   },
   "dependencies": {

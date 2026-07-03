@@ -6,7 +6,7 @@ services:
     region: singapore
     plan: free
     branch: main
-    buildCommand: yarn install --frozen-lockfile && yarn build
+    buildCommand: yarn install --frozen-lockfile && npx puppeteer browsers install chrome && yarn build && yarn seed:prod && yarn upload:targets
     startCommand: yarn start:prod
     healthCheckPath: /health
     envVars:

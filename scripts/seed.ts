@@ -404,15 +404,21 @@ export async function seed(): Promise<void> {
     await mongoose.connect(MONGO_URI!);
     console.log('✅ Connected.\n');
 
-    console.log('🔄 Clearing all collections and reseeding...\n');
+    const isProduction = process.env.NODE_ENV === 'production';
 
-    // Clear all collections to remove old guest users
-    console.log('🗑️  Clearing all collections...');
-    const db = mongoose.connection.db;
-    if (db) {
-      await db.dropDatabase();
+    if (!isProduction) {
+      console.log('🔄 Clearing all collections and reseeding...\n');
+
+      // Clear all collections to remove old guest users
+      console.log('🗑️  Clearing all collections...');
+      const db = mongoose.connection.db;
+      if (db) {
+        await db.dropDatabase();
+      }
+      console.log('✅ Database cleared.\n');
+    } else {
+      console.log('🔄 Upserting data (keeping user data)...\n');
     }
-    console.log('✅ Database cleared.\n');
 
     console.log('🌱 Upserting Entrance Test Data...');
     await EntranceTest.deleteMany({}); // Xóa và tạo lại vì đây là dữ liệu test cố định
