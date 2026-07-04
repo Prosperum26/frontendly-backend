@@ -267,6 +267,7 @@ export class PlacementService {
             videoWatchPercentage: 100,
             videoSeekPercentage: 0,
             badgeEarned: false,
+            isAutoPassed: true,
           });
         } else if (lesson.status === 'required') {
           unlockedStages.push({
@@ -279,6 +280,7 @@ export class PlacementService {
             videoWatchPercentage: 0,
             videoSeekPercentage: 0,
             badgeEarned: false,
+            isAutoPassed: false,
           });
           break;
         }
@@ -317,6 +319,33 @@ export class PlacementService {
       xpEarned,
       autoPassedCount,
     };
+  }
+
+  async resetPlacementProgress(
+    userId: string,
+    skillId: string,
+  ): Promise<boolean> {
+    const progress = await this.userProgressModel
+      .findOne({ userId, skillId })
+      .exec();
+
+    if (!progress) return false;
+
+    if (progress.currentXp > 0) {
+      await this.gamificationService.deductXp(userId, progress.currentXp);
+    }
+
+    progress.currentXp = 0;
+    progress.placementTestCompleted = false;
+    progress.skipToMilestoneId = null;
+    progress.unlockedStages = [];
+    progress.personalizedLearningPath = [];
+    progress.studyPlan = [];
+    progress.lastActiveStageId = null;
+    progress.lastActiveMilestoneId = null;
+
+    await progress.save();
+    return true;
   }
 
   private resolveSkipMilestone(

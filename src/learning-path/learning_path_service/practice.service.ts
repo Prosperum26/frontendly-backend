@@ -224,6 +224,9 @@ export class PracticeService {
           stageId,
         );
 
+        // Only award XP if this is the first time completing the exercise
+        const actualXpEarned = wasPreviouslyCompleted ? 0 : xpEarned;
+
         const topLevelSet: Record<string, unknown> = {
           lastActiveStageId: stageId,
           ...(milestoneId && { lastActiveMilestoneId: milestoneId }),
@@ -236,7 +239,7 @@ export class PracticeService {
         const stageUpdate = this.buildStageUpdate(
           stageEntry,
           stageId,
-          xpEarned,
+          actualXpEarned,
           newStars,
           badgeEarned,
           topLevelSet,
@@ -248,13 +251,13 @@ export class PracticeService {
         );
 
         this.logger.debug(
-          `[Submit/DB] exerciseId=${exerciseId} stage=${stageId} milestone=${milestoneId} level=${level} xp=+${xpEarned} stars=${newStars} streak=${streakIncremented ? '+1' : '='} badge=${badgeEarned ?? 'none'}`,
+          `[Submit/DB] exerciseId=${exerciseId} stage=${stageId} milestone=${milestoneId} level=${level} xp=+${actualXpEarned} stars=${newStars} streak=${streakIncremented ? '+1' : '='} badge=${badgeEarned ?? 'none'}`,
         );
 
         return {
           status: 'passed',
           feedback: 'Chính xác! Test case đã vượt qua.',
-          xpEarned,
+          xpEarned: actualXpEarned,
           streakIncremented,
           badgeEarned,
           stageUpdates: {

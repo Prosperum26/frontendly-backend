@@ -5,11 +5,21 @@ import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 @Injectable()
 export class CloudinaryService {
   constructor() {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // Lấy từ file .env
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
+    // Parse from CLOUDINARY_URL if available, otherwise use individual env vars
+    const cloudinaryUrl = process.env.CLOUDINARY_URL;
+    if (cloudinaryUrl) {
+      cloudinary.config({
+        cloud_name: cloudinaryUrl.split('@')[1],
+        api_key: cloudinaryUrl.split('://')[1].split(':')[0],
+        api_secret: cloudinaryUrl.split(':')[2].split('@')[0],
+      });
+    } else {
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+      });
+    }
   }
 
   async uploadImageBuffer(

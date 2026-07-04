@@ -24,6 +24,7 @@ import { User } from '../schemas';
 import { UserService } from '../services';
 import { GamificationService } from '../services/gamification.service';
 import { ConfigureAuth, ReqUser } from '@/auth/decorators';
+import { AuthenticatedHttpUser } from '@/common/types/auth.types';
 
 @ApiTags('Users')
 @Controller({
@@ -40,7 +41,7 @@ export class UserController {
   @Get('me')
   @ApiOperation({ summary: 'Get user profile' })
   public async myProfile(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
   ): Promise<{ success: boolean; data: MyProfileResponse }> {
     const user = await this.userModel.findById(authUser.userId).lean();
 
@@ -64,7 +65,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Validation error or invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateProfile(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @Body() body: UpdateProfileDto,
   ): Promise<{ success: boolean; message: string; data: User }> {
     const profile = <Record<string, string>>(<unknown>authUser.profile);
@@ -92,7 +93,7 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async changePassword(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @Body() body: ChangePasswordDto,
   ): Promise<{ message: string }> {
     const profile = <Record<string, string>>(<unknown>authUser.profile);
@@ -104,6 +105,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get XP / level / streak progress for the sidebar' })
   public async getProgress(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: this.userService.getProgress('') };
+    }
     const data = await this.userService.getProgress(userId);
     return { success: true, data };
   }
@@ -113,6 +117,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get earned badges for the sidebar' })
   public async getBadges(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: { earned: [], unearned: [] } };
+    }
     const data = await this.userService.getBadges(userId);
     return { success: true, data };
   }
@@ -122,6 +129,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get user activity logs' })
   public async getActivity(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: [] };
+    }
     const data = await this.userService.getActivity(userId);
     return { success: true, data };
   }
@@ -131,6 +141,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get user activity stats for heatmap' })
   public async getActivityStats(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: [] };
+    }
     const data = await this.gamificationService.getActivityHeatmap(userId);
     return { success: true, data };
   }
@@ -140,6 +153,9 @@ export class UserController {
   @ApiOperation({ summary: 'Update user streak for today' })
   public async updateStreak(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return { success: true, data: null };
+    }
     const data = await this.gamificationService.updateStreak(userId);
     return { success: true, data };
   }
@@ -148,7 +164,7 @@ export class UserController {
   @ApiOperation({ summary: 'Upload avatar' })
   @UseInterceptors(FileInterceptor('file'))
   public async uploadAvatar(
-    @ReqUser() authUser: Express.AuthenticatedHttpUser,
+    @ReqUser() authUser: AuthenticatedHttpUser,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
     console.log('--- FILE NHẬN ĐƯỢC ---', file);
@@ -172,6 +188,18 @@ export class UserController {
   })
   public async getLearningProgress(@Req() req: Request): Promise<unknown> {
     const userId = this.extractUserId(req);
+    if (!userId) {
+      return {
+        success: true,
+        data: {
+          totalLessons: 0,
+          completedLessons: 0,
+          completionPercentage: 0,
+          currentMilestone: 'Starting your journey',
+          isUnlocked: false,
+        },
+      };
+    }
     const data = await this.userService.getLearningProgress(userId);
     return { success: true, data };
   }

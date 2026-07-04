@@ -155,6 +155,13 @@ export class LearningPathService {
     );
   }
 
+  async resetPlacementProgress(
+    userId: string,
+    skillId: string,
+  ): Promise<boolean> {
+    return this.placementService.resetPlacementProgress(userId, skillId);
+  }
+
   async completeStage(
     stageId: string,
     userId: string,
@@ -187,6 +194,7 @@ export class LearningPathService {
                 stageId: string;
                 theoryCompleted?: boolean;
                 earnedStars: number;
+                isAutoPassed?: boolean;
               }>;
             }
           >userProgress).unlockedStages
@@ -200,6 +208,7 @@ export class LearningPathService {
         theoryCompleted: stage.theoryCompleted || false,
         practiceCompleted: (stage.earnedStars || 0) >= 3,
         earnedStars: stage.earnedStars,
+        isAutoPassed: stage.isAutoPassed || false,
       })),
     };
   }

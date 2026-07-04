@@ -1,9 +1,9 @@
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
-  IsBoolean,
   IsOptional,
 } from 'class-validator';
 

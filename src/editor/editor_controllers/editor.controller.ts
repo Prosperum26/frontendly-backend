@@ -30,11 +30,9 @@ export class EditorController {
   @Get(':exerciseId')
   async getExercise(
     @Param('exerciseId') exerciseId: string,
-    @Req() req: Request,
   ): Promise<{ success: boolean; data: Exercise }> {
     try {
-      const userId = this.extractUserId(req);
-      const exercise = await this.editorService.getExercise(exerciseId, userId);
+      const exercise = await this.editorService.getExercise(exerciseId);
       return { success: true, data: exercise };
     } catch (error) {
       this.logger.error(`Error fetching exercise ${exerciseId}:`, error);
@@ -46,10 +44,8 @@ export class EditorController {
   @Get(':exerciseId/:userId')
   async getExerciseBackwardsCompatible(
     @Param('exerciseId') exerciseId: string,
-    @Param('userId') _userId: string,
-    @Req() req: Request,
   ): Promise<{ success: boolean; data: Exercise }> {
-    return this.getExercise(exerciseId, req);
+    return this.getExercise(exerciseId);
   }
 
   @Post(':exerciseId/submit')

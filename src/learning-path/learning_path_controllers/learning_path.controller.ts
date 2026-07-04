@@ -262,4 +262,22 @@ export class LearningContentController {
       data,
     };
   }
+
+  // POST /api/v1/learning-content/reset-placement-test
+  @Post('reset-placement-test')
+  async resetPlacementTest(
+    @Body() body: { skillId: string },
+    @Req() req: Request,
+  ): Promise<unknown> {
+    const userId = extractUserId(req);
+    const data = await this.learningPathService.resetPlacementProgress(
+      userId,
+      body.skillId ?? 'frontend',
+    );
+    return {
+      success: true,
+      message: 'Reset tiến trình học tập thành công',
+      data,
+    };
+  }
 }

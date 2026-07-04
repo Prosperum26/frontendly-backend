@@ -1,0 +1,1645 @@
+{
+  "challenges": [
+    {
+      "id": "challenge_c01",
+      "module": "frontend:challenge",
+      "title": "Hello World Component",
+      "level": "easy",
+      "description": "Create a function component named `HelloWorld` that renders a single `<p>` with the text 'Hello, World!'. App must render HelloWorld.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "components"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f9fafb;font-family:sans-serif;}p{font-size:24px;color:#111827;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function HelloWorld() {\n  return <p>Hello, World!</p>;\n}\n\nexport default function App() {\n  return <HelloWorld />;\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Component name must be HelloWorld.",
+          "selector": "HelloWorld",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must render a <p> element.",
+          "selector": "p",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "The <p> must contain 'Hello, World!'.",
+          "selector": "p",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Hello, World!"
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "// TODO: Create a component named HelloWorld\n// It should return a <p> with text \"Hello, World!\"\n\nexport default function App() {\n  return (\n    // TODO: render <HelloWorld /> here\n    <div></div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f9fafb;font-family:sans-serif;}p{font-size:24px;color:#111827;}",
+      "js_content": "",
+      "jsx_content": "// TODO: Create a component named HelloWorld\n// It should return a <p> with text \"Hello, World!\"\n\nexport default function App() {\n  return (\n    // TODO: render <HelloWorld /> here\n    <div></div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c02",
+      "module": "frontend:challenge",
+      "title": "Display Your Name",
+      "level": "easy",
+      "description": "Create a component named `NameTag`. It must render a `<div>` containing an `<h2>` with the text 'My name is: ' followed by your name stored in a `const name` variable using a JSX expression.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "jsx-expressions"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#eff6ff;}div{background:#fff;padding:32px 48px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);}h2{margin:0;color:#1d4ed8;font-size:28px;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "export default function NameTag() {\n  const name = \"Alice\";\n  return (\n    <div>\n      <h2>My name is: {name}</h2>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must declare const name.",
+          "selector": "name",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must render an h2 element.",
+          "selector": "h2",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "h2 must contain 'My name is:'.",
+          "selector": "h2",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "My name is:"
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "export default function NameTag() {\n  // TODO: declare const name with your name as a string\n  const name = \"\";\n  return (\n    <div>\n      {/* TODO: render <h2> with \"My name is: {name}\" */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#eff6ff;}div{background:#fff;padding:32px 48px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);}h2{margin:0;color:#1d4ed8;font-size:28px;}",
+      "js_content": "",
+      "jsx_content": "export default function NameTag() {\n  // TODO: declare const name with your name as a string\n  const name = \"\";\n  return (\n    <div>\n      {/* TODO: render <h2> with \"My name is: {name}\" */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c03",
+      "module": "frontend:challenge",
+      "title": "Unordered List",
+      "level": "easy",
+      "description": "Create a component named `FruitList` that renders a `<ul>` with exactly three `<li>` elements: 'Apple', 'Banana', and 'Cherry'. App must render FruitList.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "lists"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0fdf4;font-family:sans-serif;}ul{background:#fff;padding:32px 48px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.06);list-style:disc;color:#166534;font-size:20px;line-height:2;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function FruitList() {\n  return (\n    <ul>\n      <li>Apple</li>\n      <li>Banana</li>\n      <li>Cherry</li>\n    </ul>\n  );\n}\n\nexport default function App() {\n  return <FruitList />;\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Component name must be FruitList.",
+          "selector": "FruitList",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must render a <ul>.",
+          "selector": "ul",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Must have a <li> with 'Apple'.",
+          "selector": "li",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Apple"
+        },
+        {
+          "id": "req_4",
+          "text": "Must have a <li> with 'Banana'.",
+          "selector": "li",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Banana"
+        },
+        {
+          "id": "req_5",
+          "text": "Must have a <li> with 'Cherry'.",
+          "selector": "li",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Cherry"
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "// TODO: Create a FruitList component\n// Return a <ul> with three <li>: Apple, Banana, Cherry\n\nexport default function App() {\n  return <div></div>; // replace with <FruitList />\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0fdf4;font-family:sans-serif;}ul{background:#fff;padding:32px 48px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.06);list-style:disc;color:#166534;font-size:20px;line-height:2;}",
+      "js_content": "",
+      "jsx_content": "// TODO: Create a FruitList component\n// Return a <ul> with three <li>: Apple, Banana, Cherry\n\nexport default function App() {\n  return <div></div>; // replace with <FruitList />\n}"
+    },
+    {
+      "id": "challenge_c04",
+      "module": "frontend:challenge",
+      "title": "Simple Button Click",
+      "level": "easy",
+      "description": "Create a component `ClickMe` with a `<button>` that shows an alert saying 'Button clicked!' when clicked. The button text must be 'Click Me'.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "events"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#faf5ff;}button{background:#7c3aed;color:#fff;border:none;padding:14px 32px;border-radius:8px;font-size:18px;cursor:pointer;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "export default function ClickMe() {\n  return (\n    <button onClick={() => alert('Button clicked!')}>Click Me</button>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport ClickMe from './UserCode';\n\ntest('button calls alert on click', () => {\n  render(<ClickMe />);\n  window.alert = jest.fn();\n  fireEvent.click(screen.getByText('Click Me'));\n  expect(window.alert).toHaveBeenCalledWith('Button clicked!');\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must render a <button> element.",
+          "selector": "button",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Button text must be 'Click Me'.",
+          "selector": "button",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Click Me"
+        },
+        {
+          "id": "req_3",
+          "text": "Button must alert 'Button clicked!' when clicked.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "export default function ClickMe() {\n  // TODO: return a <button> with text 'Click Me'\n  // onClick should alert 'Button clicked!'\n  return (\n    <button>\n      {/* TODO: add text and onClick handler */}\n    </button>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#faf5ff;}button{background:#7c3aed;color:#fff;border:none;padding:14px 32px;border-radius:8px;font-size:18px;cursor:pointer;}",
+      "js_content": "",
+      "jsx_content": "export default function ClickMe() {\n  // TODO: return a <button> with text 'Click Me'\n  // onClick should alert 'Button clicked!'\n  return (\n    <button>\n      {/* TODO: add text and onClick handler */}\n    </button>\n  );\n}"
+    },
+    {
+      "id": "challenge_c05",
+      "module": "frontend:challenge",
+      "title": "Image with Alt Text",
+      "level": "easy",
+      "description": "Create a component `Avatar` that renders an `<img>` tag with `src=\"https://i.pravatar.cc/150\"`, `alt=\"User Avatar\"`, and `width=\"150\"`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "jsx",
+        "attributes"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;}img{border-radius:50%;box-shadow:0 8px 20px rgba(0,0,0,.15);}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "export default function Avatar() {\n  return (\n    <img\n      src=\"https://i.pravatar.cc/150\"\n      alt=\"User Avatar\"\n      width=\"150\"\n    />\n  );\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must render an <img> element.",
+          "selector": "img",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "img must have alt='User Avatar'.",
+          "selector": "img",
+          "type": "attribute",
+          "type_check": "others",
+          "expectedValue": "User Avatar"
+        },
+        {
+          "id": "req_3",
+          "text": "img must have width='150'.",
+          "selector": "img",
+          "type": "attribute",
+          "type_check": "others",
+          "expectedValue": "150"
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "export default function Avatar() {\n  // TODO: return an <img> with:\n  // src=\"https://i.pravatar.cc/150\"\n  // alt=\"User Avatar\"\n  // width=\"150\"\n  return <div></div>;\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;}img{border-radius:50%;box-shadow:0 8px 20px rgba(0,0,0,.15);}",
+      "js_content": "",
+      "jsx_content": "export default function Avatar() {\n  // TODO: return an <img> with:\n  // src=\"https://i.pravatar.cc/150\"\n  // alt=\"User Avatar\"\n  // width=\"150\"\n  return <div></div>;\n}"
+    },
+    {
+      "id": "challenge_c06",
+      "module": "frontend:challenge",
+      "title": "Boolean Prop Toggle Display",
+      "level": "easy",
+      "description": "Create a component `Visibility` that accepts a `show` boolean prop. If `show` is true, render a `<p>` with 'Visible'. If `show` is false, render a `<p>` with 'Hidden'. Use a ternary operator.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "props",
+        "ternary"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:sans-serif;}p{font-size:26px;font-weight:700;color:#0f172a;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function Visibility({ show }) {\n  return <p>{show ? 'Visible' : 'Hidden'}</p>;\n}\n\nexport default function App() {\n  return <Visibility show={true} />;\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Component name must be Visibility.",
+          "selector": "Visibility",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must accept a 'show' prop.",
+          "selector": "show",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Must use a ternary operator.",
+          "selector": "",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "// TODO: Create a Visibility component\n// Accept a 'show' boolean prop\n// Use ternary to render 'Visible' or 'Hidden' in a <p>\n\nexport default function App() {\n  return <Visibility show={true} />;\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:sans-serif;}p{font-size:26px;font-weight:700;color:#0f172a;}",
+      "js_content": "",
+      "jsx_content": "// TODO: Create a Visibility component\n// Accept a 'show' boolean prop\n// Use ternary to render 'Visible' or 'Hidden' in a <p>\n\nexport default function App() {\n  return <Visibility show={true} />;\n}"
+    },
+    {
+      "id": "challenge_c07",
+      "module": "frontend:challenge",
+      "title": "Render a Number List with .map()",
+      "level": "easy",
+      "description": "Create a component `NumberList` that renders an ordered list `<ol>` from the array `[1, 2, 3, 4, 5]` using `.map()`. Each `<li>` should display the number. Remember to add a unique `key` prop to each `<li>`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "easy",
+        "reactjs",
+        "lists",
+        "map"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f9ff;font-family:sans-serif;}ol{background:#fff;padding:28px 48px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.07);color:#075985;font-size:20px;line-height:2.2;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function NumberList() {\n  const numbers = [1, 2, 3, 4, 5];\n  return (\n    <ol>\n      {numbers.map(n => <li key={n}>{n}</li>)}\n    </ol>\n  );\n}\n\nexport default function App() {\n  return <NumberList />;\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must declare array numbers.",
+          "selector": "numbers",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must use .map() to render items.",
+          "selector": "map",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Must render an <ol> element.",
+          "selector": "ol",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Each <li> must have a key prop.",
+          "selector": "key",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "function NumberList() {\n  const numbers = [1, 2, 3, 4, 5];\n  return (\n    <ol>\n      {/* TODO: use numbers.map() to render each number in a <li> with a key prop */}\n    </ol>\n  );\n}\n\nexport default function App() {\n  return <NumberList />;\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0f9ff;font-family:sans-serif;}ol{background:#fff;padding:28px 48px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.07);color:#075985;font-size:20px;line-height:2.2;}",
+      "js_content": "",
+      "jsx_content": "function NumberList() {\n  const numbers = [1, 2, 3, 4, 5];\n  return (\n    <ol>\n      {/* TODO: use numbers.map() to render each number in a <li> with a key prop */}\n    </ol>\n  );\n}\n\nexport default function App() {\n  return <NumberList />;\n}"
+    },
+    {
+      "id": "challenge_c08",
+      "module": "frontend:challenge",
+      "title": "Toggle Dark/Light Mode",
+      "level": "medium",
+      "description": "Create a `ThemeToggle` component. Use `useState` to track a boolean `isDark` (initial: false). Render a `<div>` with `className` toggled between `'theme-dark'` and `'theme-light'` based on `isDark`. Inside it, show a `<button>` that toggles the theme. Button text: 'Switch to Dark' when light, 'Switch to Light' when dark.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "useState",
+        "conditional-rendering"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}\n.theme-light{background:#f8fafc;color:#0f172a;padding:48px 64px;border-radius:16px;text-align:center;border:1px solid #e2e8f0;}\n.theme-dark{background:#0f172a;color:#f8fafc;padding:48px 64px;border-radius:16px;text-align:center;border:1px solid #334155;}\nbutton{margin-top:16px;padding:10px 24px;border-radius:8px;border:none;font-size:16px;cursor:pointer;background:#6366f1;color:#fff;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nexport default function ThemeToggle() {\n  const [isDark, setIsDark] = useState(false);\n  return (\n    <div className={isDark ? 'theme-dark' : 'theme-light'}>\n      <p>{isDark ? 'Dark Mode' : 'Light Mode'}</p>\n      <button onClick={() => setIsDark(!isDark)}>\n        {isDark ? 'Switch to Light' : 'Switch to Dark'}\n      </button>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport ThemeToggle from './UserCode';\n\ntest('starts in light mode', () => {\n  render(<ThemeToggle />);\n  expect(screen.getByText('Switch to Dark')).toBeTruthy();\n});\n\ntest('toggles to dark on click', () => {\n  render(<ThemeToggle />);\n  fireEvent.click(screen.getByText('Switch to Dark'));\n  expect(screen.getByText('Switch to Light')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState hook.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "className must toggle between theme-dark and theme-light.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Button text must change based on current theme.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nexport default function ThemeToggle() {\n  // TODO: useState for isDark (initial: false)\n  const [isDark, setIsDark] = useState(false);\n\n  return (\n    // TODO: className toggles between 'theme-dark' and 'theme-light'\n    <div className=\"\">\n      {/* TODO: show current mode text */}\n      {/* TODO: button to toggle isDark, text changes based on state */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}\n.theme-light{background:#f8fafc;color:#0f172a;padding:48px 64px;border-radius:16px;text-align:center;border:1px solid #e2e8f0;}\n.theme-dark{background:#0f172a;color:#f8fafc;padding:48px 64px;border-radius:16px;text-align:center;border:1px solid #334155;}\nbutton{margin-top:16px;padding:10px 24px;border-radius:8px;border:none;font-size:16px;cursor:pointer;background:#6366f1;color:#fff;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nexport default function ThemeToggle() {\n  // TODO: useState for isDark (initial: false)\n  const [isDark, setIsDark] = useState(false);\n\n  return (\n    // TODO: className toggles between 'theme-dark' and 'theme-light'\n    <div className=\"\">\n      {/* TODO: show current mode text */}\n      {/* TODO: button to toggle isDark, text changes based on state */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c09",
+      "module": "frontend:challenge",
+      "title": "Controlled Input",
+      "level": "medium",
+      "description": "Create a `NameInput` component. Use `useState` to store a `name` string (initial: ''). Render a `<input type=\"text\" />` that updates the state on every keystroke (`onChange`). Below the input, show a `<p>` that displays 'Hello, {name}!' — it should update live as the user types.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "useState",
+        "controlled-input"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f9fafb;font-family:'Segoe UI',sans-serif;}\n.container{background:#fff;padding:40px 56px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);text-align:center;min-width:300px;}\ninput{border:2px solid #e5e7eb;border-radius:8px;padding:10px 16px;font-size:16px;width:100%;box-sizing:border-box;outline:none;}\ninput:focus{border-color:#6366f1;}\np{margin-top:20px;font-size:22px;color:#374151;font-weight:600;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nexport default function NameInput() {\n  const [name, setName] = useState('');\n  return (\n    <div className=\"container\">\n      <input\n        type=\"text\"\n        value={name}\n        onChange={e => setName(e.target.value)}\n        placeholder=\"Enter your name\"\n      />\n      <p>Hello, {name}!</p>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport NameInput from './UserCode';\n\ntest('p updates as user types', () => {\n  render(<NameInput />);\n  const input = screen.getByRole('textbox');\n  fireEvent.change(input, { target: { value: 'React' } });\n  expect(screen.getByText('Hello, React!')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for name.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Input must be controlled (value + onChange).",
+          "selector": "onChange",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "<p> must display Hello, {name}! live.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nexport default function NameInput() {\n  // TODO: useState for name (initial: '')\n  const [name, setName] = useState('');\n\n  return (\n    <div className=\"container\">\n      {/* TODO: controlled <input> that updates name on onChange */}\n      <input type=\"text\" />\n      {/* TODO: <p> showing 'Hello, {name}!' */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f9fafb;font-family:'Segoe UI',sans-serif;}\n.container{background:#fff;padding:40px 56px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);text-align:center;min-width:300px;}\ninput{border:2px solid #e5e7eb;border-radius:8px;padding:10px 16px;font-size:16px;width:100%;box-sizing:border-box;outline:none;}\ninput:focus{border-color:#6366f1;}\np{margin-top:20px;font-size:22px;color:#374151;font-weight:600;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nexport default function NameInput() {\n  // TODO: useState for name (initial: '')\n  const [name, setName] = useState('');\n\n  return (\n    <div className=\"container\">\n      {/* TODO: controlled <input> that updates name on onChange */}\n      <input type=\"text\" />\n      {/* TODO: <p> showing 'Hello, {name}!' */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c10",
+      "module": "frontend:challenge",
+      "title": "Props-based Greeting Card",
+      "level": "medium",
+      "description": "Create a `GreetingCard` component that accepts `name` (string), `role` (string), and `age` (number) props via **destructuring**. Display them in a styled card:\n- `<h2>` showing the name\n- `<p>` showing the role\n- `<span>` showing 'Age: {age}'\nApp renders `<GreetingCard name=\"Sam\" role=\"Designer\" age={26} />`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": false
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "props",
+        "destructuring"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fdf4ff;font-family:'Segoe UI',sans-serif;}\n.card{background:#fff;padding:40px 56px;border-radius:20px;box-shadow:0 10px 28px rgba(139,92,246,.12);text-align:center;border:1px solid #ede9fe;}\nh2{margin:0 0 8px;color:#6d28d9;font-size:30px;}\np{color:#7c3aed;font-size:18px;margin:0 0 16px;}\nspan{background:#ede9fe;color:#5b21b6;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function GreetingCard({ name, role, age }) {\n  return (\n    <div className=\"card\">\n      <h2>{name}</h2>\n      <p>{role}</p>\n      <span>Age: {age}</span>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <GreetingCard name=\"Sam\" role=\"Designer\" age={26} />;\n}"
+          }
+        ]
+      },
+      "test_script": null,
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Component name must be GreetingCard.",
+          "selector": "GreetingCard",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must use props destructuring.",
+          "selector": "name",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Must render an h2 with the name.",
+          "selector": "h2",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Must render a span containing 'Age:'.",
+          "selector": "span",
+          "type": "content",
+          "type_check": "others",
+          "expectedValue": "Age:"
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "// TODO: Create GreetingCard component\n// Destructure { name, role, age } from props\n// Render: <h2> name, <p> role, <span> \"Age: {age}\"\n\nexport default function App() {\n  return <GreetingCard name=\"Sam\" role=\"Designer\" age={26} />;\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fdf4ff;font-family:'Segoe UI',sans-serif;}\n.card{background:#fff;padding:40px 56px;border-radius:20px;box-shadow:0 10px 28px rgba(139,92,246,.12);text-align:center;border:1px solid #ede9fe;}\nh2{margin:0 0 8px;color:#6d28d9;font-size:30px;}\np{color:#7c3aed;font-size:18px;margin:0 0 16px;}\nspan{background:#ede9fe;color:#5b21b6;padding:6px 16px;border-radius:999px;font-size:14px;font-weight:600;}",
+      "js_content": "",
+      "jsx_content": "// TODO: Create GreetingCard component\n// Destructure { name, role, age } from props\n// Render: <h2> name, <p> role, <span> \"Age: {age}\"\n\nexport default function App() {\n  return <GreetingCard name=\"Sam\" role=\"Designer\" age={26} />;\n}"
+    },
+    {
+      "id": "challenge_c11",
+      "module": "frontend:challenge",
+      "title": "Todo List (Add Items)",
+      "level": "medium",
+      "description": "Create a `TodoList` component with:\n1. `useState` for `todos` (initial: empty array) and `input` (initial: '').\n2. A controlled `<input>` bound to `input` state.\n3. An 'Add' `<button>` that appends the input value to `todos` and clears the input.\n4. Render the list as a `<ul>` with each todo in a `<li>` (use index as key).",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "useState",
+        "lists",
+        "controlled-input"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0fdf4;font-family:'Segoe UI',sans-serif;}\n.todo-wrap{background:#fff;padding:36px 48px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.07);min-width:320px;}\nh3{margin:0 0 20px;color:#166534;}\n.row{display:flex;gap:10px;}\ninput{flex:1;border:2px solid #d1fae5;border-radius:8px;padding:10px 14px;font-size:15px;outline:none;}\ninput:focus{border-color:#10b981;}\nbutton{background:#10b981;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer;}\nul{margin:20px 0 0;padding:0 0 0 20px;color:#065f46;font-size:16px;line-height:2;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nexport default function TodoList() {\n  const [todos, setTodos] = useState([]);\n  const [input, setInput] = useState('');\n\n  const addTodo = () => {\n    if (!input.trim()) return;\n    setTodos([...todos, input.trim()]);\n    setInput('');\n  };\n\n  return (\n    <div className=\"todo-wrap\">\n      <h3>My Todos</h3>\n      <div className=\"row\">\n        <input value={input} onChange={e => setInput(e.target.value)} placeholder=\"New todo...\" />\n        <button onClick={addTodo}>Add</button>\n      </div>\n      <ul>\n        {todos.map((t, i) => <li key={i}>{t}</li>)}\n      </ul>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport TodoList from './UserCode';\n\ntest('adds a todo item', () => {\n  render(<TodoList />);\n  const input = screen.getByPlaceholderText('New todo...');\n  fireEvent.change(input, { target: { value: 'Buy milk' } });\n  fireEvent.click(screen.getByText('Add'));\n  expect(screen.getByText('Buy milk')).toBeTruthy();\n});\n\ntest('clears input after adding', () => {\n  render(<TodoList />);\n  const input = screen.getByPlaceholderText('New todo...');\n  fireEvent.change(input, { target: { value: 'Buy milk' } });\n  fireEvent.click(screen.getByText('Add'));\n  expect(input.value).toBe('');\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for todos and input.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Input must be controlled.",
+          "selector": "onChange",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Add button must append item to list.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Input must clear after adding.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nexport default function TodoList() {\n  // TODO: useState for todos ([]) and input ('')\n  const [todos, setTodos] = useState([]);\n  const [input, setInput] = useState('');\n\n  const addTodo = () => {\n    // TODO: append input to todos, then clear input\n    // Ignore empty strings\n  };\n\n  return (\n    <div className=\"todo-wrap\">\n      <h3>My Todos</h3>\n      <div className=\"row\">\n        {/* TODO: controlled input + Add button */}\n      </div>\n      <ul>\n        {/* TODO: render todos with .map() */}\n      </ul>\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f0fdf4;font-family:'Segoe UI',sans-serif;}\n.todo-wrap{background:#fff;padding:36px 48px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.07);min-width:320px;}\nh3{margin:0 0 20px;color:#166534;}\n.row{display:flex;gap:10px;}\ninput{flex:1;border:2px solid #d1fae5;border-radius:8px;padding:10px 14px;font-size:15px;outline:none;}\ninput:focus{border-color:#10b981;}\nbutton{background:#10b981;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer;}\nul{margin:20px 0 0;padding:0 0 0 20px;color:#065f46;font-size:16px;line-height:2;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nexport default function TodoList() {\n  // TODO: useState for todos ([]) and input ('')\n  const [todos, setTodos] = useState([]);\n  const [input, setInput] = useState('');\n\n  const addTodo = () => {\n    // TODO: append input to todos, then clear input\n    // Ignore empty strings\n  };\n\n  return (\n    <div className=\"todo-wrap\">\n      <h3>My Todos</h3>\n      <div className=\"row\">\n        {/* TODO: controlled input + Add button */}\n      </div>\n      <ul>\n        {/* TODO: render todos with .map() */}\n      </ul>\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c12",
+      "module": "frontend:challenge",
+      "title": "Star Rating Display",
+      "level": "medium",
+      "description": "Create a `StarRating` component that accepts a `rating` prop (number 1–5). Render 5 `<span>` elements. Filled stars (★) for indexes ≤ rating, empty stars (☆) for the rest. Each span has class `star-filled` or `star-empty`. App renders `<StarRating rating={3} />`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "props",
+        "map",
+        "conditional-rendering"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fffbeb;font-family:sans-serif;}\n.stars{font-size:48px;display:flex;gap:6px;}\n.star-filled{color:#f59e0b;}\n.star-empty{color:#d1d5db;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function StarRating({ rating }) {\n  return (\n    <div className=\"stars\">\n      {[1,2,3,4,5].map(i => (\n        <span key={i} className={i <= rating ? \"star-filled\" : \"star-empty\"}>\n          {i <= rating ? \"★\" : \"☆\"}\n        </span>\n      ))}\n    </div>\n  );\n}\n\nexport default function App() {\n  return <StarRating rating={3} />;\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen } from '@testing-library/react';\nimport App from './UserCode';\n\ntest('renders 3 filled and 2 empty stars for rating=3', () => {\n  render(<App />);\n  const filled = document.querySelectorAll('.star-filled');\n  const empty = document.querySelectorAll('.star-empty');\n  expect(filled.length).toBe(3);\n  expect(empty.length).toBe(2);\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Component name must be StarRating.",
+          "selector": "StarRating",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must accept a rating prop.",
+          "selector": "rating",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Filled stars must use class star-filled.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Empty stars must use class star-empty.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "function StarRating({ rating }) {\n  return (\n    <div className=\"stars\">\n      {/* TODO: map [1,2,3,4,5] to <span> elements */}\n      {/* className=\"star-filled\" or \"star-empty\" based on index vs rating */}\n      {/* content: \"★\" (filled) or \"☆\" (empty) */}\n    </div>\n  );\n}\n\nexport default function App() {\n  return <StarRating rating={3} />;\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#fffbeb;font-family:sans-serif;}\n.stars{font-size:48px;display:flex;gap:6px;}\n.star-filled{color:#f59e0b;}\n.star-empty{color:#d1d5db;}",
+      "js_content": "",
+      "jsx_content": "function StarRating({ rating }) {\n  return (\n    <div className=\"stars\">\n      {/* TODO: map [1,2,3,4,5] to <span> elements */}\n      {/* className=\"star-filled\" or \"star-empty\" based on index vs rating */}\n      {/* content: \"★\" (filled) or \"☆\" (empty) */}\n    </div>\n  );\n}\n\nexport default function App() {\n  return <StarRating rating={3} />;\n}"
+    },
+    {
+      "id": "challenge_c13",
+      "module": "frontend:challenge",
+      "title": "Password Visibility Toggle",
+      "level": "medium",
+      "description": "Create a `PasswordInput` component. Use `useState` for `visible` (initial: false). Render an `<input>` whose `type` switches between `'password'` and `'text'` based on `visible`. Render a `<button>` that toggles `visible`; button text: 'Show' or 'Hide'.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": false,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "useState",
+        "controlled-input"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.wrap{display:flex;gap:10px;align-items:center;background:#fff;padding:28px 40px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);}\ninput{border:2px solid #cbd5e1;border-radius:8px;padding:10px 14px;font-size:16px;width:220px;outline:none;}\ninput:focus{border-color:#3b82f6;}\nbutton{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nexport default function PasswordInput() {\n  const [visible, setVisible] = useState(false);\n  return (\n    <div className=\"wrap\">\n      <input type={visible ? 'text' : 'password'} placeholder=\"Enter password\" />\n      <button onClick={() => setVisible(!visible)}>{visible ? 'Hide' : 'Show'}</button>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport PasswordInput from './UserCode';\n\ntest('input starts as password type', () => {\n  render(<PasswordInput />);\n  expect(screen.getByPlaceholderText('Enter password').type).toBe('password');\n});\n\ntest('clicking Show switches to text type', () => {\n  render(<PasswordInput />);\n  fireEvent.click(screen.getByText('Show'));\n  expect(screen.getByPlaceholderText('Enter password').type).toBe('text');\n  expect(screen.getByText('Hide')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for visible.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Input type must toggle between text and password.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Button text must toggle between Show and Hide.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nexport default function PasswordInput() {\n  // TODO: useState for visible (initial: false)\n  const [visible, setVisible] = useState(false);\n\n  return (\n    <div className=\"wrap\">\n      {/* TODO: <input> whose type is 'text' or 'password' based on visible */}\n      {/* TODO: <button> that toggles visible, text 'Show' or 'Hide' */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.wrap{display:flex;gap:10px;align-items:center;background:#fff;padding:28px 40px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);}\ninput{border:2px solid #cbd5e1;border-radius:8px;padding:10px 14px;font-size:16px;width:220px;outline:none;}\ninput:focus{border-color:#3b82f6;}\nbutton{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;cursor:pointer;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nexport default function PasswordInput() {\n  // TODO: useState for visible (initial: false)\n  const [visible, setVisible] = useState(false);\n\n  return (\n    <div className=\"wrap\">\n      {/* TODO: <input> whose type is 'text' or 'password' based on visible */}\n      {/* TODO: <button> that toggles visible, text 'Show' or 'Hide' */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c14",
+      "module": "frontend:challenge",
+      "title": "Tabs Component",
+      "level": "medium",
+      "description": "Create a `Tabs` component with 3 tabs: 'Home', 'Profile', 'Settings'. Use `useState` for `activeTab` (initial: 'Home'). Render 3 `<button>` elements. The active button gets `className='tab-active'`, others get `className='tab'`. Below the buttons, render a `<div className='tab-content'>` showing 'You are on the {activeTab} tab.'",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "medium",
+        "reactjs",
+        "useState",
+        "conditional-rendering",
+        "tabs"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.tabs-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;min-width:360px;}\n.tab-bar{display:flex;}\n.tab{flex:1;padding:14px;border:none;background:#f8fafc;color:#64748b;font-size:15px;cursor:pointer;border-bottom:2px solid #e2e8f0;}\n.tab-active{flex:1;padding:14px;border:none;background:#fff;color:#6366f1;font-size:15px;font-weight:700;cursor:pointer;border-bottom:2px solid #6366f1;}\n.tab-content{padding:32px;color:#374151;font-size:18px;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nconst TABS = ['Home', 'Profile', 'Settings'];\n\nexport default function Tabs() {\n  const [activeTab, setActiveTab] = useState('Home');\n  return (\n    <div className=\"tabs-wrap\">\n      <div className=\"tab-bar\">\n        {TABS.map(tab => (\n          <button\n            key={tab}\n            className={tab === activeTab ? 'tab-active' : 'tab'}\n            onClick={() => setActiveTab(tab)}\n          >{tab}</button>\n        ))}\n      </div>\n      <div className=\"tab-content\">You are on the {activeTab} tab.</div>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Tabs from './UserCode';\n\ntest('shows Home tab content initially', () => {\n  render(<Tabs />);\n  expect(screen.getByText('You are on the Home tab.')).toBeTruthy();\n});\n\ntest('switches content on tab click', () => {\n  render(<Tabs />);\n  fireEvent.click(screen.getByText('Profile'));\n  expect(screen.getByText('You are on the Profile tab.')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for activeTab.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Active button must have class tab-active.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Tab content must update when a tab is clicked.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nconst TABS = ['Home', 'Profile', 'Settings'];\n\nexport default function Tabs() {\n  // TODO: useState for activeTab (initial: 'Home')\n  const [activeTab, setActiveTab] = useState('Home');\n\n  return (\n    <div className=\"tabs-wrap\">\n      <div className=\"tab-bar\">\n        {/* TODO: map TABS to <button> elements */}\n        {/* active tab gets className='tab-active', others get 'tab' */}\n        {/* onClick sets activeTab */}\n      </div>\n      {/* TODO: <div className='tab-content'> showing current tab */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.tabs-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:hidden;min-width:360px;}\n.tab-bar{display:flex;}\n.tab{flex:1;padding:14px;border:none;background:#f8fafc;color:#64748b;font-size:15px;cursor:pointer;border-bottom:2px solid #e2e8f0;}\n.tab-active{flex:1;padding:14px;border:none;background:#fff;color:#6366f1;font-size:15px;font-weight:700;cursor:pointer;border-bottom:2px solid #6366f1;}\n.tab-content{padding:32px;color:#374151;font-size:18px;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nconst TABS = ['Home', 'Profile', 'Settings'];\n\nexport default function Tabs() {\n  // TODO: useState for activeTab (initial: 'Home')\n  const [activeTab, setActiveTab] = useState('Home');\n\n  return (\n    <div className=\"tabs-wrap\">\n      <div className=\"tab-bar\">\n        {/* TODO: map TABS to <button> elements */}\n        {/* active tab gets className='tab-active', others get 'tab' */}\n        {/* onClick sets activeTab */}\n      </div>\n      {/* TODO: <div className='tab-content'> showing current tab */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c15",
+      "module": "frontend:challenge",
+      "title": "Shopping Cart with Total",
+      "level": "hard",
+      "description": "Build a `ShoppingCart` component with these items pre-loaded in state:\n`[{id:1,name:'Apple',price:1.5,qty:1},{id:2,name:'Bread',price:2.0,qty:1},{id:3,name:'Milk',price:3.5,qty:1}]`\nFor each item show the name, price, and two buttons `+` / `−` to adjust qty (minimum 1). Show a `<p>` with `Total: $X.XX` that updates live. Use `className='cart-wrap'` on the container.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "lists",
+        "events"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.cart-wrap{background:#fff;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.09);padding:36px 48px;min-width:360px;}\nh3{margin:0 0 20px;color:#0f172a;font-size:22px;}\n.item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;}\n.item-name{color:#334155;font-size:16px;flex:1;}\n.item-price{color:#64748b;font-size:14px;margin:0 16px;}\n.qty-ctrl{display:flex;align-items:center;gap:10px;}\n.qty-ctrl button{background:#e2e8f0;border:none;border-radius:6px;width:28px;height:28px;font-size:18px;cursor:pointer;}\n.qty-ctrl span{font-weight:700;color:#0f172a;min-width:20px;text-align:center;}\n.total{margin-top:20px;font-size:20px;font-weight:700;color:#0f172a;text-align:right;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nconst INITIAL = [\n  {id:1,name:'Apple',price:1.5,qty:1},\n  {id:2,name:'Bread',price:2.0,qty:1},\n  {id:3,name:'Milk',price:3.5,qty:1}\n];\n\nexport default function ShoppingCart() {\n  const [items, setItems] = useState(INITIAL);\n\n  const change = (id, delta) => {\n    setItems(items.map(it =>\n      it.id === id ? {...it, qty: Math.max(1, it.qty + delta)} : it\n    ));\n  };\n\n  const total = items.reduce((s, it) => s + it.price * it.qty, 0);\n\n  return (\n    <div className=\"cart-wrap\">\n      <h3>Shopping Cart</h3>\n      {items.map(it => (\n        <div className=\"item\" key={it.id}>\n          <span className=\"item-name\">{it.name}</span>\n          <span className=\"item-price\">${it.price.toFixed(2)}</span>\n          <div className=\"qty-ctrl\">\n            <button onClick={() => change(it.id, -1)}>−</button>\n            <span>{it.qty}</span>\n            <button onClick={() => change(it.id, 1)}>+</button>\n          </div>\n        </div>\n      ))}\n      <p className=\"total\">Total: ${total.toFixed(2)}</p>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport ShoppingCart from './UserCode';\n\ntest('initial total is correct', () => {\n  render(<ShoppingCart />);\n  expect(screen.getByText('Total: $7.00')).toBeTruthy();\n});\n\ntest('+ button increases qty and total', () => {\n  render(<ShoppingCart />);\n  const plusBtns = screen.getAllByText('+');\n  fireEvent.click(plusBtns[0]); // Apple +1 => total 8.50\n  expect(screen.getByText('Total: $8.50')).toBeTruthy();\n});\n\ntest('− button does not go below 1', () => {\n  render(<ShoppingCart />);\n  const minusBtns = screen.getAllByText('−');\n  fireEvent.click(minusBtns[0]);\n  expect(screen.getByText('Total: $7.00')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for items.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "+ button must increase qty and update total.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "− button must not allow qty below 1.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Total must update live and be formatted as $X.XX.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nconst INITIAL = [\n  {id:1,name:'Apple',price:1.5,qty:1},\n  {id:2,name:'Bread',price:2.0,qty:1},\n  {id:3,name:'Milk',price:3.5,qty:1}\n];\n\nexport default function ShoppingCart() {\n  // TODO: useState for items (initial: INITIAL)\n  const [items, setItems] = useState(INITIAL);\n\n  const change = (id, delta) => {\n    // TODO: update qty of the matching item by delta, minimum 1\n  };\n\n  const total = 0; // TODO: compute sum of price * qty for all items\n\n  return (\n    <div className=\"cart-wrap\">\n      <h3>Shopping Cart</h3>\n      {/* TODO: map items to rows with name, price, qty +/- buttons */}\n      <p className=\"total\">Total: ${total.toFixed(2)}</p>\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.cart-wrap{background:#fff;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.09);padding:36px 48px;min-width:360px;}\nh3{margin:0 0 20px;color:#0f172a;font-size:22px;}\n.item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;}\n.item-name{color:#334155;font-size:16px;flex:1;}\n.item-price{color:#64748b;font-size:14px;margin:0 16px;}\n.qty-ctrl{display:flex;align-items:center;gap:10px;}\n.qty-ctrl button{background:#e2e8f0;border:none;border-radius:6px;width:28px;height:28px;font-size:18px;cursor:pointer;}\n.qty-ctrl span{font-weight:700;color:#0f172a;min-width:20px;text-align:center;}\n.total{margin-top:20px;font-size:20px;font-weight:700;color:#0f172a;text-align:right;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nconst INITIAL = [\n  {id:1,name:'Apple',price:1.5,qty:1},\n  {id:2,name:'Bread',price:2.0,qty:1},\n  {id:3,name:'Milk',price:3.5,qty:1}\n];\n\nexport default function ShoppingCart() {\n  // TODO: useState for items (initial: INITIAL)\n  const [items, setItems] = useState(INITIAL);\n\n  const change = (id, delta) => {\n    // TODO: update qty of the matching item by delta, minimum 1\n  };\n\n  const total = 0; // TODO: compute sum of price * qty for all items\n\n  return (\n    <div className=\"cart-wrap\">\n      <h3>Shopping Cart</h3>\n      {/* TODO: map items to rows with name, price, qty +/- buttons */}\n      <p className=\"total\">Total: ${total.toFixed(2)}</p>\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c16",
+      "module": "frontend:challenge",
+      "title": "Accordion / FAQ",
+      "level": "hard",
+      "description": "Build an `Accordion` component. Use this data (hardcoded):\n```\n[\n  {id:1, q:'What is React?', a:'A JavaScript library for building UIs.'},\n  {id:2, q:'What is JSX?', a:'A syntax extension for JavaScript.'},\n  {id:3, q:'What is useState?', a:'A hook to add state to function components.'}\n]\n```\nFor each item render a `<button>` (the question) and a `<div className='answer'>` visible only when that item is expanded. Clicking the button toggles it open/closed. Only **one item** can be open at a time. Use `className='accordion-wrap'` on the container.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "conditional-rendering",
+        "accordion"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.accordion-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.09);min-width:420px;overflow:hidden;}\n.accordion-item{border-bottom:1px solid #e2e8f0;}\n.accordion-item:last-child{border-bottom:none;}\n.accordion-item button{width:100%;text-align:left;background:none;border:none;padding:18px 24px;font-size:16px;font-weight:600;color:#0f172a;cursor:pointer;}\n.accordion-item button:hover{background:#f8fafc;}\n.answer{padding:0 24px 18px;color:#475569;font-size:15px;line-height:1.6;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nconst DATA = [\n  {id:1,q:'What is React?',a:'A JavaScript library for building UIs.'},\n  {id:2,q:'What is JSX?',a:'A syntax extension for JavaScript.'},\n  {id:3,q:'What is useState?',a:'A hook to add state to function components.'}\n];\n\nexport default function Accordion() {\n  const [open, setOpen] = useState(null);\n  return (\n    <div className=\"accordion-wrap\">\n      {DATA.map(item => (\n        <div className=\"accordion-item\" key={item.id}>\n          <button onClick={() => setOpen(open === item.id ? null : item.id)}>\n            {item.q}\n          </button>\n          {open === item.id && <div className=\"answer\">{item.a}</div>}\n        </div>\n      ))}\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Accordion from './UserCode';\n\ntest('answers are hidden initially', () => {\n  render(<Accordion />);\n  expect(screen.queryByText('A JavaScript library for building UIs.')).toBeNull();\n});\n\ntest('clicking a question reveals its answer', () => {\n  render(<Accordion />);\n  fireEvent.click(screen.getByText('What is React?'));\n  expect(screen.getByText('A JavaScript library for building UIs.')).toBeTruthy();\n});\n\ntest('only one item open at a time', () => {\n  render(<Accordion />);\n  fireEvent.click(screen.getByText('What is React?'));\n  fireEvent.click(screen.getByText('What is JSX?'));\n  expect(screen.queryByText('A JavaScript library for building UIs.')).toBeNull();\n  expect(screen.getByText('A syntax extension for JavaScript.')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState to track the open item.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Answers must be hidden by default.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Clicking a question must reveal its answer.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Only one item can be open at a time.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nconst DATA = [\n  {id:1,q:'What is React?',a:'A JavaScript library for building UIs.'},\n  {id:2,q:'What is JSX?',a:'A syntax extension for JavaScript.'},\n  {id:3,q:'What is useState?',a:'A hook to add state to function components.'}\n];\n\nexport default function Accordion() {\n  // TODO: useState for open item id (initial: null)\n  const [open, setOpen] = useState(null);\n\n  return (\n    <div className=\"accordion-wrap\">\n      {DATA.map(item => (\n        <div className=\"accordion-item\" key={item.id}>\n          {/* TODO: <button> that toggles this item open/closed */}\n          {/* TODO: conditionally render <div className='answer'> when open */}\n        </div>\n      ))}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.accordion-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.09);min-width:420px;overflow:hidden;}\n.accordion-item{border-bottom:1px solid #e2e8f0;}\n.accordion-item:last-child{border-bottom:none;}\n.accordion-item button{width:100%;text-align:left;background:none;border:none;padding:18px 24px;font-size:16px;font-weight:600;color:#0f172a;cursor:pointer;}\n.accordion-item button:hover{background:#f8fafc;}\n.answer{padding:0 24px 18px;color:#475569;font-size:15px;line-height:1.6;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nconst DATA = [\n  {id:1,q:'What is React?',a:'A JavaScript library for building UIs.'},\n  {id:2,q:'What is JSX?',a:'A syntax extension for JavaScript.'},\n  {id:3,q:'What is useState?',a:'A hook to add state to function components.'}\n];\n\nexport default function Accordion() {\n  // TODO: useState for open item id (initial: null)\n  const [open, setOpen] = useState(null);\n\n  return (\n    <div className=\"accordion-wrap\">\n      {DATA.map(item => (\n        <div className=\"accordion-item\" key={item.id}>\n          {/* TODO: <button> that toggles this item open/closed */}\n          {/* TODO: conditionally render <div className='answer'> when open */}\n        </div>\n      ))}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c17",
+      "module": "frontend:challenge",
+      "title": "Search & Filter List",
+      "level": "hard",
+      "description": "Build a `SearchList` component. Start with a hardcoded list of 6 countries: `['Vietnam','Japan','France','Brazil','Germany','Canada']`. Use `useState` for a `query` string (initial ''). Render a controlled `<input>` for the search. Below it render a `<ul>` showing only countries that **include** the query (case-insensitive). Show `'No results found.'` in a `<p>` if nothing matches.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "filter",
+        "search"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.search-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:36px 48px;min-width:340px;}\ninput{width:100%;box-sizing:border-box;border:2px solid #e2e8f0;border-radius:10px;padding:11px 16px;font-size:16px;outline:none;}\ninput:focus{border-color:#6366f1;}\nul{padding:0;margin:16px 0 0;list-style:none;}\nli{padding:10px 4px;color:#334155;font-size:16px;border-bottom:1px solid #f1f5f9;}\np{color:#94a3b8;font-size:15px;margin-top:16px;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nconst COUNTRIES = ['Vietnam','Japan','France','Brazil','Germany','Canada'];\n\nexport default function SearchList() {\n  const [query, setQuery] = useState('');\n  const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(query.toLowerCase()));\n  return (\n    <div className=\"search-wrap\">\n      <input\n        value={query}\n        onChange={e => setQuery(e.target.value)}\n        placeholder=\"Search countries...\"\n      />\n      {filtered.length === 0\n        ? <p>No results found.</p>\n        : <ul>{filtered.map(c => <li key={c}>{c}</li>)}</ul>\n      }\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport SearchList from './UserCode';\n\ntest('shows all countries initially', () => {\n  render(<SearchList />);\n  expect(screen.getByText('Vietnam')).toBeTruthy();\n  expect(screen.getByText('Japan')).toBeTruthy();\n});\n\ntest('filters correctly', () => {\n  render(<SearchList />);\n  fireEvent.change(screen.getByPlaceholderText('Search countries...'), {target:{value:'an'}});\n  expect(screen.getByText('Japan')).toBeTruthy();\n  expect(screen.getByText('Germany')).toBeTruthy();\n  expect(screen.queryByText('Brazil')).toBeNull();\n});\n\ntest('shows no results message', () => {\n  render(<SearchList />);\n  fireEvent.change(screen.getByPlaceholderText('Search countries...'), {target:{value:'xyz'}});\n  expect(screen.getByText('No results found.')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for query.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Filter must be case-insensitive.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Must show 'No results found.' when list is empty.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Input must be a controlled component.",
+          "selector": "onChange",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nconst COUNTRIES = ['Vietnam','Japan','France','Brazil','Germany','Canada'];\n\nexport default function SearchList() {\n  // TODO: useState for query (initial: '')\n  const [query, setQuery] = useState('');\n\n  // TODO: filter COUNTRIES by query (case-insensitive)\n  const filtered = COUNTRIES;\n\n  return (\n    <div className=\"search-wrap\">\n      {/* TODO: controlled input updating query */}\n      {/* TODO: render filtered list or 'No results found.' */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f8fafc;font-family:'Segoe UI',sans-serif;}\n.search-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:36px 48px;min-width:340px;}\ninput{width:100%;box-sizing:border-box;border:2px solid #e2e8f0;border-radius:10px;padding:11px 16px;font-size:16px;outline:none;}\ninput:focus{border-color:#6366f1;}\nul{padding:0;margin:16px 0 0;list-style:none;}\nli{padding:10px 4px;color:#334155;font-size:16px;border-bottom:1px solid #f1f5f9;}\np{color:#94a3b8;font-size:15px;margin-top:16px;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nconst COUNTRIES = ['Vietnam','Japan','France','Brazil','Germany','Canada'];\n\nexport default function SearchList() {\n  // TODO: useState for query (initial: '')\n  const [query, setQuery] = useState('');\n\n  // TODO: filter COUNTRIES by query (case-insensitive)\n  const filtered = COUNTRIES;\n\n  return (\n    <div className=\"search-wrap\">\n      {/* TODO: controlled input updating query */}\n      {/* TODO: render filtered list or 'No results found.' */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c18",
+      "module": "frontend:challenge",
+      "title": "Multi-step Form Wizard",
+      "level": "hard",
+      "description": "Build a `FormWizard` component with 3 steps:\n- Step 1: `<input>` for Name, 'Next' button\n- Step 2: `<input>` for Email, 'Back' + 'Next' buttons\n- Step 3: Summary showing entered Name and Email, 'Back' + 'Submit' button (Submit alerts 'Form submitted!')\nUse `useState` for `step` (1–3), `name`, and `email`. Show only the current step. Show a progress indicator `'Step {step} of 3'` at the top using `className='progress'`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "multi-step",
+        "forms"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.wizard{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.10);padding:40px 52px;min-width:360px;}\n.progress{color:#6366f1;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:0 0 24px;}\nh3{margin:0 0 20px;color:#0f172a;font-size:22px;}\nlabel{display:block;color:#475569;font-size:14px;font-weight:600;margin-bottom:6px;}\ninput{width:100%;box-sizing:border-box;border:2px solid #e2e8f0;border-radius:8px;padding:11px 14px;font-size:16px;outline:none;margin-bottom:24px;}\ninput:focus{border-color:#6366f1;}\n.btn-row{display:flex;gap:10px;justify-content:flex-end;}\nbutton{padding:10px 22px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;}\n.btn-primary{background:#6366f1;color:#fff;}\n.btn-secondary{background:#e2e8f0;color:#475569;}\n.summary p{color:#334155;font-size:16px;margin:8px 0;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nexport default function FormWizard() {\n  const [step, setStep] = useState(1);\n  const [name, setName] = useState('');\n  const [email, setEmail] = useState('');\n\n  return (\n    <div className=\"wizard\">\n      <p className=\"progress\">Step {step} of 3</p>\n      {step === 1 && (\n        <>\n          <h3>Your Name</h3>\n          <label>Name</label>\n          <input value={name} onChange={e=>setName(e.target.value)} placeholder=\"Enter name\" />\n          <div className=\"btn-row\"><button className=\"btn-primary\" onClick={()=>setStep(2)}>Next</button></div>\n        </>\n      )}\n      {step === 2 && (\n        <>\n          <h3>Your Email</h3>\n          <label>Email</label>\n          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder=\"Enter email\" />\n          <div className=\"btn-row\">\n            <button className=\"btn-secondary\" onClick={()=>setStep(1)}>Back</button>\n            <button className=\"btn-primary\" onClick={()=>setStep(3)}>Next</button>\n          </div>\n        </>\n      )}\n      {step === 3 && (\n        <>\n          <h3>Confirm</h3>\n          <div className=\"summary\">\n            <p>Name: {name}</p>\n            <p>Email: {email}</p>\n          </div>\n          <div className=\"btn-row\">\n            <button className=\"btn-secondary\" onClick={()=>setStep(2)}>Back</button>\n            <button className=\"btn-primary\" onClick={()=>alert('Form submitted!')}>Submit</button>\n          </div>\n        </>\n      )}\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport FormWizard from './UserCode';\n\ntest('starts on Step 1', () => {\n  render(<FormWizard />);\n  expect(screen.getByText('Step 1 of 3')).toBeTruthy();\n});\n\ntest('Next advances to Step 2', () => {\n  render(<FormWizard />);\n  fireEvent.click(screen.getByText('Next'));\n  expect(screen.getByText('Step 2 of 3')).toBeTruthy();\n});\n\ntest('Back returns to Step 1', () => {\n  render(<FormWizard />);\n  fireEvent.click(screen.getByText('Next'));\n  fireEvent.click(screen.getByText('Back'));\n  expect(screen.getByText('Step 1 of 3')).toBeTruthy();\n});\n\ntest('Submit alerts on step 3', () => {\n  render(<FormWizard />);\n  fireEvent.click(screen.getByText('Next'));\n  fireEvent.click(screen.getByText('Next'));\n  window.alert = jest.fn();\n  fireEvent.click(screen.getByText('Submit'));\n  expect(window.alert).toHaveBeenCalledWith('Form submitted!');\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for step, name, and email.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must show Step {step} of 3 progress indicator.",
+          "selector": "progress",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Next and Back must navigate between steps correctly.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Submit must alert 'Form submitted!'.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nexport default function FormWizard() {\n  // TODO: useState for step (1), name (''), email ('')\n  const [step, setStep] = useState(1);\n  const [name, setName] = useState('');\n  const [email, setEmail] = useState('');\n\n  return (\n    <div className=\"wizard\">\n      <p className=\"progress\">Step {step} of 3</p>\n      {/* TODO: Step 1 — Name input + Next button */}\n      {/* TODO: Step 2 — Email input + Back + Next buttons */}\n      {/* TODO: Step 3 — Summary of name & email + Back + Submit button */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9;font-family:'Segoe UI',sans-serif;}\n.wizard{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.10);padding:40px 52px;min-width:360px;}\n.progress{color:#6366f1;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:0 0 24px;}\nh3{margin:0 0 20px;color:#0f172a;font-size:22px;}\nlabel{display:block;color:#475569;font-size:14px;font-weight:600;margin-bottom:6px;}\ninput{width:100%;box-sizing:border-box;border:2px solid #e2e8f0;border-radius:8px;padding:11px 14px;font-size:16px;outline:none;margin-bottom:24px;}\ninput:focus{border-color:#6366f1;}\n.btn-row{display:flex;gap:10px;justify-content:flex-end;}\nbutton{padding:10px 22px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;}\n.btn-primary{background:#6366f1;color:#fff;}\n.btn-secondary{background:#e2e8f0;color:#475569;}\n.summary p{color:#334155;font-size:16px;margin:8px 0;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nexport default function FormWizard() {\n  // TODO: useState for step (1), name (''), email ('')\n  const [step, setStep] = useState(1);\n  const [name, setName] = useState('');\n  const [email, setEmail] = useState('');\n\n  return (\n    <div className=\"wizard\">\n      <p className=\"progress\">Step {step} of 3</p>\n      {/* TODO: Step 1 — Name input + Next button */}\n      {/* TODO: Step 2 — Email input + Back + Next buttons */}\n      {/* TODO: Step 3 — Summary of name & email + Back + Submit button */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c19",
+      "module": "frontend:challenge",
+      "title": "Countdown Timer",
+      "level": "hard",
+      "description": "Build a `CountdownTimer` component. Use `useState` for `seconds` (initial: 10) and `running` (initial: false). Use `useEffect` to set up an interval when `running` is true that decreases `seconds` by 1 every second. When `seconds` reaches 0, stop the timer. Render: the countdown in a large `<h1>`, a 'Start' / 'Pause' button (toggles running), and a 'Reset' button that sets seconds back to 10 and stops the timer. Wrap in `className='timer-wrap'`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "useEffect",
+        "timer"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;font-family:'Segoe UI',sans-serif;}\n.timer-wrap{text-align:center;}\nh1{font-size:96px;color:#f8fafc;margin:0 0 32px;font-weight:800;letter-spacing:-4px;}\n.btn-row{display:flex;gap:16px;justify-content:center;}\nbutton{padding:12px 28px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;}\n.btn-start{background:#22c55e;color:#fff;}\n.btn-pause{background:#f59e0b;color:#fff;}\n.btn-reset{background:#64748b;color:#fff;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState, useEffect } from 'react';\n\nexport default function CountdownTimer() {\n  const [seconds, setSeconds] = useState(10);\n  const [running, setRunning] = useState(false);\n\n  useEffect(() => {\n    if (!running) return;\n    if (seconds === 0) { setRunning(false); return; }\n    const id = setInterval(() => setSeconds(s => s - 1), 1000);\n    return () => clearInterval(id);\n  }, [running, seconds]);\n\n  return (\n    <div className=\"timer-wrap\">\n      <h1>{seconds}</h1>\n      <div className=\"btn-row\">\n        <button\n          className={running ? 'btn-pause' : 'btn-start'}\n          onClick={() => setRunning(r => !r)}\n        >{running ? 'Pause' : 'Start'}</button>\n        <button className=\"btn-reset\" onClick={() => { setSeconds(10); setRunning(false); }}>Reset</button>\n      </div>\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent, act } from '@testing-library/react';\nimport CountdownTimer from './UserCode';\n\ntest('starts at 10', () => {\n  render(<CountdownTimer />);\n  expect(screen.getByRole('heading',{level:1}).textContent).toBe('10');\n});\n\ntest('Reset sets back to 10', () => {\n  render(<CountdownTimer />);\n  fireEvent.click(screen.getByText('Start'));\n  fireEvent.click(screen.getByText('Reset'));\n  expect(screen.getByRole('heading',{level:1}).textContent).toBe('10');\n  expect(screen.getByText('Start')).toBeTruthy();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for seconds and running.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "Must use useEffect to drive the interval.",
+          "selector": "useEffect",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Timer must stop when seconds reaches 0.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Reset must restore seconds to 10 and stop the timer.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState, useEffect } from 'react';\n\nexport default function CountdownTimer() {\n  // TODO: useState for seconds (10) and running (false)\n  const [seconds, setSeconds] = useState(10);\n  const [running, setRunning] = useState(false);\n\n  useEffect(() => {\n    // TODO: when running, decrease seconds by 1 every 1000ms\n    // Stop when seconds === 0\n    // Clean up interval on return\n  }, [running, seconds]);\n\n  return (\n    <div className=\"timer-wrap\">\n      {/* TODO: <h1> showing seconds */}\n      {/* TODO: Start/Pause button toggling running */}\n      {/* TODO: Reset button resetting to 10 and stopping */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;font-family:'Segoe UI',sans-serif;}\n.timer-wrap{text-align:center;}\nh1{font-size:96px;color:#f8fafc;margin:0 0 32px;font-weight:800;letter-spacing:-4px;}\n.btn-row{display:flex;gap:16px;justify-content:center;}\nbutton{padding:12px 28px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;}\n.btn-start{background:#22c55e;color:#fff;}\n.btn-pause{background:#f59e0b;color:#fff;}\n.btn-reset{background:#64748b;color:#fff;}",
+      "js_content": "",
+      "jsx_content": "import { useState, useEffect } from 'react';\n\nexport default function CountdownTimer() {\n  // TODO: useState for seconds (10) and running (false)\n  const [seconds, setSeconds] = useState(10);\n  const [running, setRunning] = useState(false);\n\n  useEffect(() => {\n    // TODO: when running, decrease seconds by 1 every 1000ms\n    // Stop when seconds === 0\n    // Clean up interval on return\n  }, [running, seconds]);\n\n  return (\n    <div className=\"timer-wrap\">\n      {/* TODO: <h1> showing seconds */}\n      {/* TODO: Start/Pause button toggling running */}\n      {/* TODO: Reset button resetting to 10 and stopping */}\n    </div>\n  );\n}"
+    },
+    {
+      "id": "challenge_c20",
+      "module": "frontend:challenge",
+      "title": "Kanban Board (3 Columns)",
+      "level": "hard",
+      "description": "Build a `KanbanBoard` with 3 columns: 'Todo', 'In Progress', 'Done'. Initial state: `{ Todo: ['Write tests','Fix bug'], 'In Progress': ['Build UI'], Done: ['Setup repo'] }`. Each card in a column has a '→' button that moves it to the next column (Todo→In Progress→Done; Done cards have no button). Render columns with `className='col'` and cards with `className='card'`. Column headers in `<h4>`.",
+      "evaluation_config": {
+        "lint": true,
+        "requirements": true,
+        "visual": true,
+        "behavior": true
+      },
+      "restrictions": [],
+      "tags": [
+        "hard",
+        "reactjs",
+        "useState",
+        "state-update",
+        "kanban"
+      ],
+      "target_design": {
+        "deviceType": "desktop",
+        "width": 800,
+        "height": 600
+      },
+      "target_url": "",
+      "code_test": {
+        "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+        "css": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;font-family:'Segoe UI',sans-serif;}\n.board{display:flex;gap:20px;}\n.col{background:#1e293b;border-radius:14px;padding:20px 18px;min-width:180px;min-height:260px;border:1px solid #334155;}\nh4{margin:0 0 16px;color:#94a3b8;font-size:13px;text-transform:uppercase;letter-spacing:.08em;}\n.card{background:#0f172a;color:#f1f5f9;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;border:1px solid #334155;}\n.card button{background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;}",
+        "js": "",
+        "files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\nconst COLS = ['Todo','In Progress','Done'];\nconst INIT = { Todo:['Write tests','Fix bug'], 'In Progress':['Build UI'], Done:['Setup repo'] };\n\nexport default function KanbanBoard() {\n  const [board, setBoard] = useState(INIT);\n\n  const move = (item, from) => {\n    const nextCol = COLS[COLS.indexOf(from) + 1];\n    if (!nextCol) return;\n    setBoard(prev => ({\n      ...prev,\n      [from]: prev[from].filter(i => i !== item),\n      [nextCol]: [...prev[nextCol], item]\n    }));\n  };\n\n  return (\n    <div className=\"board\">\n      {COLS.map(col => (\n        <div className=\"col\" key={col}>\n          <h4>{col}</h4>\n          {board[col].map(item => (\n            <div className=\"card\" key={item}>\n              {item}\n              {col !== 'Done' && <button onClick={() => move(item, col)}>→</button>}\n            </div>\n          ))}\n        </div>\n      ))}\n    </div>\n  );\n}"
+          }
+        ]
+      },
+      "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport KanbanBoard from './UserCode';\n\ntest('renders initial cards', () => {\n  render(<KanbanBoard />);\n  expect(screen.getByText('Write tests')).toBeTruthy();\n  expect(screen.getByText('Setup repo')).toBeTruthy();\n});\n\ntest('→ moves card to next column', () => {\n  render(<KanbanBoard />);\n  const arrows = screen.getAllByText('→');\n  fireEvent.click(arrows[0]); // moves 'Write tests' to In Progress\n  // After move, In Progress should have 2 cards\n  const inProgressCards = document.querySelectorAll('.col:nth-child(2) .card');\n  expect(inProgressCards.length).toBe(2);\n});\n\ntest('Done column cards have no → button', () => {\n  render(<KanbanBoard />);\n  const doneCol = document.querySelector('.col:nth-child(3)');\n  expect(doneCol.querySelector('button')).toBeNull();\n});",
+      "requirements": [
+        {
+          "id": "req_1",
+          "text": "Must use useState for board state.",
+          "selector": "useState",
+          "type": "hook",
+          "type_check": "others",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_2",
+          "text": "→ button must move card to the next column.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_3",
+          "text": "Done column cards must not have a → button.",
+          "selector": "",
+          "type": "",
+          "type_check": "behavior",
+          "expectedValue": ""
+        },
+        {
+          "id": "req_4",
+          "text": "Board must have 3 columns with correct headers.",
+          "selector": "col",
+          "type": "exist",
+          "type_check": "others",
+          "expectedValue": ""
+        }
+      ],
+      "navigation": null,
+      "starter_files": [
+        {
+          "filename": "App.jsx",
+          "language": "jsx",
+          "content": "import { useState } from 'react';\n\nconst COLS = ['Todo','In Progress','Done'];\nconst INIT = { Todo:['Write tests','Fix bug'], 'In Progress':['Build UI'], Done:['Setup repo'] };\n\nexport default function KanbanBoard() {\n  // TODO: useState for board (initial: INIT)\n  const [board, setBoard] = useState(INIT);\n\n  const move = (item, from) => {\n    // TODO: move item from 'from' column to the next column\n    // Hint: use COLS.indexOf(from) + 1 to find the next column\n  };\n\n  return (\n    <div className=\"board\">\n      {/* TODO: map COLS to .col divs */}\n      {/* Each col: <h4> header + map cards */}\n      {/* Each card: item name + '→' button (not shown in Done) */}\n    </div>\n  );\n}"
+        }
+      ],
+      "html_content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+      "css_content": "body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;font-family:'Segoe UI',sans-serif;}\n.board{display:flex;gap:20px;}\n.col{background:#1e293b;border-radius:14px;padding:20px 18px;min-width:180px;min-height:260px;border:1px solid #334155;}\nh4{margin:0 0 16px;color:#94a3b8;font-size:13px;text-transform:uppercase;letter-spacing:.08em;}\n.card{background:#0f172a;color:#f1f5f9;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;display:flex;justify-content:space-between;align-items:center;border:1px solid #334155;}\n.card button{background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;}",
+      "js_content": "",
+      "jsx_content": "import { useState } from 'react';\n\nconst COLS = ['Todo','In Progress','Done'];\nconst INIT = { Todo:['Write tests','Fix bug'], 'In Progress':['Build UI'], Done:['Setup repo'] };\n\nexport default function KanbanBoard() {\n  // TODO: useState for board (initial: INIT)\n  const [board, setBoard] = useState(INIT);\n\n  const move = (item, from) => {\n    // TODO: move item from 'from' column to the next column\n    // Hint: use COLS.indexOf(from) + 1 to find the next column\n  };\n\n  return (\n    <div className=\"board\">\n      {/* TODO: map COLS to .col divs */}\n      {/* Each col: <h4> header + map cards */}\n      {/* Each card: item name + '→' button (not shown in Done) */}\n    </div>\n  );\n}"
+    }
+  ]
+}

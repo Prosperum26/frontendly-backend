@@ -6,7 +6,7 @@ services:
     region: singapore
     plan: free
     branch: main
-    buildCommand: yarn install --frozen-lockfile && yarn build
+    buildCommand: yarn install --frozen-lockfile && yarn build && yarn seed:prod
     startCommand: yarn start:prod
     healthCheckPath: /health
     envVars:

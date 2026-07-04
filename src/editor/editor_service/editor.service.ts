@@ -154,6 +154,10 @@ export default function App() {
     userId: string,
     exercise: Exercise,
   ): Promise<Exercise> {
+    if (this.userUtilsService.isGuestUser(userId)) {
+      return exercise;
+    }
+
     const lastExercise = await this.submissionModel
       .findOne({
         exerciseId: exerciseId,
@@ -182,7 +186,7 @@ export default function App() {
   }
 
   // Lấy bài tập
-  async getExercise(exerciseId: string, userId: string): Promise<Exercise> {
+  async getExercise(exerciseId: string): Promise<Exercise> {
     const rawExercise = await this.getExerciseById(exerciseId);
     if (!rawExercise) {
       throw new NotFoundException('Cannot find exercise!');
@@ -191,16 +195,48 @@ export default function App() {
     // Tính toán navigation
     const navigation = this.calculateExerciseNavigation(exerciseId);
 
-    const lastSubmitExercise = await this.getLastSubmit(
-      exerciseId,
-      userId,
-      rawExercise,
-    );
-    if (!lastSubmitExercise) {
+    // Always return starter code - draft saving is handled by frontend localStorage
+    // If exercise has starter_files, return as is
+    if (rawExercise.starter_files && rawExercise.starter_files.length > 0) {
       return { ...rawExercise, navigation };
-    } else {
-      return { ...lastSubmitExercise, navigation };
     }
+
+    // Fallback: Convert old exercise fields to starter_files
+    const exerciseFiles: any[] = [];
+    if (rawExercise.html_content?.trim()) {
+      exerciseFiles.push({
+        filename: 'index.html',
+        language: 'html',
+        content: rawExercise.html_content,
+      });
+    }
+    if (rawExercise.css_content?.trim()) {
+      exerciseFiles.push({
+        filename: 'index.css',
+        language: 'css',
+        content: rawExercise.css_content,
+      });
+    }
+    if (rawExercise.js_content?.trim()) {
+      exerciseFiles.push({
+        filename: 'index.js',
+        language: 'js',
+        content: rawExercise.js_content,
+      });
+    }
+    if (rawExercise.jsx_content?.trim()) {
+      exerciseFiles.push({
+        filename: 'App.jsx',
+        language: 'jsx',
+        content: rawExercise.jsx_content,
+      });
+    }
+
+    return {
+      ...rawExercise,
+      navigation,
+      starter_files: exerciseFiles,
+    };
   }
 
   async getExerciseForBackend(exerciseId: string): Promise<Exercise> {
@@ -319,6 +355,22 @@ export default function App() {
         jsx = '',
         files = [],
       } = editorContent;
+
+      // Extract content from files array if individual fields are empty
+      let finalHtml = html;
+      let finalCss = css;
+      let finalJs = js;
+      let finalJsx = jsx;
+
+      if (files && Array.isArray(files) && files.length > 0) {
+        files.forEach((file: any) => {
+          if (file.language === 'html' && !finalHtml) finalHtml = file.content;
+          if (file.language === 'css' && !finalCss) finalCss = file.content;
+          if (file.language === 'js' && !finalJs) finalJs = file.content;
+          if (file.language === 'jsx' && !finalJsx) finalJsx = file.content;
+        });
+      }
+
       const exercise = await this.getExerciseForBackend(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
 
@@ -339,10 +391,10 @@ export default function App() {
       let hasLintError = false;
       if (evalConfig.lint) {
         lintResult = await this.codeLint.checkLintUserCode(
-          html,
-          css,
-          js,
-          jsx,
+          finalHtml,
+          finalCss,
+          finalJs,
+          finalJsx,
           exercise.restrictions,
           files,
         );
@@ -374,14 +426,14 @@ export default function App() {
           });
 
           if (
-            (html && html.trim() !== '') ||
-            (css && css.trim() !== '') ||
-            (js && js.trim() !== '')
+            (finalHtml && finalHtml.trim() !== '') ||
+            (finalCss && finalCss.trim() !== '') ||
+            (finalJs && finalJs.trim() !== '')
           ) {
             const checkHtmlCssJs = this.reqCheck.evaluateCodeHtmlCssJs(
-              html,
-              css,
-              js,
+              finalHtml,
+              finalCss,
+              finalJs,
               validReqs,
             );
             checkHtmlCssJs.forEach((result: any) => {
@@ -389,9 +441,9 @@ export default function App() {
             });
           }
 
-          if (jsx && jsx.trim() !== '') {
+          if (finalJsx && finalJsx.trim() !== '') {
             const checkReact = this.reqCheck.evaluateCodeReact(
-              jsx,
+              finalJsx,
               validReqs,
               files,
             );
@@ -524,19 +576,28 @@ export default function App() {
 
       const finalMatchPercentage = parseFloat(matchPercentage.toFixed(2));
 
-      const previousSubmissions = await this.submissionModel
-        .find({ userId, exerciseId, isCompleted: true })
-        .lean();
-      const alreadyCompleted = previousSubmissions.length > 0;
+      this.logger.debug(
+        `[SubmitCode] Saving submission: passed=${isCompleted}, percentage=${finalMatchPercentage}`,
+      );
 
-      await this.saveSubmission(userId, exerciseId, editorContent, {
-        isCompleted,
-        match_percentage: finalMatchPercentage,
-        lint_errors: lintResult,
-        requirementResult: requirementResults,
-        visual_results: visualResults,
-        behavior_results: behaviorResult,
-      });
+      const alreadyCompleted =
+        !this.userUtilsService.isGuestUser(userId) &&
+        (
+          await this.submissionModel
+            .find({ userId, exerciseId, isCompleted: true })
+            .lean()
+        ).length > 0;
+
+      if (!this.userUtilsService.isGuestUser(userId)) {
+        await this.saveSubmission(userId, exerciseId, editorContent, {
+          isCompleted,
+          match_percentage: finalMatchPercentage,
+          lint_errors: lintResult,
+          requirementResult: requirementResults,
+          visual_results: visualResults,
+          behavior_results: behaviorResult,
+        });
+      }
 
       if (
         isCompleted &&
@@ -622,7 +683,13 @@ export default function App() {
   private async saveSubmission(
     userId: string,
     exerciseId: string,
-    editorContent: { html: string; css: string; js: string; jsx: string },
+    editorContent: {
+      html: string;
+      css: string;
+      js: string;
+      jsx: string;
+      files?: any[];
+    },
     resultData: {
       isCompleted: boolean;
       match_percentage: number;
@@ -635,6 +702,31 @@ export default function App() {
     const timestamp = Date.now();
     const randomStr = randomBytes(3).toString('hex'); // random số làm key
 
+    console.log('[saveSubmission] editorContent.files:', editorContent.files);
+    console.log(
+      '[saveSubmission] editorContent.html:',
+      editorContent.html?.substring(0, 50),
+    );
+    console.log(
+      '[saveSubmission] editorContent.jsx:',
+      editorContent.jsx?.substring(0, 50),
+    );
+
+    // Convert files array to object for storage
+    const filesObject: Record<
+      string,
+      { filename: string; language: string; content: string }
+    > = {};
+    if (editorContent.files && Array.isArray(editorContent.files)) {
+      editorContent.files.forEach((file: any) => {
+        filesObject[file.filename] = {
+          filename: file.filename,
+          language: file.language,
+          content: file.content,
+        };
+      });
+    }
+
     const newSubmit = new this.submissionModel({
       id: `sub_${timestamp}_${randomStr}`,
       userId,
@@ -643,6 +735,7 @@ export default function App() {
       css_content: editorContent.css || '',
       js_content: editorContent.js || '',
       jsx_content: editorContent.jsx || '',
+      files: filesObject,
       isCompleted: resultData.isCompleted,
       match_percentage: resultData.match_percentage,
       lint_errors: resultData.lint_errors || {

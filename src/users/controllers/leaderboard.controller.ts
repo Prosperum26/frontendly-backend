@@ -2,8 +2,10 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { UserService } from '../services';
+import { ConfigureAuth } from '@/auth/decorators';
 
 @ApiTags('Leaderboard')
+@ConfigureAuth({ blockIfUnauthenticated: false })
 @Controller({
   path: 'leaderboard',
   version: '1',

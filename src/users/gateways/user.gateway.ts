@@ -12,6 +12,11 @@ import { Server, Socket } from 'socket.io';
 
 import { WsAuthMiddleware } from '@/auth/middlewares';
 import { CommonConfig, commonConfigObj } from '@/common/config';
+import { AuthenticatedHttpUser } from '@/common/types/auth.types';
+
+interface AuthenticatedSocket extends Socket {
+  user?: AuthenticatedHttpUser;
+}
 
 /**
  * This gateway subscribes to the users namespace and listens for 'hello'
@@ -52,17 +57,29 @@ export class UserGateway
     server.use(this.wsAuth.authenticate.bind(this.wsAuth));
   }
 
-  handleConnection(@ConnectedSocket() socket: Socket): void {
-    const name = `${socket.user?.profile.firstName} ${socket.user?.profile.lastName}`;
-    this.logger.log(
-      `Client connected: ${socket.user?.profile._id.toString()} (${name}). Session ID: ${socket.id}`,
-    );
+  handleConnection(@ConnectedSocket() socket: AuthenticatedSocket): void {
+    if (socket.user?.profile) {
+      const name = `${socket.user.profile.firstName} ${socket.user.profile.lastName}`;
+      this.logger.log(
+        `Client connected: ${socket.user.profile._id.toString()} (${name}). Session ID: ${socket.id}`,
+      );
+    } else {
+      this.logger.log(
+        `Client connected (unauthenticated). Session ID: ${socket.id}`,
+      );
+    }
   }
 
-  handleDisconnect(@ConnectedSocket() socket: Socket): void {
-    const name = `${socket.user?.profile.firstName} ${socket.user?.profile.lastName}`;
-    this.logger.log(
-      `Client disconnected: ${socket.user?.profile._id.toString()} (${name}). Session ID ${socket.id}. Reason: ${socket.handshake.query.reason}`,
-    );
+  handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket): void {
+    if (socket.user?.profile) {
+      const name = `${socket.user.profile.firstName} ${socket.user.profile.lastName}`;
+      this.logger.log(
+        `Client disconnected: ${socket.user.profile._id.toString()} (${name}). Session ID ${socket.id}. Reason: ${socket.handshake.query.reason}`,
+      );
+    } else {
+      this.logger.log(
+        `Client disconnected (unauthenticated). Session ID ${socket.id}. Reason: ${socket.handshake.query.reason}`,
+      );
+    }
   }
 }

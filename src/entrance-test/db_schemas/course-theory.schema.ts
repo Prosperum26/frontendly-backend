@@ -11,6 +11,9 @@ class TheorySection {
 
   @Prop()
   code?: string;
+
+  @Prop()
+  fileName?: string;
 }
 
 @Schema({ _id: false })

@@ -10,7 +10,11 @@ export class ChallengeController {
   constructor(private readonly challengeService: ChallengeService) {}
 
   @Get('exercises')
-  getExercises(): { success: boolean; data: ChallengeExercise[] } {
-    return { success: true, data: this.challengeService.getExercises() };
+  async getExercises(): Promise<{
+    success: boolean;
+    data: ChallengeExercise[];
+  }> {
+    const data = await this.challengeService.getExercises();
+    return { success: true, data };
   }
 }

@@ -71,11 +71,30 @@ export class ProgressSummaryService {
         s => s.earnedStars >= 3,
       ).length;
 
+      // Build completed milestones detail with badge info
+      const completedMilestonesDetail = dbProgress.completedMilestones
+        ? dbProgress.completedMilestones.map((cm: any) => {
+            const milestone = dbMilestones.find(
+              (m: any) => m.id === cm.milestoneId,
+            );
+            const badge = dbProgress.earnedBadges?.find(
+              (b: any) => b.badgeId === cm.badgeId,
+            );
+            return {
+              milestoneId: cm.milestoneId,
+              title: milestone?.title || '',
+              badge: badge || null,
+              completedAt: cm.completedAt,
+            };
+          })
+        : [];
+
       return {
         userId,
         currentXp: dbProgress.currentXp,
         streakDays: dbProgress.streakDays,
-        badges: dbProgress.badges,
+        earnedBadges: dbProgress.earnedBadges || [],
+        completedMilestonesDetail,
         lastActiveStageId: dbProgress.lastActiveStageId,
         lastActiveMilestoneId: dbProgress.lastActiveMilestoneId,
         courseProgressPercentage,
@@ -86,7 +105,19 @@ export class ProgressSummaryService {
       };
     }
 
-    throw new Error('Database not available. Please try again later.');
+    // Return safe zero-defaults when no progress exists
+    return {
+      userId,
+      currentXp: 0,
+      streakDays: 0,
+      earnedBadges: [],
+      completedMilestonesDetail: [],
+      courseProgressPercentage: 0,
+      totalStages: 0,
+      completedStages: 0,
+      milestoneProgress: {},
+      unlockedStages: [],
+    };
   }
 
   private computeProgress(

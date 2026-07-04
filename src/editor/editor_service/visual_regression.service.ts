@@ -32,15 +32,30 @@ export class VisualRegressionService {
     const exercises = await this.exerciseModel.find({
       code_test: { $ne: null },
     }); // lấy bài tập
+    console.log(
+      `[Target Image] Found ${exercises.length} exercises with code_test`,
+    );
+
+    // Log database connection info
+    const dbConnection = this.exerciseModel.db;
+    console.log(`[Target Image] Database: ${dbConnection.name}`);
+    console.log(
+      `[Target Image] Connection URI: ${process.env.DB_URI?.substring(0, 20)}...`,
+    );
+
     if (!this.puppeteerEvaluator) {
       return '[Target Image] Puppeteer is not initialized!';
     }
     const browser = this.puppeteerEvaluator.getBrowser();
+    let successCount = 0;
+    let errorCount = 0;
+
     for (const exercise of exercises) {
       if (!exercise.code_test) continue;
       let page: any = null;
 
       try {
+        console.log(`[Target Image] Processing ${exercise.id}...`);
         page = await browser.newPage();
         await page.setViewport({
           width: exercise.target_design.width,
@@ -54,6 +69,7 @@ export class VisualRegressionService {
           console.error(
             `[Target Image] Failed to render UI for ${exercise.id}`,
           );
+          errorCount++;
           continue;
         }
         const screenshotBuffer = await page.screenshot({ type: 'png' }); // screenshot đưa về Buffer
@@ -63,20 +79,33 @@ export class VisualRegressionService {
           folderName,
         );
 
-        await this.exerciseModel.updateOne(
+        console.log(
+          `[Target Image] Uploading ${exercise.id} -> ${uploadResult.secure_url}`,
+        );
+
+        const updateResult = await this.exerciseModel.updateOne(
           { id: exercise.id },
           { $set: { target_url: uploadResult.secure_url } },
         );
+
         console.log(
-          `[Target Image] Success ${exercise.id} -> ${uploadResult.secure_url}`,
+          `[Target Image] Updated ${exercise.id} - matched: ${updateResult.matchedCount}, modified: ${updateResult.modifiedCount}`,
         );
+
+        if (updateResult.modifiedCount > 0) {
+          successCount++;
+        } else {
+          console.warn(`[Target Image] No changes made to ${exercise.id}`);
+        }
       } catch (error: any) {
         console.error(`[Target Image] Error on ${exercise.id}:`, error.message);
+        console.error(`[Target Image] Stack:`, error.stack);
+        errorCount++;
       } finally {
         if (page && !page.isClosed()) await page.close();
       }
     }
-    const resultMsg = `[Target Image] Done!`;
+    const resultMsg = `[Target Image] Done! Success: ${successCount}, Errors: ${errorCount}`;
     console.log(resultMsg);
     return resultMsg;
   }

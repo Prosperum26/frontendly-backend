@@ -25,6 +25,9 @@ export class XpService {
    * Calculate total level from XP
    */
   calculateLevel(totalXp: number, xpPerLevel: number = 500): number {
+    if (xpPerLevel <= 0) {
+      throw new Error('xpPerLevel must be greater than 0');
+    }
     return Math.floor(totalXp / xpPerLevel) + 1;
   }
 
@@ -39,6 +42,9 @@ export class XpService {
     xpInLevel: number;
     progressPercent: number;
   } {
+    if (xpPerLevel <= 0) {
+      throw new Error('xpPerLevel must be greater than 0');
+    }
     const level = this.calculateLevel(totalXp, xpPerLevel);
     const xpInLevel = totalXp % xpPerLevel;
     const progressPercent = Math.round((xpInLevel / xpPerLevel) * 100);
