@@ -1,0 +1,1172 @@
+{
+  "lessons": [
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s1",
+        "module": "Milestone 1",
+        "title": "My First React Component",
+        "level": "easy",
+        "description": "Welcome to your first React challenge! Your task is to build a simple welcome interface for the application. Design a standalone `Welcome` component that introduces the app, featuring a primary heading <h1> with the text 'Welcome to React', followed by a descriptive paragraph <p> saying 'This is my first React application.'. Finally, ensure that this welcome interface is successfully integrated and displayed on the main application screen.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": false
+        },
+        "restrictions": [],
+        "tags": [
+          "easy",
+          "reactjs",
+          "components",
+          "milestone 1"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n.card-container { background-color: #ffffff; padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; }\nh1 { color: #0ea5e9; margin: 0 0 16px 0; font-size: 32px; }\np { color: #475569; font-size: 18px; margin: 0; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function Welcome() {\n  return (\n    <div>\n      <h1>Welcome to React</h1>\n      <p>This is my first React application.</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return (\n    <div className=\"card-container\">\n      <Welcome />\n    </div>\n  );\n}"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Welcome.",
+            "selector": "Welcome",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must render an h1 with text 'Welcome to React'.",
+            "selector": "h1",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Welcome to React"
+          },
+          {
+            "id": "req_3",
+            "text": "Must render a paragraph with text 'This is my first React application.'",
+            "selector": "p",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "This is my first React application."
+          },
+          {
+            "id": "req_4",
+            "text": "App component must render Welcome.",
+            "selector": "Welcome",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": null,
+          "next": {
+            "type": "practice",
+            "id": "exercise_s2",
+            "milestoneId": "m1"
+          },
+          "currentMilestoneId": "m1"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// TODO: Create a function component named `Welcome`.\n// It should display a short welcome message (see exercise description\n// for the exact heading and paragraph text).\n// Then render <Welcome /> inside the App component below.\n\nexport default function App() {\n  return (\n    <div className=\"card-container\">\n      {/* render Welcome here */}\n    </div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s2",
+        "module": "Milestone 1",
+        "title": "Rendering HTML in React",
+        "level": "easy",
+        "description": "In this exercise, you will initialize and render a React application to the DOM. Your objective is to use the standard React 18 DOM client API to mount a specific UI structure into the existing root element. Create a container element assigned the class `root-card`. Inside this card, display a primary heading <h1> containing the exact text 'React Root Node', followed by a short paragraph <p> stating 'Learning createRoot()'. Render this entire UI block to see it appear on the screen!",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": false
+        },
+        "restrictions": [],
+        "tags": [
+          "easy",
+          "reactjs",
+          "createRoot",
+          "milestone 1"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: radial-gradient(circle at top, #1e293b, #0f172a); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }\n.root-card { background: rgba(255, 255, 255, 0.03); padding: 50px 70px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); text-align: center; }\nh1 { color: #61dafb; font-size: 38px; margin: 0 0 16px 0; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 0 20px rgba(97, 218, 251, 0.3); }\np { color: #94a3b8; font-size: 20px; margin: 0; font-weight: 500; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "index.jsx",
+              "language": "jsx",
+              "content": "import { createRoot } from 'react-dom/client';\n\nconst rootElement = document.getElementById('root');\nconst root = createRoot(rootElement);\n\nroot.render(\n  <div className=\"root-card\">\n    <h1>React Root Node</h1>\n    <p>Learning createRoot()</p>\n  </div>\n);"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Must use createRoot from react-dom/client.",
+            "selector": "createRoot",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must render a div with className 'root-card'.",
+            "selector": "className=root-card",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must render an h1 with text 'React Root Node'.",
+            "selector": "h1",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "React Root Node"
+          },
+          {
+            "id": "req_4",
+            "text": "Must render a paragraph with text 'Learning createRoot()'.",
+            "selector": "p",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Learning createRoot()"
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s1",
+            "milestoneId": "m1"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s3",
+            "milestoneId": "m1"
+          },
+          "currentMilestoneId": "m1"
+        },
+        "starter_files": [
+          {
+            "filename": "index.jsx",
+            "language": "jsx",
+            "content": "// TODO: Use createRoot() to mount a small UI into the page.\n// The import is already done for you — follow the steps in the\n// exercise description to create the root and render your markup.\n\nimport { createRoot } from 'react-dom/client';\n\nconst rootElement = document.getElementById('root');\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s3",
+        "module": "Milestone 1",
+        "title": "JSX className Attribute",
+        "level": "easy",
+        "description": "Your task is to build a user profile card. Create a new component called `Profile` that presents two pieces of information: the user's role ('Frontend Developer') and their current activity ('Learning JSX'). To ensure the card is styled correctly by our pre-written stylesheet, you must apply the CSS class named `profile` to the component's outermost wrapping element using the appropriate JSX syntax. Finally, integrate and display this profile card within the main `App` component.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": false
+        },
+        "restrictions": [],
+        "tags": [
+          "easy",
+          "reactjs",
+          "jsx",
+          "className",
+          "milestone 1"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; font-family: sans-serif; }\n.profile { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }\n.profile h1 { color: #2c3e50; margin: 0 0 10px 0; font-size: 28px; }\n.profile p { color: #7f8c8d; font-size: 18px; margin: 0; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function Profile() {\n  return (\n    <div className=\"profile\">\n      <h1>Frontend Developer</h1>\n      <p>Learning JSX</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Profile />;\n}"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Profile.",
+            "selector": "Profile",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use className='profile' on the wrapper element.",
+            "selector": "className=profile",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must display 'Frontend Developer'.",
+            "selector": "body",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Frontend Developer"
+          },
+          {
+            "id": "req_4",
+            "text": "Must display the text 'Learning JSX'.",
+            "selector": "",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Learning JSX"
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s2",
+            "milestoneId": "m1"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s4",
+            "milestoneId": "m1"
+          },
+          "currentMilestoneId": "m1"
+        },
+          "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// TODO: Create a component named `Profile` that displays the two lines\n// of text described in the exercise, wrapped in an element with the\n// required className. Then render <Profile /> inside App.\n\nexport default function App() {\n  return (\n    <div></div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s4",
+        "module": "Milestone 1",
+        "title": "JSX Expressions with Variables",
+        "level": "medium",
+        "description": "Let's bring your UI to life with dynamic data! Your task is to build a profile card by embedding JavaScript variables directly into your markup. First, define two variables inside your component: a `name` (string) and an `age` (number). Next, design the card's layout: use a primary heading <h1> to display the user's name, followed by two separate text elements. The first should state 'Age: ' along with the current age. The second must display 'Age Next Year: ' followed by their calculated age for the upcoming year. **Crucial:** You must calculate the future age using a math operation within a JSX expression—hardcoded values will not pass! Finally, wrap your entire profile layout inside a container element with the `user-profile` class.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": true
+        },
+        "restrictions": [],
+        "tags": [
+          "medium",
+          "reactjs",
+          "jsx-expressions",
+          "milestone 1"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n.user-profile { background-color: #ffffff; padding: 40px 60px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); text-align: center; border: 1px solid #f3f4f6; }\nh1 { color: #111827; margin: 0 0 16px 0; font-size: 38px; font-weight: 800; }\np { color: #4b5563; font-size: 22px; margin: 12px 0; font-weight: 600; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function App() {\n  const name = \"Alice\";\n  const age = 20;\n  return (\n    <div className=\"user-profile\">\n      <h1>{name}</h1>\n      <p>Age: {age}</p>\n      <p>Age Next Year: {age + 1}</p>\n    </div>\n  );\n}\n\nexport default App;"
+            }
+          ]
+        },
+        "test_script": "import { render } from '@testing-library/react';\nimport App from './App';\n\ntest('Must display Age and Age Next Year computed correctly', () => {\n  const { container } = render(<App />);\n  const text = container.textContent;\n  \n  console.log('--- DEBUG RENDER TEXT ---', text);\n  \n  const ageMatch = text.match(/Age:\\s*(\\d+)/i);\n  const ageNextMatch = text.match(/Age Next Year:\\s*(\\d+)/i);\n  \n  expect(ageMatch).toBeTruthy();\n  expect(ageNextMatch).toBeTruthy();\n  \n  const age = parseInt(ageMatch[1], 10);\n  const ageNext = parseInt(ageNextMatch[1], 10);\n  \n  expect(ageNext).toBe(age + 1);\n});",
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Must declare the variable 'name'.",
+            "selector": "name",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must declare the variable 'age'.",
+            "selector": "age",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must render name in an h1 using a JSX expression.",
+            "selector": "h1",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Must display Age Next Year computed as age + 1.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s3",
+            "milestoneId": "m1"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s5",
+            "milestoneId": "m2"
+          },
+          "currentMilestoneId": "m1"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "export default function App() {\n  // TODO: declare the two variables described in the exercise\n  // (a string and a number).\n\n  return (\n    <div className=\"user-profile\">\n      {/* TODO: use JSX expressions {} to display the variables below —\n          one of the values shown must be computed, not hardcoded */}\n    </div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s5",
+        "module": "Milestone 2",
+        "title": "Interactive Profile Card",
+        "level": "medium",
+        "description": "Let's level up the profile card by adding interactivity and practicing different ways to assign JSX attributes! Build a `ProfileCard` component that includes a title ('Frontend Developer'), a short description ('Learning React JSX Attributes'), and two action buttons. \n\n**Styling Rules:** Apply the CSS class `profile-heading` to your title. For the main card wrapper, you must define a variable named `cardClass` holding the string `'profile-card'` and pass it dynamically to the wrapper's class attribute. Please rely on the provided CSS classes; do NOT use inline styles.\n\n**Interactivity:** The first button, labeled 'Show Message', must trigger a browser alert displaying exactly 'Hello React!' when clicked. The second button, labeled 'Coming Soon', must be rendered in a disabled state.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": true,
+          "behavior": true
+        },
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [
+          "medium",
+          "reactjs",
+          "events",
+          "milestone 2"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }\n.profile-card { background-color: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; width: 320px; }\n.profile-heading { color: #1e40af; font-size: 28px; background-color: #dbeafe; padding: 12px 24px; border-radius: 8px; margin: 0 0 16px 0; font-weight: 700; }\np { color: #64748b; font-size: 16px; margin-bottom: 24px; }\nbutton { padding: 10px 20px; border-radius: 6px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0 6px; }\nbutton:not(:disabled) { background-color: #3b82f6; color: white; }\nbutton:not(:disabled):hover { background-color: #2563eb; }\nbutton:disabled { background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function ProfileCard() {\n  const cardClass = \"profile-card\";\n  const showMessage = () => {\n    alert(\"Hello React!\");\n  };\n  return (\n    <div className={cardClass}>\n      <h1 className=\"profile-heading\">Frontend Developer</h1>\n      <p>Learning React JSX Attributes</p>\n      <button onClick={showMessage}>Show Message</button>\n      <button disabled={true}>Coming Soon</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
+            }
+          ]
+        },
+        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport App from './UserCode';\n\ntest('Coming Soon button is disabled', () => {\n  render(<App />);\n  const btn = screen.getByText('Coming Soon');\n  expect(btn.disabled).toBe(true);\n});\n\ntest('Show Message button is enabled and calls alert on click', () => {\n  render(<App />);\n  const btn = screen.getByText('Show Message');\n  expect(btn.disabled).toBe(false);\n  window.alert = jest.fn();\n  fireEvent.click(btn);\n  expect(window.alert).toHaveBeenCalledWith('Hello React!');\n});",
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Must declare and use the 'cardClass' variable as className.",
+            "selector": "cardClass",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Show Message button must call alert('Hello React!') on click.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Coming Soon button must be disabled.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Heading must use the CSS class 'profile-heading'.",
+            "selector": "className=profile-heading",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s4",
+            "milestoneId": "m1"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s6",
+            "milestoneId": "m2"
+          },
+          "currentMilestoneId": "m2"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function ProfileCard() {\n  // TODO: 1) store the card's class name in a variable and use it as className\n  // TODO: 2) write a function that shows an alert message\n\n  return (\n    <div>\n      {/* TODO: heading, description text, and two buttons go here —\n          see the exercise description for what each button must do */}\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s6",
+        "module": "Milestone 2",
+        "title": "Styling React Components",
+        "level": "medium",
+        "description": "Time to make the profile card look professional using CSS classes! Your task is to style the `ProfileCard` component that displays information for 'Alex Johnson', a 'Frontend Developer' who is 'Learning React Styling'. Using the pre-defined stylesheet, apply the following design rules: First, wrap the entire component's content in a container using the `card-container` class. Next, format the user's name as a prominent title by applying the `profile-heading` class to it. Finally, draw attention to the current learning status ('Learning React Styling') by applying the `highlight-text` class to that specific element. Note: Inline styles are strictly prohibited in this exercise—you must rely entirely on JSX class attributes!",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": true,
+          "behavior": false
+        },
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [
+          "medium",
+          "reactjs",
+          "css-classes",
+          "milestone 2"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0f172a; font-family: 'Inter', -apple-system, sans-serif; }\n.card-container { background-color: #1e293b; padding: 48px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid #334155; min-width: 320px; }\n.profile-heading { color: #f8fafc; font-size: 36px; margin: 0 0 12px 0; font-weight: 800; letter-spacing: -0.5px; }\np { color: #94a3b8; font-size: 18px; margin: 0 0 28px 0; font-weight: 500; }\n.highlight-text { color: #10b981; font-weight: 700; background-color: rgba(16, 185, 129, 0.1); padding: 10px 20px; border-radius: 9999px; display: inline-block; margin: 0; border: 1px solid rgba(16, 185, 129, 0.2); }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function ProfileCard() {\n  return (\n    <div className=\"card-container\">\n      <h1 className=\"profile-heading\">Alex Johnson</h1>\n      <p>Frontend Developer</p>\n      <p className=\"highlight-text\">Learning React Styling</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be ProfileCard.",
+            "selector": "ProfileCard",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use CSS class 'card-container'.",
+            "selector": "className=card-container",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must use CSS class 'profile-heading'.",
+            "selector": "className=profile-heading",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Must use CSS class 'highlight-text'.",
+            "selector": "className=highlight-text",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s5",
+            "milestoneId": "m2"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s7",
+            "milestoneId": "m2"
+          },
+          "currentMilestoneId": "m2"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "function ProfileCard() {\n  return (\n    // TODO: apply the three CSS classes described in the exercise to the\n    // wrapping div, the heading, and the highlighted paragraph below\n    <div>\n      <h1>Alex Johnson</h1>\n      <p>Frontend Developer</p>\n      <p>Learning React Styling</p>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <ProfileCard />;\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s7",
+        "module": "Milestone 2",
+        "title": "React CSS Modules",
+        "level": "medium",
+        "description": "Let's explore scoped styling to prevent class name collisions! Your objective is to craft a reusable `Button` component that displays the text 'Click Me' and style it using CSS Modules. First, open the `Button.module.css` file and design a custom class from scratch—give it a solid background color, comfortable padding, rounded corners, and an interactive hover state. Once your design is ready, switch over to `Button.jsx`, import this stylesheet as a module, and dynamically bind your custom class to the button element. Keep your component clean: inline styles are strictly prohibited!",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": true,
+          "behavior": false
+        },
+        "restrictions": [
+          "BANNED_INLINE_STYLE"
+        ],
+        "tags": [
+          "medium",
+          "reactjs",
+          "css-modules",
+          "milestone 2"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0f172a; font-family: 'Inter', -apple-system, sans-serif; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "Button.jsx",
+              "language": "jsx",
+              "content": "import styles from './Button.module.css';\n\nexport default function Button() {\n  return <button className={styles.mybutton}>Click Me</button>;\n}\n"
+            },
+            {
+              "filename": "Button.module.css",
+              "language": "css",
+              "content": ".mybutton {\n  background-color: #8b5cf6;\n  color: #ffffff;\n  padding: 16px 32px;\n  font-size: 18px;\n  font-weight: 600;\n  border: none;\n  border-radius: 12px;\n  cursor: pointer;\n  box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);\n  transition: transform 0.2s;\n}\n\n.mybutton:hover {\n  transform: translateY(-2px);\n}\n"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Button.",
+            "selector": "Button",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must import styles from './Button.module.css'.",
+            "selector": "import styles",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must apply className to the button element.",
+            "selector": "className",
+            "type": "attribute",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Button must display the text 'Click Me'.",
+            "selector": "",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Click Me"
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s6",
+            "milestoneId": "m2"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s8",
+            "milestoneId": "m2"
+          },
+          "currentMilestoneId": "m2"
+        },
+        "starter_files": [
+          {
+            "filename": "Button.jsx",
+            "language": "jsx",
+            "content": "// TODO: import the CSS module file below, then apply one of its\n// classes to the button using styles.<className>\n\nimport styles from './Button.module.css';\n\nexport default function Button() {\n  // TODO: return a <button> styled with the imported CSS Module class,\n  // with the text \"Click Me\"\n}\n"
+          },
+          {
+            "filename": "Button.module.css",
+            "language": "css",
+            "content": "/* TODO: define a class (e.g. .mybutton) for the button.\n   Try background-color, color, padding, border-radius, and a\n   :hover effect for a nice interactive feel. */\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s8",
+        "module": "Milestone 2",
+        "title": "React JSX Conditional Statements",
+        "level": "hard",
+        "description": "It's time to build a dynamic UI feature! Your task is to develop a `StatusBadge` component that indicates whether a user is currently active. The component must accept a boolean prop named `isOnline` (which should default to true). Based on this prop, the badge needs to update both its appearance and its text dynamically: when online, it should display 'Online' and use the `badge-online` CSS class; when offline, it should display 'Offline' and use the `badge-offline` CSS class.\n\n**Strict Coding Standard:** To keep the React component clean and declarative, traditional `if/else` statements are strictly banned in this exercise. You must handle the conditional logic for both the text content and the `className` attribute by using inline ternary operators (`condition ? true : false`) directly within your JSX.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": true,
+          "behavior": true
+        },
+        "restrictions": [
+          "BANNED_IF_STATEMENT"
+        ],
+        "tags": [
+          "hard",
+          "reactjs",
+          "conditional-rendering",
+          "milestone 2",
+          "ui-styling"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0f172a; font-family: 'Inter', -apple-system, sans-serif; }\n.user-card { background-color: #1e293b; padding: 32px 48px; border-radius: 20px; text-align: center; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }\n.avatar { width: 64px; height: 64px; background: #3b82f6; border-radius: 50%; margin: 0 auto 16px auto; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; }\nh2 { color: #f8fafc; margin: 0 0 16px 0; font-size: 20px; }\n.badge-online { background-color: #10b981; color: #ffffff; padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 9999px; display: inline-block; box-shadow: 0 0 12px rgba(16,185,129,0.4); }\n.badge-offline { background-color: #64748b; color: #ffffff; padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 9999px; display: inline-block; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "export function StatusBadge({ isOnline = true }) {\n  return (\n    <div className={isOnline ? 'badge-online' : 'badge-offline'}>\n      {isOnline ? 'Online' : 'Offline'}\n    </div>\n  );\n}\n\nexport default function App() {\n  return (\n    <div className=\"user-card\">\n      <div className=\"avatar\">JD</div>\n      <h2>John Doe</h2>\n      <StatusBadge isOnline={true} />\n    </div>\n  );\n}"
+            }
+          ]
+        },
+        "test_script": "import { render, screen } from '@testing-library/react';\nimport * as UserCode from './UserCode';\n\nconst StatusBadge = UserCode.StatusBadge || UserCode.default;\n\ntest('renders Online with correct class when isOnline is true', () => {\n  render(<StatusBadge isOnline={true} />);\n  const badge = screen.getByText('Online');\n  expect(badge).toBeTruthy();\n  expect(badge.className).toContain('badge-online');\n});\n\ntest('renders Offline with correct class when isOnline is false', () => {\n  render(<StatusBadge isOnline={false} />);\n  const badge = screen.getByText('Offline');\n  expect(badge).toBeTruthy();\n  expect(badge.className).toContain('badge-offline');\n});",
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Create a React component named StatusBadge.",
+            "selector": "StatusBadge",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Accept a boolean prop called isOnline.",
+            "selector": "isOnline",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Use ternary (? :) to change className based on isOnline.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Use ternary (? :) to display 'Online' or 'Offline'.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s7",
+            "milestoneId": "m2"
+          },
+          "next": null,
+          "currentMilestoneId": "m2"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// See the exercise description above for the full requirements\n// of the StatusBadge component (props, ternary logic, restrictions).\n\nexport default function App() {\n  return (\n    <div className=\"user-card\">\n      <div className=\"avatar\">JD</div>\n      <h2>John Doe</h2>\n      {/* TODO: render <StatusBadge isOnline={true} /> once it's ready */}\n    </div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s9",
+        "module": "Milestone 3",
+        "title": "React Component",
+        "level": "easy",
+        "description": "Welcome to Milestone 3! Your objective is to build a foundational piece of UI. Create a functional component named `Greeting` that presents a prominent welcome message displaying exactly 'Hello, React!'. Because this component is purely presentational and only renders static content, it must remain entirely stateless—do not use any React hooks here. Once your component is ready, integrate it into the main application layout by rendering it inside the provided container element styled with the `card` class.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": false
+        },
+        "restrictions": [
+          "BANNED_ALL_HOOKS"
+        ],
+        "tags": [
+          "easy",
+          "reactjs",
+          "components",
+          "milestone 3"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #282c34; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }\n.card { background-color: #ffffff; padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }\nh1 { color: #61dafb; margin: 0; font-size: 42px; font-weight: bold; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function Greeting() {\n  return <h1>Hello, React!</h1>;\n}\n\nexport default function App() {\n  return (\n    <div className=\"card\">\n      <Greeting />\n    </div>\n  );\n}"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Greeting.",
+            "selector": "Greeting",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Component must return an h1 element.",
+            "selector": "h1",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "The h1 must contain the text 'Hello, React!'.",
+            "selector": "h1",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "Hello, React!"
+          }
+        ],
+        "navigation": {
+          "prev": null,
+          "next": {
+            "type": "practice",
+            "id": "exercise_s10",
+            "milestoneId": "m3"
+          },
+          "currentMilestoneId": "m3"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// TODO: Create a function component named `Greeting`.\n// It should return a single heading element with the text described above.\n// Do NOT use any hooks. Then render <Greeting /> inside App.\n\nexport default function App() {\n  return (\n    <div className=\"card\">\n      {/* render Greeting here */}\n    </div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s10",
+        "module": "Milestone 3",
+        "title": "Passing Props",
+        "level": "easy",
+        "description": "Let's make our components reusable by passing data into them! Your task is to build a `UserCard` component that receives external data and displays it. The component needs to accept a property named `username` and render a level-3 heading with the exact format 'User: [provided username]'. \n\n**Core Rules:**\n1. **Prop Handling:** To master the fundamentals of how React passes data, you must receive the data via the standard `props` object parameter and access the `username` property directly from it. **Do not use object destructuring** in the function signature.\n2. **Stateless:** Keep the component purely presentational—React hooks are strictly prohibited.\n\nFinally, mount your `UserCard` inside the main `App` component's container and pass a sample name (like 'Alex') to see your dynamic component in action!",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": false
+        },
+        "restrictions": [
+          "BANNED_ALL_HOOKS",
+          "BANNED_PROPS_DESTRUCTURING"
+        ],
+        "tags": [
+          "easy",
+          "reactjs",
+          "props",
+          "milestone 3"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n.card-container { background-color: #ffffff; padding: 30px 60px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }\nh3 { margin: 0; color: #374151; font-size: 26px; font-weight: 600; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "function UserCard(props) {\n  return <h3>User: {props.username}</h3>;\n}\n\nexport default function App() {\n  return (\n    <div className=\"card-container\">\n      <UserCard username=\"Alex\" />\n    </div>\n  );\n}"
+            }
+          ]
+        },
+        "test_script": null,
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be UserCard.",
+            "selector": "UserCard",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Component must accept a prop named username via props object.",
+            "selector": "username",
+            "type": "prop",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Component must return an h3 element.",
+            "selector": "h3",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "The h3 must contain 'User: ' followed by the username value.",
+            "selector": "h3",
+            "type": "content",
+            "type_check": "others",
+            "expectedValue": "User:"
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s9",
+            "milestoneId": "m3"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s11",
+            "milestoneId": "m3"
+          },
+          "currentMilestoneId": "m3"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// TODO: Create a function component named `UserCard` that accepts a\n// `username` prop through the props object (do NOT destructure it).\n// Then render <UserCard username=\"Alex\" /> inside App.\n\nexport default function App() {\n  return (\n    <div className=\"card-container\">\n      {/* render UserCard here */}\n    </div>\n  );\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s11",
+        "module": "Milestone 3",
+        "title": "Destructuring Props - Default Values",
+        "level": "medium",
+        "description": "Let's write cleaner code by leveraging destructuring! Your objective is to build a `Product` component that displays merchandise details based on three incoming properties: `name`, `price`, and `category`.\n\n**Core Requirements:**\n- **Destructuring & Defaults:** You must extract these properties directly within the function parameter list (do not use the `props` object inside the function body). Since some products might not be categorized yet, assign a fallback default value of `'General'` for the `category` prop.\n- **UI Layout:** Wrap the product details in a container using the `product-card` CSS class. Inside this card, display the product's name as a heading, its price in a paragraph (make sure to prepend a `$` symbol to the number), and the category in a `span` element.\n- **Module Export:** The test suite requires you to export the `Product` component as a **named export** (not a default export). As always for presentational components, do not use any React hooks.",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": false,
+          "behavior": true
+        },
+        "restrictions": [
+          "BANNED_ALL_HOOKS",
+          "REQUIRED_PROPS_DESTRUCTURING",
+          "BANNED_CREATE_ELEMENT"
+        ],
+        "tags": [
+          "medium",
+          "reactjs",
+          "destructuring",
+          "props",
+          "milestone 3"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n.product-card { background-color: #ffffff; padding: 32px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; min-width: 200px; }\n.product-card h2 { margin: 0 0 12px 0; color: #1e293b; font-size: 26px; }\n.product-card p { color: #10b981; font-size: 22px; font-weight: bold; margin: 0 0 20px 0; }\n.product-card span { background-color: #f1f5f9; color: #64748b; padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "export function Product({ name, price, category = 'General' }) {\n  return (\n    <div className=\"product-card\">\n      <h2>{name}</h2>\n      <p>${price}</p>\n      <span>{category}</span>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Product name=\"Wireless Mouse\" price=\"25\" />;\n}"
+            }
+          ]
+        },
+        "test_script": "import { render, screen } from '@testing-library/react';\nimport * as UserCode from './App';\n\nconst Product = UserCode.Product || UserCode.default;\n\ntest('renders product with provided category', () => {\n  if (!Product) throw new Error('Cannot find Product component. Did you export it?');\n  render(<Product name=\"Laptop\" price=\"1000\" category=\"Electronics\" />);\n  expect(screen.getByText('Laptop')).toBeTruthy();\n  expect(screen.getByText(/1000/)).toBeTruthy();\n  expect(screen.getByText('Electronics')).toBeTruthy();\n});\n\ntest('renders product with default category', () => {\n  if (!Product) throw new Error('Cannot find Product component. Did you export it?');\n  render(<Product name=\"Book\" price=\"20\" />);\n  expect(screen.getByText('Book')).toBeTruthy();\n  expect(screen.getByText(/20/)).toBeTruthy();\n  expect(screen.getByText('General')).toBeTruthy();\n});",
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Product.",
+            "selector": "Product",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use props destructuring in function parameters.",
+            "selector": "category",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Must set default value 'General' for category.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Must export Product as a named export.",
+            "selector": "export function Product",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s10",
+            "milestoneId": "m3"
+          },
+          "next": {
+            "type": "practice",
+            "id": "exercise_s12",
+            "milestoneId": "m3"
+          },
+          "currentMilestoneId": "m3"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "// TODO: Create and export a `Product` component (named export) that:\n// - destructures its props in the function parameters\n// - gives the `category` prop a default value\n// See the exercise description for the exact prop names and JSX structure.\n\nexport default function App() {\n  return <Product name=\"Wireless Mouse\" price=\"25\" />;\n}\n"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "exercise_s12",
+        "module": "Milestone 3",
+        "title": "Stateful Counter Component",
+        "level": "hard",
+        "description": "Let's bring interactivity to your React components using state! Your challenge is to build a `Counter` component that tracks and displays a number, starting at zero. You must use the `useState` hook to manage this dynamic data.\n\n**UI Requirements:** Wrap the entire component in a container using the `counter-container` class, and display the current count prominently as a primary heading. Below the number, provide three action buttons grouped together in a wrapper with the `btn-group` class.\n\n**Behavior & Styling:** The buttons must be logically labeled 'Decrement', 'Reset', and 'Increment'. Wire them up so they correctly decrease the count by 1, reset the count to 0, and increase the count by 1, respectively. Don't forget to apply their corresponding CSS classes (`btn-decrement`, `btn-reset`, `btn-increment`) to ensure they match our design system!",
+        "evaluation_config": {
+          "lint": true,
+          "requirements": true,
+          "visual": true,
+          "behavior": true
+        },
+        "restrictions": [],
+        "tags": [
+          "hard",
+          "reactjs",
+          "useState",
+          "hooks",
+          "milestone 3",
+          "ui-styling"
+        ],
+        "target_design": {
+          "deviceType": "desktop",
+          "width": 800,
+          "height": 600
+        },
+        "target_url": "",
+        "code_test": {
+          "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Document</title>\n</head>\n<body>\n  <div id=\"root\"></div>\n</body>\n</html>",
+          "css": "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #edf2f7; font-family: 'Segoe UI', sans-serif; }\n.counter-container { background-color: #ffffff; padding: 40px 60px; border-radius: 16px; box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); text-align: center; }\nh1 { color: #2d3748; font-size: 56px; margin: 0 0 24px 0; }\n.btn-group { display: flex; gap: 12px; justify-content: center; }\n.btn-increment { background-color: #3182ce; color: #ffffff; padding: 12px 24px; border-radius: 8px; border: none; font-size: 18px; cursor: pointer; }\n.btn-decrement { background-color: #e53e3e; color: #ffffff; padding: 12px 24px; border-radius: 8px; border: none; font-size: 18px; cursor: pointer; }\n.btn-reset { background-color: #718096; color: #ffffff; padding: 12px 24px; border-radius: 8px; border: none; font-size: 18px; cursor: pointer; }",
+          "js": "",
+          "files": [
+            {
+              "filename": "App.jsx",
+              "language": "jsx",
+              "content": "import React, { useState } from 'react';\n\nexport default function Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <div className=\"counter-container\">\n      <h1>{count}</h1>\n      <div className=\"btn-group\">\n        <button className=\"btn-decrement\" onClick={() => setCount(count - 1)}>Decrement</button>\n        <button className=\"btn-reset\" onClick={() => setCount(0)}>Reset</button>\n        <button className=\"btn-increment\" onClick={() => setCount(count + 1)}>Increment</button>\n      </div>\n    </div>\n  );\n}"
+            }
+          ]
+        },
+        "test_script": "import { render, screen, fireEvent } from '@testing-library/react';\nimport Counter from './App';\n\ntest('initial count is 0', () => {\n  render(<Counter />);\n  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('0');\n});\n\ntest('Increment button increases count by 1', () => {\n  render(<Counter />);\n  fireEvent.click(screen.getByText('Increment'));\n  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('1');\n});\n\ntest('Decrement button decreases count by 1', () => {\n  render(<Counter />);\n  fireEvent.click(screen.getByText('Decrement'));\n  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('-1');\n});\n\ntest('Reset button resets count to 0 after changes', () => {\n  render(<Counter />);\n  fireEvent.click(screen.getByText('Increment'));\n  fireEvent.click(screen.getByText('Increment'));\n  fireEvent.click(screen.getByText('Reset'));\n  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('0');\n});",
+        "requirements": [
+          {
+            "id": "req_1",
+            "text": "Component name must be Counter.",
+            "selector": "Counter",
+            "type": "exist",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_2",
+            "text": "Must use the useState hook.",
+            "selector": "useState",
+            "type": "hook",
+            "type_check": "others",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_3",
+            "text": "Increment button must increase count by 1.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_4",
+            "text": "Decrement button must decrease count by 1.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          },
+          {
+            "id": "req_5",
+            "text": "Reset button must set count back to 0.",
+            "selector": "",
+            "type": "",
+            "type_check": "behavior",
+            "expectedValue": ""
+          }
+        ],
+        "navigation": {
+          "prev": {
+            "type": "practice",
+            "id": "exercise_s11",
+            "milestoneId": "m3"
+          },
+          "next": null,
+          "currentMilestoneId": "m3"
+        },
+        "starter_files": [
+          {
+            "filename": "App.jsx",
+            "language": "jsx",
+            "content": "import { useState } from 'react';\n\n// See the exercise description above for the full requirements\n// (initial state, layout, and what each button must do).\n\nexport default function Counter() {\n\n}\n"
+          }
+        ]
+      }
+    }
+  ]
+}
