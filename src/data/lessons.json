@@ -7,7 +7,7 @@
         "module": "Milestone 1",
         "title": "My First React Component",
         "level": "easy",
-        "description": "Create a React component named `Welcome` with a heading 'Welcome to React' and a paragraph 'This is my first React application.' The `App` component must render `Welcome`.",
+        "description": "Welcome to your first React challenge! Your task is to build a simple welcome interface for the application. Design a standalone `Welcome` component that introduces the app, featuring a primary heading <h1> with the text 'Welcome to React', followed by a descriptive paragraph <p> saying 'This is my first React application.'. Finally, ensure that this welcome interface is successfully integrated and displayed on the main application screen.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -99,7 +99,7 @@
         "module": "Milestone 1",
         "title": "Rendering HTML in React",
         "level": "easy",
-        "description": "Using `createRoot()` from `react-dom/client`, render a container `<div>` into the root node. Give the `<div>` a `className=\"root-card\"`. Inside it, include an `<h1>` heading 'React Root Node' and a `<p>` paragraph 'Learning createRoot()'.",
+        "description": "In this exercise, you will initialize and render a React application to the DOM. Your objective is to use the standard React 18 DOM client API to mount a specific UI structure into the existing root element. Create a container element assigned the class `root-card`. Inside this card, display a primary heading <h1> containing the exact text 'React Root Node', followed by a short paragraph <p> stating 'Learning createRoot()'. Render this entire UI block to see it appear on the screen!",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -195,7 +195,7 @@
         "module": "Milestone 1",
         "title": "JSX className Attribute",
         "level": "easy",
-        "description": "Create a component named `Profile` that displays 'Frontend Developer' and 'Learning JSX'. Requirements: use JSX syntax, apply `className=\"profile\"` to the wrapping element. App must render Profile.",
+        "description": "Your task is to build a user profile card. Create a new component called `Profile` that presents two pieces of information: the user's role ('Frontend Developer') and their current activity ('Learning JSX'). To ensure the card is styled correctly by our pre-written stylesheet, you must apply the CSS class named `profile` to the component's outermost wrapping element using the appropriate JSX syntax. Finally, integrate and display this profile card within the main `App` component.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -276,7 +276,7 @@
           },
           "currentMilestoneId": "m1"
         },
-        "starter_files": [
+          "starter_files": [
           {
             "filename": "App.jsx",
             "language": "jsx",
@@ -292,7 +292,7 @@
         "module": "Milestone 1",
         "title": "JSX Expressions with Variables",
         "level": "medium",
-        "description": "Create variables `name` (string) and `age` (number). Display: the name inside an `<h1>` tag, 'Age: {age}' in a `<p>`, and 'Age Next Year: {age + 1}' in another `<p>`. Wrap everything in a `<div className=\"user-profile\">`. Use JSX expressions `{}` — do not hardcode computed values.",
+        "description": "Let's bring your UI to life with dynamic data! Your task is to build a profile card by embedding JavaScript variables directly into your markup. First, define two variables inside your component: a `name` (string) and an `age` (number). Next, design the card's layout: use a primary heading <h1> to display the user's name, followed by two separate text elements. The first should state 'Age: ' along with the current age. The second must display 'Age Next Year: ' followed by their calculated age for the upcoming year. **Crucial:** You must calculate the future age using a math operation within a JSX expression—hardcoded values will not pass! Finally, wrap your entire profile layout inside a container element with the `user-profile` class.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -388,7 +388,7 @@
         "module": "Milestone 2",
         "title": "Interactive Profile Card",
         "level": "medium",
-        "description": "Create a profile card displaying 'Frontend Developer' / 'Learning React JSX Attributes'. Requirements: 1) Declare `const cardClass = \"profile-card\"` and use it as `className`. 2) A 'Show Message' button that alerts 'Hello React!' on click, initially enabled. 3) A disabled 'Coming Soon' button. 4) Apply CSS class 'profile-heading' to the heading. Do NOT use inline styles.",
+        "description": "Let's level up the profile card by adding interactivity and practicing different ways to assign JSX attributes! Build a `ProfileCard` component that includes a title ('Frontend Developer'), a short description ('Learning React JSX Attributes'), and two action buttons. \n\n**Styling Rules:** Apply the CSS class `profile-heading` to your title. For the main card wrapper, you must define a variable named `cardClass` holding the string `'profile-card'` and pass it dynamically to the wrapper's class attribute. Please rely on the provided CSS classes; do NOT use inline styles.\n\n**Interactivity:** The first button, labeled 'Show Message', must trigger a browser alert displaying exactly 'Hello React!' when clicked. The second button, labeled 'Coming Soon', must be rendered in a disabled state.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -486,7 +486,7 @@
         "module": "Milestone 2",
         "title": "Styling React Components",
         "level": "medium",
-        "description": "Create a ProfileCard component displaying 'Alex Johnson' / 'Frontend Developer' / 'Learning React Styling'. Requirements: 1) Apply CSS class 'card-container' to the wrapping div. 2) Apply CSS class 'profile-heading' to the h1. 3) Apply CSS class 'highlight-text' to the paragraph 'Learning React Styling'. Do NOT use inline styles.",
+        "description": "Time to make the profile card look professional using CSS classes! Your task is to style the `ProfileCard` component that displays information for 'Alex Johnson', a 'Frontend Developer' who is 'Learning React Styling'. Using the pre-defined stylesheet, apply the following design rules: First, wrap the entire component's content in a container using the `card-container` class. Next, format the user's name as a prominent title by applying the `profile-heading` class to it. Finally, draw attention to the current learning status ('Learning React Styling') by applying the `highlight-text` class to that specific element. Note: Inline styles are strictly prohibited in this exercise—you must rely entirely on JSX class attributes!",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -584,7 +584,7 @@
         "module": "Milestone 2",
         "title": "React CSS Modules",
         "level": "medium",
-        "description": "Practice real CSS Modules. In `Button.jsx`, import the styles object from `Button.module.css` and apply a class to the button using `styles.<className>`. Write the actual CSS rules yourself in `Button.module.css` (background color, padding, border-radius, and a hover effect). The button must display the text 'Click Me'. Do NOT use inline styles.",
+        "description": "Let's explore scoped styling to prevent class name collisions! Your objective is to craft a reusable `Button` component that displays the text 'Click Me' and style it using CSS Modules. First, open the `Button.module.css` file and design a custom class from scratch—give it a solid background color, comfortable padding, rounded corners, and an interactive hover state. Once your design is ready, switch over to `Button.jsx`, import this stylesheet as a module, and dynamically bind your custom class to the button element. Keep your component clean: inline styles are strictly prohibited!",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -692,7 +692,7 @@
         "module": "Milestone 2",
         "title": "React JSX Conditional Statements",
         "level": "hard",
-        "description": "1. Create a `StatusBadge` component that accepts an `isOnline` boolean prop (default value true).\n2. Return a `<div>` element.\n3. Use a ternary operator (`? :`) to conditionally set BOTH `className` and text inside the `<div>`.\n4. If isOnline is true: className = 'badge-online', text = 'Online'.\n5. If isOnline is false: className = 'badge-offline', text = 'Offline'.\n6. You must NOT use if/else statements (use ternary only).",
+        "description": "It's time to build a dynamic UI feature! Your task is to develop a `StatusBadge` component that indicates whether a user is currently active. The component must accept a boolean prop named `isOnline` (which should default to true). Based on this prop, the badge needs to update both its appearance and its text dynamically: when online, it should display 'Online' and use the `badge-online` CSS class; when offline, it should display 'Offline' and use the `badge-offline` CSS class.\n\n**Strict Coding Standard:** To keep the React component clean and declarative, traditional `if/else` statements are strictly banned in this exercise. You must handle the conditional logic for both the text content and the `className` attribute by using inline ternary operators (`condition ? true : false`) directly within your JSX.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -787,7 +787,7 @@
         "module": "Milestone 3",
         "title": "React Component",
         "level": "easy",
-        "description": "Create a function component named `Greeting` that returns an `<h1>` element with the text 'Hello, React!'. Do NOT use any hooks (useState, useEffect, etc.). App must render Greeting inside a div with className='card'.",
+        "description": "Welcome to Milestone 3! Your objective is to build a foundational piece of UI. Create a functional component named `Greeting` that presents a prominent welcome message displaying exactly 'Hello, React!'. Because this component is purely presentational and only renders static content, it must remain entirely stateless—do not use any React hooks here. Once your component is ready, integrate it into the main application layout by rendering it inside the provided container element styled with the `card` class.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -873,7 +873,7 @@
         "module": "Milestone 3",
         "title": "Passing Props",
         "level": "easy",
-        "description": "Create a function component named `UserCard` that accepts a `username` prop via the `props` object (do NOT destructure). Return an `<h3>` displaying 'User: {props.username}'. Do NOT use any hooks.",
+        "description": "Let's make our components reusable by passing data into them! Your task is to build a `UserCard` component that receives external data and displays it. The component needs to accept a property named `username` and render a level-3 heading with the exact format 'User: [provided username]'. \n\n**Core Rules:**\n1. **Prop Handling:** To master the fundamentals of how React passes data, you must receive the data via the standard `props` object parameter and access the `username` property directly from it. **Do not use object destructuring** in the function signature.\n2. **Stateless:** Keep the component purely presentational—React hooks are strictly prohibited.\n\nFinally, mount your `UserCard` inside the main `App` component's container and pass a sample name (like 'Alex') to see your dynamic component in action!",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -972,7 +972,7 @@
         "module": "Milestone 3",
         "title": "Destructuring Props - Default Values",
         "level": "medium",
-        "description": "Create a `Product` component that receives `name`, `price`, and `category` props. Use destructuring in the function parameters. Set a default value of 'General' for `category`. Return a `<div className=\"product-card\">` containing: `<h2>{name}</h2>`, `<p>${price}</p>`, `<span>{category}</span>`. Export Product as a named export. Do NOT use hooks.",
+        "description": "Let's write cleaner code by leveraging destructuring! Your objective is to build a `Product` component that displays merchandise details based on three incoming properties: `name`, `price`, and `category`.\n\n**Core Requirements:**\n- **Destructuring & Defaults:** You must extract these properties directly within the function parameter list (do not use the `props` object inside the function body). Since some products might not be categorized yet, assign a fallback default value of `'General'` for the `category` prop.\n- **UI Layout:** Wrap the product details in a container using the `product-card` CSS class. Inside this card, display the product's name as a heading, its price in a paragraph (make sure to prepend a `$` symbol to the number), and the category in a `span` element.\n- **Module Export:** The test suite requires you to export the `Product` component as a **named export** (not a default export). As always for presentational components, do not use any React hooks.",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
@@ -1073,7 +1073,7 @@
         "module": "Milestone 3",
         "title": "Stateful Counter Component",
         "level": "hard",
-        "description": "Create a `Counter` component using `useState` (initial value 0). Display `count` in an `<h1>`. Add THREE buttons inside a `<div className=\"btn-group\">`:\n- `<button className=\"btn-decrement\">Decrement</button>` — decreases count by 1\n- `<button className=\"btn-reset\">Reset</button>` — resets count to 0\n- `<button className=\"btn-increment\">Increment</button>` — increases count by 1\nUI: background #edf2f7, card background #ffffff, counter container class 'counter-container'.",
+        "description": "Let's bring interactivity to your React components using state! Your challenge is to build a `Counter` component that tracks and displays a number, starting at zero. You must use the `useState` hook to manage this dynamic data.\n\n**UI Requirements:** Wrap the entire component in a container using the `counter-container` class, and display the current count prominently as a primary heading. Below the number, provide three action buttons grouped together in a wrapper with the `btn-group` class.\n\n**Behavior & Styling:** The buttons must be logically labeled 'Decrement', 'Reset', and 'Increment'. Wire them up so they correctly decrease the count by 1, reset the count to 0, and increase the count by 1, respectively. Don't forget to apply their corresponding CSS classes (`btn-decrement`, `btn-reset`, `btn-increment`) to ensure they match our design system!",
         "evaluation_config": {
           "lint": true,
           "requirements": true,
