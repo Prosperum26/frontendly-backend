@@ -49,15 +49,31 @@ export class UserController {
       throw new NotFoundException('User not found');
     }
 
+    const cleanBadges =
+      (<any>user).badges?.map((badge: any) => ({
+        ...badge,
+        badgeId: badge.badgeId?.toString(),
+        _id: badge._id?.toString(),
+      })) || [];
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ID, password, ...restUser } = <any>user;
+
+    const cleanData = {
+      ...restUser,
+      id: ID.toString(),
+      badges: cleanBadges,
+    };
+
     return {
       success: true,
-      data: new MyProfileResponse(<User>(<unknown>user)),
+      data: <MyProfileResponse>(<unknown>cleanData),
     };
   }
 
   @Patch('me')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  @ApiOperation({ summary: 'Cập nhật thông tin cá nhân' })
+  @ApiOperation({ summary: 'Update profile' })
   @ApiResponse({
     status: 200,
     description: 'Profile updated successfully',
@@ -82,7 +98,7 @@ export class UserController {
 
   @Patch('me/password')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  @ApiOperation({ summary: 'Đổi mật khẩu' })
+  @ApiOperation({ summary: 'Change password' })
   @ApiResponse({
     status: 200,
     description: 'Password changed successfully',

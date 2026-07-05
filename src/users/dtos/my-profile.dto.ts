@@ -5,6 +5,9 @@ import { Badge } from '@/users/schemas/badge.schema';
 
 export class MyProfileResponse {
   @Expose()
+  _id!: string;
+
+  @Expose()
   email: string;
 
   @Expose()
