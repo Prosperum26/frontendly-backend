@@ -7,9 +7,7 @@ import {
   Post,
   InternalServerErrorException,
   Logger,
-  Req,
 } from '@nestjs/common';
-import { Request } from 'express';
 
 import { Exercise } from '../db_schemas/exercise_schema';
 import { SubmitCodeDto } from '../dtos/submit_code.dto';
@@ -48,14 +46,14 @@ export class EditorController {
     return this.getExercise(exerciseId);
   }
 
-  @Post(':exerciseId/submit')
-  async submitCode(
+  // Keep old endpoint for backwards compatibility
+  @Post(':exerciseId/:userId/submit')
+  async submitCodeBackwardsCompatible(
     @Param('exerciseId') exerciseId: string,
+    @Param('userId') userId: string,
     @Body() submitCode: SubmitCodeDto,
-    @Req() req: Request,
   ): Promise<{ success: boolean; data: SubmitResponse }> {
     try {
-      const userId = this.extractUserId(req);
       const result = await this.editorService.submitCode(
         userId,
         exerciseId,
@@ -67,24 +65,5 @@ export class EditorController {
         error.message || 'Error in evaluating code!',
       );
     }
-  }
-
-  // Keep old endpoint for backwards compatibility
-  @Post(':exerciseId/:userId/submit')
-  async submitCodeBackwardsCompatible(
-    @Param('exerciseId') exerciseId: string,
-    @Param('userId') _userId: string,
-    @Body() submitCode: SubmitCodeDto,
-    @Req() req: Request,
-  ): Promise<{ success: boolean; data: SubmitResponse }> {
-    return this.submitCode(exerciseId, submitCode, req);
-  }
-
-  private extractUserId(req: Request): string {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const user = req.user as
-      | { profile?: { _id?: { toString(): string } } }
-      | undefined;
-    return user?.profile?._id?.toString() || 'guest';
   }
 }

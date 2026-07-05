@@ -581,29 +581,23 @@ export default function App() {
       );
 
       const alreadyCompleted =
-        !this.userUtilsService.isGuestUser(userId) &&
+        userId !== 'guest' &&
         (
           await this.submissionModel
             .find({ userId, exerciseId, isCompleted: true })
             .lean()
         ).length > 0;
 
-      if (!this.userUtilsService.isGuestUser(userId)) {
-        await this.saveSubmission(userId, exerciseId, editorContent, {
-          isCompleted,
-          match_percentage: finalMatchPercentage,
-          lint_errors: lintResult,
-          requirementResult: requirementResults,
-          visual_results: visualResults,
-          behavior_results: behaviorResult,
-        });
-      }
+      await this.saveSubmission(userId, exerciseId, editorContent, {
+        isCompleted,
+        match_percentage: finalMatchPercentage,
+        lint_errors: lintResult,
+        requirementResult: requirementResults,
+        visual_results: visualResults,
+        behavior_results: behaviorResult,
+      });
 
-      if (
-        isCompleted &&
-        !this.userUtilsService.isGuestUser(userId) &&
-        !alreadyCompleted
-      ) {
+      if (isCompleted && userId !== 'guest' && !alreadyCompleted) {
         this.logger.debug(`[SubmitCode] Updating progress for user ${userId}`);
         try {
           const stageId = exerciseId.startsWith('exercise_')
