@@ -340,7 +340,7 @@ describe('ProgressSummaryService', () => {
         await service.getProgressSummary('user-done', 'react')
       );
 
-      expect((<unknown[]>result.earnedBadges).length).toBe(3);
+      expect(<unknown[]>result.earnedBadges).toHaveLength(3);
     });
 
     it('reports 100% course progress', async () => {

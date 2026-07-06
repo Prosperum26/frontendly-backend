@@ -56,8 +56,7 @@ export class UserController {
         _id: badge._id?.toString(),
       })) || [];
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { ID, password, ...restUser } = <any>user;
+    const { ID, ...restUser } = <any>user;
 
     const cleanData = {
       ...restUser,
