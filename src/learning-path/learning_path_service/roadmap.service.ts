@@ -136,6 +136,7 @@ export class RoadmapService {
         streakDays: dbProgress?.streakDays ?? 0,
         placementTestCompleted: dbProgress?.placementTestCompleted ?? false,
         skipToMilestoneId: dbProgress?.skipToMilestoneId ?? null,
+        unlockedStages: dbProgress?.unlockedStages ?? [],
       },
       personalizedLearningPath: dbProgress?.personalizedLearningPath ?? [],
       studyPlan: dbProgress?.studyPlan ?? [],

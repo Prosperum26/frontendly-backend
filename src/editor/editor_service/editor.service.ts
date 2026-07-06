@@ -192,16 +192,11 @@ export default function App() {
       throw new NotFoundException('Cannot find exercise!');
     }
 
-    // Tính toán navigation
     const navigation = this.calculateExerciseNavigation(exerciseId);
-
-    // Always return starter code - draft saving is handled by frontend localStorage
-    // If exercise has starter_files, return as is
     if (rawExercise.starter_files && rawExercise.starter_files.length > 0) {
       return { ...rawExercise, navigation };
     }
 
-    // Fallback: Convert old exercise fields to starter_files
     const exerciseFiles: any[] = [];
     if (rawExercise.html_content?.trim()) {
       exerciseFiles.push({
