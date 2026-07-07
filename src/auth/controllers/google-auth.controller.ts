@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   Res,
 } from '@nestjs/common';
@@ -12,10 +13,17 @@ import type { Response } from 'express';
 import { ConfigureAuth } from '../decorators';
 import { GoogleLoginRequestDto, GoogleLoginResponseDto } from '../dtos';
 import { GoogleAuthService } from '../services';
+import { AuthConfig, authConfigObj } from '@/common/config';
 
-@Controller('auth/google')
+@Controller({
+  path: 'auth/google',
+  version: '1',
+})
 export class GoogleAuthController {
-  constructor(private readonly googleAuthService: GoogleAuthService) {}
+  constructor(
+    private readonly googleAuthService: GoogleAuthService,
+    @Inject(authConfigObj.KEY) private readonly authConfig: AuthConfig,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -25,8 +33,18 @@ export class GoogleAuthController {
     @Body() dto: GoogleLoginRequestDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<GoogleLoginResponseDto> {
-    const { accessToken, refreshToken, user } =
-      await this.googleAuthService.authenticate(dto.idToken, res);
-    return new GoogleLoginResponseDto(accessToken, user, refreshToken);
+    const { accessToken, refreshToken, user, isNewUser } =
+      await this.googleAuthService.authenticate(
+        dto.idToken,
+        res,
+        dto.rememberMe || false,
+      );
+
+    return new GoogleLoginResponseDto(
+      accessToken,
+      user,
+      refreshToken,
+      isNewUser,
+    );
   }
 }
