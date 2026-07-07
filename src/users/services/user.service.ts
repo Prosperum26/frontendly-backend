@@ -300,14 +300,14 @@ export class UserService {
       .sort({ xp: -1, _id: 1 }) // _id to handle ties
       .skip(skip)
       .limit(limit)
-      .select('name firstName lastName avatarUrl xp level')
+      .select('username name firstName lastName avatarUrl xp level')
       .lean();
 
     return topUsers.map((user, index) => {
       return {
         id: user._id.toString(),
         rank: skip + index + 1,
-        username: user.name || user.firstName || 'Unknown',
+        username: user.username || user.name || user.firstName || 'Unknown',
         avatar: user.avatarUrl,
         level: user.level,
         xp: user.xp,

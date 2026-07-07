@@ -146,16 +146,19 @@ export class GamificationService {
     let currentStreak = user.stats.streakDays || 0;
     let streakMaintained = false;
 
-    if (!lastActiveAt || lastActiveAt < yesterday) {
-      // Bỏ lỡ ngày, reset chuỗi
+    if (!lastActiveAt) {
+      // Lần đầu tiên hoạt động
       currentStreak = 1;
+    } else if (lastActiveAt.getTime() === today.getTime()) {
+      // Hôm nay đã tính streak rồi, giữ nguyên chuỗi
+      streakMaintained = true;
     } else if (lastActiveAt.getTime() === yesterday.getTime()) {
       // Hôm qua có học, tăng chuỗi
       currentStreak += 1;
       streakMaintained = true;
-    } else if (lastActiveAt.getTime() === today.getTime()) {
-      // THÊM: Hôm nay đã tính streak rồi, giữ nguyên chuỗi
-      streakMaintained = true;
+    } else {
+      // Bỏ lỡ ngày (lastActiveAt < yesterday), reset chuỗi về 1
+      currentStreak = 1;
     }
 
     // Cập nhật dữ liệu
