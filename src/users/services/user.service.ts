@@ -55,7 +55,6 @@ export class UserService {
         googleId,
         firstName,
         lastName,
-        ...(picture && { avatarUrl: picture }),
       },
       $setOnInsert: {
         avatarUrl: picture || defaultAvatarUrl,
