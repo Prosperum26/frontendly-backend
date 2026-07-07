@@ -56,11 +56,11 @@ export class UserController {
         _id: badge._id?.toString(),
       })) || [];
 
-    const { ID, ...restUser } = <any>user;
+    const { _id, ...restUser } = <any>user;
 
     const cleanData = {
       ...restUser,
-      id: ID.toString(),
+      id: _id.toString(),
       badges: cleanBadges,
     };
 
