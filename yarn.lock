@@ -3387,9 +3387,9 @@
   integrity sha512-DLCpnKgD4alVxTBSKulK+gU1KCqOgUXfDRDXh2mZgzokQKa/70ax93I2uVO3m/LLvIAtWZIFoiifudmIqAxpMA==
 
 "@typescript-eslint/tsconfig-utils@^8.59.4":
-  version "8.63.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/tsconfig-utils/-/tsconfig-utils-8.63.0.tgz#f7e1cf9a029bb71f4027ffa4194ba82afb564cd3"
-  integrity sha512-sUAbkulqBAsncKnbRP3+7CtQFRKicexnj7ZwNC6ddCR7EmrXvjvdCYMJbUIqMd6lwoEriZjwLo08aS5tSjVMHg==
+  version "8.62.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/tsconfig-utils/-/tsconfig-utils-8.62.1.tgz#e2b5f24fe721044189cb7e81117c96d75979d627"
+  integrity sha512-xadytJqX9vJVQ2fdQjkcIVigwaOJNWkpjdLt6cEQ+xPnrI1fkp+/jZE/I97k9KUjqtpd25i0HeyZf3T6dutv2g==
 
 "@typescript-eslint/type-utils@8.59.4":
   version "8.59.4"
@@ -3408,9 +3408,9 @@
   integrity sha512-F1o7WJcCq+bc8dwcO/YsSEOudAH8RDtaOhM6wcAQhcUsFhnWQl81JKy48q1hoxAU0qrzM89+31GYh1515Zde3Q==
 
 "@typescript-eslint/types@^8.59.4":
-  version "8.63.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-8.63.0.tgz#6b32b0a5913520554d81a986acfffba2d32b6963"
-  integrity sha512-xyLtl9DUBBFrcJS4x2pIqGLH68/tC2uOa4Z7pUteW09D3bXnnXUom4dyPikzWgB7llmIc1zoeI3aoUdC4rPK/Q==
+  version "8.62.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-8.62.1.tgz#c58be954e483b2fc98275374d5bcb40b99842dc1"
+  integrity sha512-ooCzJFaf+Hg+uG6fA3NRFGuFjlfNlDhBthbv4ZPU/0elCAFUfnyXUvf/WOpHz/jYwSmvU2GkR2LtyUfy1AxZ1Q==
 
 "@typescript-eslint/typescript-estree@8.59.4":
   version "8.59.4"
@@ -4550,9 +4550,9 @@ camelcase@^6.2.0, camelcase@^6.3.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001688:
-  version "1.0.30001803"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001803.tgz#b2a5d696e042bc8304dcd4942c39fe330fbbcb24"
-  integrity sha512-g/uHREV2ZpK9qMalCsWaxmA6ol+DX8GYhuf3T40RKoP+oL7vhRJh8LNt73PCjpnR6l14FzfPrB5Yux4PKm2meg==
+  version "1.0.30001802"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001802.tgz#2671fb13d468930586c56ffa80feb1c51e18ec69"
+  integrity sha512-vmv8ub2xwTNmljSKf82mtCk5JH7hC+YgzLj3P5zotvA0tPQ9016tdNNOG8WRca1IxOnhSsivB+J0z5FeE5LOUw==
 
 caniuse-lite@^1.0.30001799:
   version "1.0.30001799"
@@ -5267,9 +5267,9 @@ electron-to-chromium@^1.5.376:
   integrity sha512-cH1jZgJHoezfTnKfKwnScpHywTFVnJUNITDPREFdhNjiuD502+QFpG0Qk7G8jhsV/f+CEAFlIrzP1fT+IMb92g==
 
 electron-to-chromium@^1.5.73:
-  version "1.5.388"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.388.tgz#002666dfda32e087c44fd01b7ce1719b6ec89c57"
-  integrity sha512-Pl/aJaqOOxYxda3vcx1IKSJimwYXHDkEnGn0F+kG2EE68dDtx2uCinaS+Vih8Z91B9t8CSAbiF/HKyWcnXjhzw==
+  version "1.5.387"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.387.tgz#d3ce821b0a37af5a46e2d2a33379ecfa16303636"
+  integrity sha512-TaxwufTFDufvPEoXdhwVrA3UdFWBeWGkYoJ1K8ldF1xe6gKfth6iRNS5lTQ5JPNOHdGQm8PT1QYKUqFLCiUefQ==
 
 emittery@^0.13.1:
   version "0.13.1"
@@ -8739,6 +8739,11 @@ onetime@^7.0.0:
   integrity sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==
   dependencies:
     mimic-function "^5.0.0"
+
+openai@^6.45.0:
+  version "6.45.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-6.45.0.tgz#53840c5c5848884dfbff47006f839b27d1d955b9"
+  integrity sha512-5DQVNErssk0afNpTTHUm/qZPU4iKR9OYdNid8Ib4puq4gHNNvGWZht2zY4h9a8JMF949Ik6m8gQutllVPbjdnw==
 
 optionator@^0.9.3:
   version "0.9.4"

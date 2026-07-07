@@ -4,7 +4,7 @@ export interface EntranceTestQuestion {
   id: string;
   question: string;
   type: EntranceQuestionType;
-  options?: string[];
+  options?: string[] | { key: string; value: string }[];
   starterCode?: {
     html?: string;
     css?: string;

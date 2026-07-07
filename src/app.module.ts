@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AiChatModule } from './ai-chat/ai-chat.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/guards';
 import { ChallengeModule } from './challenge/challenge.module';
@@ -48,6 +49,7 @@ import { UserModule } from './users/user.module';
     LearningPathModule,
     EntranceTestModule,
     ChallengeModule,
+    AiChatModule,
   ],
   providers: [
     {

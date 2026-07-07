@@ -29,7 +29,10 @@ export class EntranceTestService {
       id: String(question.id),
       question: question.question,
       type: <EntranceTestQuestion['type']>'single-choice',
-      options: Object.values(question.options),
+      options: Object.entries(question.options).map(([key, value]) => ({
+        key,
+        value,
+      })),
     }));
   }
 
