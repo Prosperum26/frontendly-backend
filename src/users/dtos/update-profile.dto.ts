@@ -56,6 +56,7 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(50, { message: 'Bio cannot exceed 50 characters' })
   bio?: string;
 
   @IsOptional()

@@ -1,15 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import OpenAI from 'openai';
 
 @Injectable()
 export class OpenRouterService {
   private readonly logger = new Logger(OpenRouterService.name);
-  private readonly openai: OpenAI;
+  private readonly primaryOpenAI: OpenAI;
+  private readonly backupOpenAI: OpenAI | null;
   private readonly model: string;
+  private readonly hasBackup: boolean;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
+    const backupApiKey = this.configService.get<string>(
+      'OPENROUTER_BACKUP_API_KEY',
+    );
     const model = this.configService.get<string>(
       'OPENROUTER_MODEL',
       'tencent/hy3:free',
@@ -19,7 +25,15 @@ export class OpenRouterService {
       this.logger.warn('OPENROUTER_API_KEY not configured');
     }
 
-    this.openai = new OpenAI({
+    if (backupApiKey) {
+      this.logger.log('Backup OpenRouter API key configured');
+    } else {
+      this.logger.warn(
+        'OPENROUTER_BACKUP_API_KEY not configured - no backup available',
+      );
+    }
+
+    this.primaryOpenAI = new OpenAI({
       apiKey: apiKey || '',
       baseURL: 'https://openrouter.ai/api/v1',
       defaultHeaders: {
@@ -27,48 +41,20 @@ export class OpenRouterService {
         'X-Title': 'Frontendly',
       },
     });
+
+    this.backupOpenAI = backupApiKey
+      ? new OpenAI({
+          apiKey: backupApiKey,
+          baseURL: 'https://openrouter.ai/api/v1',
+          defaultHeaders: {
+            'HTTP-Referer': 'http://localhost:5173',
+            'X-Title': 'Frontendly',
+          },
+        })
+      : null;
+
     this.model = model;
-  }
-
-  async chat(
-    messages: Array<{ role: string; content: string }>,
-    systemPrompt: string,
-  ): Promise<string> {
-    try {
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          { role: <const>'system', content: systemPrompt },
-          ...messages.map(m => ({
-            role: <'user' | 'assistant'>m.role,
-            content: m.content,
-          })),
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content in AI response');
-      }
-
-      return content;
-    } catch (error: any) {
-      this.logger.error('Error calling OpenRouter API:', error);
-
-      // Log more details about the error
-      if (error.response) {
-        this.logger.error(
-          `OpenRouter API Error Status: ${error.response.status}`,
-        );
-        this.logger.error(
-          `OpenRouter API Error Data: ${JSON.stringify(error.response.data)}`,
-        );
-      }
-
-      throw new Error('Failed to get AI response');
-    }
+    this.hasBackup = !!backupApiKey;
   }
 
   buildSystemPrompt(
@@ -104,5 +90,86 @@ Help the user by:
 - Pointing out specific issues or missing concepts
 - Suggesting next steps without giving the answer
 - Explaining relevant concepts if needed`;
+  }
+
+  async chat(
+    messages: Array<{ role: string; content: string }>,
+    systemPrompt: string,
+  ): Promise<string> {
+    try {
+      return await this.chatWithClient(
+        this.primaryOpenAI,
+        'primary',
+        messages,
+        systemPrompt,
+      );
+    } catch (primaryError: any) {
+      this.logger.error('Primary OpenRouter API failed:', primaryError);
+
+      if (this.hasBackup) {
+        this.logger.warn('Attempting to use backup OpenRouter API...');
+        try {
+          return await this.chatWithClient(
+            this.backupOpenAI!,
+            'backup',
+            messages,
+            systemPrompt,
+          );
+        } catch (backupError: any) {
+          this.logger.error('Backup OpenRouter API also failed:', backupError);
+          throw new Error('Both primary and backup OpenRouter APIs failed');
+        }
+      } else {
+        throw new Error(
+          'Primary OpenRouter API failed and no backup available',
+        );
+      }
+    }
+  }
+
+  private async chatWithClient(
+    client: OpenAI,
+    clientType: 'primary' | 'backup',
+    messages: Array<{ role: string; content: string }>,
+    systemPrompt: string,
+  ): Promise<string> {
+    try {
+      const response = await client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: <const>'system', content: systemPrompt },
+          ...messages.map(m => ({
+            role: <'user' | 'assistant'>m.role,
+            content: m.content,
+          })),
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No content in AI response');
+      }
+
+      if (clientType === 'backup') {
+        this.logger.log('Successfully used backup OpenRouter API');
+      }
+
+      return content;
+    } catch (error: any) {
+      this.logger.error(`Error calling ${clientType} OpenRouter API:`, error);
+
+      if (error.response) {
+        this.logger.error(
+          `${clientType} OpenRouter API Error Status: ${error.response.status}`,
+        );
+        this.logger.error(
+          `${clientType} OpenRouter API Error Data: ${JSON.stringify(error.response.data)}`,
+        );
+      }
+
+      throw error;
+    }
   }
 }

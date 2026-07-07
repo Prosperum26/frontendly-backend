@@ -5,6 +5,7 @@ import {
   Body,
   Patch,
   NotFoundException,
+  BadRequestException,
   Req,
   UsePipes,
   ValidationPipe,
@@ -56,6 +57,7 @@ export class UserController {
         _id: badge._id?.toString(),
       })) || [];
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { _id, ...restUser } = <any>user;
 
     const cleanData = {
@@ -182,7 +184,31 @@ export class UserController {
     @ReqUser() authUser: AuthenticatedHttpUser,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{ success: boolean; message: string; avatarUrl: string }> {
-    console.log('--- FILE NHẬN ĐƯỢC ---', file);
+    // Validate file
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new BadRequestException('File size exceeds 5MB limit');
+    }
+
+    // Validate file type
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`,
+      );
+    }
+
     const profile = <Record<string, string>>(<unknown>authUser.profile);
     const result = await this.userService.uploadAvatar(
       String(profile._id),
