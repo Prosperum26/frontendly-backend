@@ -10,11 +10,6 @@ async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<INestApplication<Server>>(AppModule);
 
-  app.enableCors({
-    origin: 'http://localhost:5173',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
   configApp(app);
   const { port } = app.get<CommonConfig>(commonConfigObj.KEY);
 
