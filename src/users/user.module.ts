@@ -13,8 +13,8 @@ import {
 } from './schemas/stage-progress.schema';
 import { GamificationService } from './services/gamification.service';
 import { UserService } from './services/user.service'; // Đường dẫn file service của bạn
-import { CloudinaryService } from '../../src/cloudinary.service';
 import { AuthModule } from '@/auth/auth.module';
+import { CloudinaryService } from '@/common/cloudinary/cloudinary.service';
 import { UserLearningProgressSchema } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneSchema } from '@/learning-path/db_schemas/milestone_schema';
 

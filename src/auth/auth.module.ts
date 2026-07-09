@@ -11,7 +11,7 @@ import {
   RefreshTokenController,
   SessionController,
 } from './controllers';
-import { AuthGuard, JwtAuthGuard, RateLimitGuard } from './guards';
+import { AuthGuard, RateLimitGuard } from './guards';
 import { WsAuthMiddleware } from './middlewares';
 import { Token, TokenSchema } from './schemas';
 import { Session, SessionSchema } from './schemas/session.schema';
@@ -55,7 +55,6 @@ import { UserModule } from '@/users/user.module';
     GoogleAuthService,
     TokenService,
     AuthGuard,
-    JwtAuthGuard,
     RateLimitGuard,
     WsAuthMiddleware,
     {

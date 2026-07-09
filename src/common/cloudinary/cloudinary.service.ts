@@ -1,6 +1,6 @@
-// cloudinary.service.ts
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { Express } from 'express';
 
 @Injectable()
 export class CloudinaryService {
@@ -20,6 +20,31 @@ export class CloudinaryService {
         api_secret: process.env.CLOUDINARY_API_SECRET,
       });
     }
+  }
+
+  async uploadImage(
+    file: Express.Multer.File,
+    folder?: string,
+  ): Promise<UploadApiResponse> {
+    const uploadFolder = folder || 'frontendly_avatars';
+
+    return new Promise((resolve, reject) => {
+      try {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: uploadFolder },
+          (error, result) => {
+            if (error || !result) {
+              return reject(new Error(error?.message || 'Upload failed'));
+            }
+            resolve(result);
+          },
+        );
+
+        upload.end(file.buffer);
+      } catch (err) {
+        reject(new Error(String(err)));
+      }
+    });
   }
 
   async uploadImageBuffer(

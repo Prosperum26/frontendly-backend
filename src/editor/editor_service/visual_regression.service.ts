@@ -8,8 +8,8 @@ import { PNG } from 'pngjs';
 import { ActivityType } from '../../users/schemas/activity-log.schema';
 import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
-import { CloudinaryService } from '../editor_service/cloudinary.service';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
+import { CloudinaryService } from '@/common/cloudinary/cloudinary.service';
 import { GamificationService } from '@/users/services/gamification.service';
 
 declare const Babel: {

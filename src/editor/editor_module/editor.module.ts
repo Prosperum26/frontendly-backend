@@ -7,7 +7,6 @@ import { ExerciseSchema } from '../db_schemas/exercise_schema';
 import { SubmissionSchema } from '../db_schemas/submission_schema';
 import { EditorController } from '../editor_controllers/editor.controller';
 import { CheckLint } from '../editor_service/checkLint.service';
-import { CloudinaryService } from '../editor_service/cloudinary.service';
 import { EditorService } from '../editor_service/editor.service';
 import { VisualRegressionService } from '../editor_service/visual_regression.service';
 import { BehaviorEvaluator } from '../evaluators/behavior/behavior.evaluator';
@@ -19,6 +18,7 @@ import { CheckLintInternalJs } from '../evaluators/lint/internalJS.evaluator';
 import { CheckLintReact } from '../evaluators/lint/reactJS.evaluator';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
+import { CloudinaryService } from '@/common/cloudinary/cloudinary.service';
 
 @Module({
   imports: [

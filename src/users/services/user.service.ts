@@ -11,7 +11,6 @@ import { Model, UpdateQuery } from 'mongoose';
 import { Types } from 'mongoose';
 
 import { GamificationService } from './gamification.service';
-import { CloudinaryService } from '../../cloudinary.service';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { UpdateProfileDto } from '../dtos/update-profile.dto';
 import { User, getXpForLevel } from '../schemas';
@@ -21,6 +20,7 @@ import {
   CreateUserOptions,
   createUserSchema,
 } from '../types';
+import { CloudinaryService } from '@/common/cloudinary/cloudinary.service';
 import { UserLearningProgressDocument } from '@/learning-path/db_schemas/learning_path_schemas';
 import { MilestoneDocument } from '@/learning-path/db_schemas/milestone_schema';
 import 'multer';
