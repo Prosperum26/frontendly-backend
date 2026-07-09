@@ -6,7 +6,11 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
 import { ActivityType } from '../../users/schemas/activity-log.schema';
-import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
+import {
+  Exercise,
+  ExerciseDocument,
+  EditorFile,
+} from '../db_schemas/exercise_schema';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { PuppeteerEvaluator } from '../evaluators/visual-regression/puppeteer_run.evaluator';
 import { CloudinaryService } from '@/common/cloudinary/cloudinary.service';
@@ -117,7 +121,7 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
-    files?: any[],
+    files?: EditorFile[],
   ): Promise<VisualEvaluationDto> {
     const exercise = await this.exerciseModel
       .findOne({ id: exerciseId })
@@ -336,7 +340,7 @@ export class VisualRegressionService {
     css: string,
     js: string,
     jsx: string,
-    files?: any[],
+    files?: EditorFile[],
   ): Promise<boolean> {
     try {
       const dom = new JSDOM(html || '<div id="root"></div>');

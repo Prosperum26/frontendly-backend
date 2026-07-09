@@ -11,12 +11,17 @@ import { Model } from 'mongoose';
 import { CheckLint } from './checkLint.service';
 import { VisualRegressionService } from './visual_regression.service';
 import { ExerciseTag } from '../db_schemas/exercise.enum';
-import { Exercise, ExerciseDocument } from '../db_schemas/exercise_schema';
+import {
+  Exercise,
+  ExerciseDocument,
+  EditorFile,
+} from '../db_schemas/exercise_schema';
 import { SubmissionDocument } from '../db_schemas/submission_schema';
 import { SubmitResponse } from '../dtos/submitCodeResponse';
 import { VisualEvaluationDto } from '../dtos/visual_regression.dto';
 import { BehaviorEvaluator } from '../evaluators/behavior/behavior.evaluator';
 import { RequirementEvaluator } from '../evaluators/requirements/requirements.evaluators';
+import { RequirementResult, EvaluationResult } from '../types/evaluation.types';
 import { LearningPathService } from '@/learning-path/learning_path_service/learning_path.service';
 import { UserUtilsService } from '@/learning-path/learning_path_service/user-utils.service';
 import { ActivityType } from '@/users/schemas/activity-log.schema';
@@ -197,7 +202,7 @@ export default function App() {
       return { ...rawExercise, navigation };
     }
 
-    const exerciseFiles: any[] = [];
+    const exerciseFiles: EditorFile[] = [];
     if (rawExercise.html_content?.trim()) {
       exerciseFiles.push({
         filename: 'index.html',
@@ -402,7 +407,7 @@ export default function App() {
       }
 
       const reqList = exercise.requirements || [];
-      const requirementResults: any[] = reqList.map(req => ({
+      const requirementResults: RequirementResult[] = reqList.map(req => ({
         requirementId: req.id,
         passed: false,
       }));
@@ -677,16 +682,9 @@ export default function App() {
       css: string;
       js: string;
       jsx: string;
-      files?: any[];
+      files?: EditorFile[];
     },
-    resultData: {
-      isCompleted: boolean;
-      match_percentage: number;
-      lint_errors: any;
-      requirementResult: any[];
-      visual_results: any;
-      behavior_results: any;
-    },
+    resultData: EvaluationResult,
   ): Promise<SubmissionDocument> {
     const timestamp = Date.now();
     const randomStr = randomBytes(3).toString('hex'); // random số làm key

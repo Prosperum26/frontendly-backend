@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { EditorFile } from '../db_schemas/exercise_schema';
 import { LintEvaluation } from '../dtos/lint_evaluators.dto';
 import { CheckLintExternalCss } from '../evaluators/lint/externalCSS.evaluator';
 import { CheckLintExternalJs } from '../evaluators/lint/externalJS.evaluator';
@@ -7,6 +8,7 @@ import { CheckLintHtml } from '../evaluators/lint/html.evaluators';
 import { CheckLintInternalCss } from '../evaluators/lint/internalCSS.evaluator';
 import { CheckLintInternalJs } from '../evaluators/lint/internalJS.evaluator';
 import { CheckLintReact } from '../evaluators/lint/reactJS.evaluator';
+import { LintRestriction } from '../types/evaluation.types';
 
 @Injectable()
 export class CheckLint {
@@ -24,8 +26,8 @@ export class CheckLint {
     css: string,
     javascript: string,
     jsx: string,
-    restrictions: any[] = [],
-    files?: { filename: string; language: string; content: string }[],
+    restrictions: LintRestriction[] = [],
+    files?: EditorFile[],
   ): Promise<LintEvaluation> {
     try {
       const htmlCheck = this.checkLintHtml.checkHtml(html);
