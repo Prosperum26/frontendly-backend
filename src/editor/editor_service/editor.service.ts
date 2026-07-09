@@ -328,6 +328,43 @@ export default function App() {
     return exercise;
   }
 
+  getCode(edtiorContent: any): {
+    html: string;
+    css: string;
+    js: string;
+    jsx: string;
+  } {
+    const files = edtiorContent.files || [];
+    try {
+      const countFile = files.length;
+      if (countFile > 0) {
+        let htmlFile = '';
+        let cssFile = '';
+        let jsFile = '';
+        let jsxFile = '';
+
+        files.forEach((file: any) => {
+          if (file.language === 'html') htmlFile = file.content;
+          if (file.language === 'css') cssFile = file.content;
+          if (file.language === 'js') jsFile = file.content;
+          if (file.language === 'jsx') jsxFile = file.content;
+        });
+
+        return { html: htmlFile, css: cssFile, js: jsFile, jsx: jsxFile };
+      } else {
+        return {
+          html: '',
+          css: '',
+          js: '',
+          jsx: '',
+        };
+      }
+    } catch (error: any) {
+      this.logger.error(`[Error]: ${error.message}`);
+      throw new InternalServerErrorException('Please try again later!');
+    }
+  }
+
   // Evaluate Code khi user submit
   async submitCode(
     userId: string,
@@ -348,23 +385,15 @@ export default function App() {
         css = '',
         js = '',
         jsx = '',
-        files = [],
-      } = editorContent;
+      } = this.getCode(editorContent);
+
+      const files = editorContent.files || [];
 
       // Extract content from files array if individual fields are empty
-      let finalHtml = html;
-      let finalCss = css;
-      let finalJs = js;
-      let finalJsx = jsx;
-
-      if (files && Array.isArray(files) && files.length > 0) {
-        files.forEach((file: any) => {
-          if (file.language === 'html' && !finalHtml) finalHtml = file.content;
-          if (file.language === 'css' && !finalCss) finalCss = file.content;
-          if (file.language === 'js' && !finalJs) finalJs = file.content;
-          if (file.language === 'jsx' && !finalJsx) finalJsx = file.content;
-        });
-      }
+      const finalHtml = html;
+      const finalCss = css;
+      const finalJs = js;
+      const finalJsx = jsx;
 
       const exercise = await this.getExerciseForBackend(exerciseId);
       this.logger.debug(`[SubmitCode] Exercise found: ${exercise.id}`);
