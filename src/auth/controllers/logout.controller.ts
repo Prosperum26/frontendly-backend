@@ -41,8 +41,8 @@ export class LogoutController {
     try {
       const userId = req.user?.userId;
 
-      // Get refreshToken from cookie or body
-      const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      // Get refreshToken from HttpOnly cookie
+      const refreshToken = req.cookies?.refreshToken;
 
       if (refreshToken) {
         await this.tokenService.revokeSession(
@@ -52,14 +52,16 @@ export class LogoutController {
           new Types.ObjectId(userId),
         );
       } else {
-        // Even if no refresh token, clear the cookie
+        // Even if no refresh token, clear the cookies
         res.clearCookie('refreshToken');
+        res.clearCookie('accessToken');
       }
 
       return { message: 'Logged out successfully' };
     } catch {
-      // Always clear cookie even if error occurs
+      // Always clear cookies even if error occurs
       res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
       return { message: 'Logged out successfully' };
     }
   }
@@ -91,13 +93,15 @@ export class LogoutController {
       // eslint-disable-next-line sonarjs/deprecation
       await this.tokenService.revokeAllUserSessions(new Types.ObjectId(userId));
 
-      // Clear refresh token cookie
+      // Clear both cookies
       res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
 
       return { message: 'Logged out from all devices successfully' };
     } catch {
-      // Always clear cookie even if error occurs
+      // Always clear cookies even if error occurs
       res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
       return { message: 'Logged out from all devices successfully' };
     }
   }

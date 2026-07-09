@@ -158,6 +158,15 @@ export class TokenService {
         expires: expiresAt,
       });
 
+      // Set new access token in HttpOnly cookie
+      const accessExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: accessExpires,
+      });
+
       this.logger.log(
         `Token refreshed successfully for user: ${session.user_id}`,
       );
@@ -203,10 +212,13 @@ export class TokenService {
 
       // Clear refresh token cookie
       res.clearCookie('refreshToken');
+      // Clear access token cookie
+      res.clearCookie('accessToken');
     } catch (error) {
       this.logger.error(`Session revocation failed: ${error.message}`);
-      // Still clear cookie even if database operation fails
+      // Still clear cookies even if database operation fails
       res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
     }
   }
 

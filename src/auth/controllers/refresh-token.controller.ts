@@ -1,16 +1,15 @@
 import {
-  Body,
   Controller,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { ConfigureAuth } from '../decorators';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { TokenService } from '../services';
 
 @ApiTags('Authentication')
@@ -36,15 +35,22 @@ export class RefreshTokenController {
   })
   @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
   public async refreshToken(
-    @Body() body: RefreshTokenDto,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Req() req: any,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
-    const { accessToken, refreshToken } =
-      await this.tokenService.refreshAccessToken(body.refreshToken, res);
+    // Get refreshToken from HttpOnly cookie
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      throw new Error('No refresh token found in cookie');
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.tokenService.refreshAccessToken(refreshToken, res);
     return {
       message: 'Token refreshed successfully',
       accessToken,
-      refreshToken,
+      refreshToken: newRefreshToken,
     };
   }
 }

@@ -70,6 +70,15 @@ export class GoogleAuthService {
       expires: expiresAt,
     });
 
+    // Set access token in HttpOnly cookie
+    const accessExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: accessExpires,
+    });
+
     // Handle daily check-in
     const dailyCheckIn = await this.gamificationService.dailyCheckIn(user._id);
 

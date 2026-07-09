@@ -121,6 +121,7 @@ export class AuthService {
       );
 
       this.setRefreshCookie(res, refreshToken, expiresAt);
+      this.setAccessCookie(res, accessToken);
 
       // Handle daily check-in
       const dailyCheckInResult = await this.gamificationService.dailyCheckIn(
@@ -251,6 +252,16 @@ export class AuthService {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       expires: expiresAt,
+    });
+  }
+
+  private setAccessCookie(res: Response, accessToken: string): void {
+    const accessExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: accessExpires,
     });
   }
 }
