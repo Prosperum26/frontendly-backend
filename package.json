@@ -15,7 +15,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "build": "npx @nestjs/cli build",
+    "build": "yarn install --production=false && npx @nestjs/cli build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "npx @nestjs/cli start",
     "dev": "npx @nestjs/cli build && npx @nestjs/cli start",
