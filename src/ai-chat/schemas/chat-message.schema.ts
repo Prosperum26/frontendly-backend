@@ -23,7 +23,7 @@ export class ChatMessage {
 
   createdAt!: Date;
   updatedAt!: Date;
-  _id: Types.ObjectId;
+  _id!: Types.ObjectId;
 }
 
 export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);

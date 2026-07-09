@@ -16,7 +16,7 @@ export class ChatSession {
 
   createdAt!: Date;
   updatedAt!: Date;
-  _id: Types.ObjectId;
+  _id!: Types.ObjectId;
 }
 
 export const ChatSessionSchema = SchemaFactory.createForClass(ChatSession);
