@@ -36,16 +36,6 @@ export class VisualRegressionService {
     const exercises = await this.exerciseModel.find({
       code_test: { $ne: null },
     }); // lấy bài tập
-    console.log(
-      `[Target Image] Found ${exercises.length} exercises with code_test`,
-    );
-
-    // Log database connection info
-    const dbConnection = this.exerciseModel.db;
-    console.log(`[Target Image] Database: ${dbConnection.name}`);
-    console.log(
-      `[Target Image] Connection URI: ${process.env.DB_URI?.substring(0, 20)}...`,
-    );
 
     if (!this.puppeteerEvaluator) {
       return '[Target Image] Puppeteer is not initialized!';
@@ -59,7 +49,6 @@ export class VisualRegressionService {
       let page: any = null;
 
       try {
-        console.log(`[Target Image] Processing ${exercise.id}...`);
         page = await browser.newPage();
         await page.setViewport({
           width: exercise.target_design.width,
@@ -83,17 +72,9 @@ export class VisualRegressionService {
           folderName,
         );
 
-        console.log(
-          `[Target Image] Uploading ${exercise.id} -> ${uploadResult.secure_url}`,
-        );
-
         const updateResult = await this.exerciseModel.updateOne(
           { id: exercise.id },
           { $set: { target_url: uploadResult.secure_url } },
-        );
-
-        console.log(
-          `[Target Image] Updated ${exercise.id} - matched: ${updateResult.matchedCount}, modified: ${updateResult.modifiedCount}`,
         );
 
         if (updateResult.modifiedCount > 0) {
@@ -110,7 +91,6 @@ export class VisualRegressionService {
       }
     }
     const resultMsg = `[Target Image] Done! Success: ${successCount}, Errors: ${errorCount}`;
-    console.log(resultMsg);
     return resultMsg;
   }
 
@@ -200,9 +180,6 @@ export class VisualRegressionService {
               this.targetImageCache.keys().next().value
             ); // xóa phần screenshot cũ nhất
             this.targetImageCache.delete(oldestExerciseId);
-            console.log(
-              `[Visual Service] Cache clear the exercise ${oldestExerciseId}`,
-            );
           }
           await targetPage.close();
         }
@@ -210,7 +187,7 @@ export class VisualRegressionService {
         // user screenshot
         userPage = await browser.newPage();
         userPage.on('pageerror', (err: any) =>
-          console.log('[Puppeteer User Error]', err.message),
+          console.error('[Puppeteer User Error]', err.message),
         );
         await userPage.setViewport({
           width: targetDesign.width,
@@ -226,9 +203,6 @@ export class VisualRegressionService {
           files,
         );
         if (!isUserReady) {
-          console.log(
-            `[Visual Service] User code failed to render. Failing automatically.`,
-          );
           return {
             deviceType: targetDesign.deviceType,
             passed: false,
@@ -355,9 +329,6 @@ export class VisualRegressionService {
       page.on('pageerror', (error: any) =>
         console.error('[Puppeteer Page Error]', error.message),
       );
-      page.on('console', (msg: any) =>
-        console.log('[Puppeteer Console]', msg.text()),
-      );
       await page.setContent(baseHtml, { waitUntil: 'load' });
 
       // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
@@ -435,10 +406,6 @@ export class VisualRegressionService {
           componentName,
         );
 
-        // Chờ component xuất hiện
-        await page.evaluate(() =>
-          console.log('[Visual Service] Puppeteer running...'),
-        );
         await page.waitForSelector('#root > *', { timeout: 5000 });
       } else if (js?.trim()) {
         await page.addScriptTag({ content: js });

@@ -689,16 +689,6 @@ export default function App() {
     const timestamp = Date.now();
     const randomStr = randomBytes(3).toString('hex'); // random số làm key
 
-    console.log('[saveSubmission] editorContent.files:', editorContent.files);
-    console.log(
-      '[saveSubmission] editorContent.html:',
-      editorContent.html?.substring(0, 50),
-    );
-    console.log(
-      '[saveSubmission] editorContent.jsx:',
-      editorContent.jsx?.substring(0, 50),
-    );
-
     // Convert files array to object for storage
     const filesObject: Record<
       string,

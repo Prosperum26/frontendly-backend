@@ -136,14 +136,7 @@ export class RequirementEvaluator {
       }
     }
 
-    console.log(
-      '[evaluateCodeReact] jsxToEvaluate:',
-      jsxToEvaluate?.substring(0, 200),
-    );
-    console.log('[evaluateCodeReact] requirements:', requirements);
-
     if (!jsxToEvaluate || jsxToEvaluate.trim() === '') {
-      console.log('[evaluateCodeReact] Empty JSX, returning all failed');
       return requirements.map(req => ({
         requirementId: req.id,
         passed: false,
