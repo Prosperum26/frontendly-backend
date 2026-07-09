@@ -39,10 +39,10 @@ export class RefreshTokenController {
     @Req() req: any,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string; accessToken: string; refreshToken: string }> {
-    // Get refreshToken from HttpOnly cookie
-    const refreshToken = req.cookies?.refreshToken;
+    // Get refreshToken from HttpOnly cookie or request body for backward compatibility
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
-      throw new Error('No refresh token found in cookie');
+      throw new Error('No refresh token found');
     }
 
     const { accessToken, refreshToken: newRefreshToken } =
