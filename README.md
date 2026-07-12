@@ -1,181 +1,181 @@
 # Frontendly Backend
 
-NestJS API cho nền tảng học frontend gamified: auth, learning path, entrance test, workspace evaluation, gamification, challenge catalog, leaderboard.
+**Deploy:** https://frontendly-backend.onrender.com
 
-Frontend repo: `../frontendly-frontend` (hai repo riêng trong workspace local).
+Backend của Frontendly — nền tảng học React theo hướng gamification (challenges, leaderboard, code evaluation).
 
-## Chạy local
+## Tech Stack
+
+- **NestJS:** ^11.0.1
+- **MongoDB/Mongoose:** ^8.24.0
+- **Socket.IO:** ^4.8.1
+- **Passport:** ^0.7.0 (Google OAuth)
+- **JWT:** @nestjs/jwt ^11.0.2, passport-jwt ^4.0.1
+- **Validation:** class-validator ^0.14.1, zod ^3.24.2
+- **Testing:** Jest ^30.4.2, @testing-library/react ^16.3.2
+
+## Architecture
+
+| Module | Description |
+|--------|-------------|
+| `auth` | Register, login, Google OAuth, refresh tokens, sessions, rate limiting |
+| `users` | Profile, XP, badges, streak, activity log, leaderboard, gamification |
+| `learning-path` | Roadmap, stages, theory content, practice exercises, progress tracking |
+| `entrance-test` | Placement test with 20 questions, personalized learning path generation |
+| `editor` | Exercise workspace, code evaluation (lint/requirement/visual/behavior) |
+| `challenge` | Challenge catalog with 20 exercises across 3 difficulty levels |
+| `ai-chat` | AI-powered tutoring with OpenRouter integration, daily quota management |
+| `common` | Shared utilities: email, cloudinary, observability, API environment guards |
+
+## Environment Requirements
+
+- **Node Version:** >=22.12.0 (engines in package.json)
+- **MongoDB:** Required for data persistence
+- **Package Manager:** Yarn (yarn.lock present)
+
+## Installation
 
 ```bash
+git clone <repository-url>
+cd frontendly-backend
 yarn install
-docker compose -f docker/local/infra.yml up -d
-yarn seed
-yarn start:dev
 ```
 
-| Endpoint | URL |
-|----------|-----|
-| API | `http://localhost:3000/api/v1` |
-| Swagger | `http://localhost:3000/api-docs` |
-| Health | `http://localhost:3000/health` |
+## Environment Variables
 
-## Env (`.env`)
+Required environment variables (create `.env` file):
 
 ```env
 NODE_ENV=local
 PORT=3000
 DB_URI=mongodb://localhost:27017/frontendly
 CORS_ORIGINS=http://localhost:5173
-JWT_SECRET=replace-with-a-long-random-secret
+JWT_SECRET=your-jwt-secret-key
 FRONTEND_URL=http://localhost:5173
-GOOGLE_CLIENT_ID=replace-with-google-client-id
-GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_BACKUP_API_KEY=your-backup-openrouter-api-key
+OPENROUTER_MODEL=tencent/hy3:free
+AI_CHAT_DAILY_LIMIT=10
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_SECURE=false
+MAIL_USER=your-email
+MAIL_PASS=your-email-password
+MAIL_FROM=noreply@frontendly.com
+ACCESS_TOKEN_EXPIRES_IN=3h
+PASSWORD_RESET_EXPIRES_IN_MINUTES=15
+BCRYPT_SALT_ROUNDS=10
+RATE_LIMIT_MAX_ATTEMPTS=5
+RATE_LIMIT_WINDOW_MINUTES=15
 O11Y_HEAP_THRESHOLD_BYTES=536870912
 ```
 
-## Scripts
+## Running the Project
 
 ```bash
-yarn start:dev      # dev watch
-yarn build          # production build
-yarn lint:check     # ESLint (CI)
-yarn lint           # ESLint --fix
-yarn seed           # seed MongoDB từ src/data/*.json
-yarn test           # unit tests
+yarn start:dev      # Development with watch mode
+yarn build          # Production build
+yarn start:prod     # Production start
+yarn test           # Unit tests
+yarn test:watch     # Watch mode tests
+yarn test:cov       # Tests with coverage
+yarn lint           # ESLint with auto-fix
+yarn lint:check     # ESLint check only
+yarn seed           # Seed MongoDB from src/data/*.json
 ```
 
-## Kiến trúc module
+## API Documentation
 
-| Module | Mô tả |
-|--------|--------|
-| `auth` | Register, login, Google OAuth, refresh, sessions |
-| `users` | Profile, XP, badges, streak, activity, leaderboard |
-| `learning-path` | Roadmap, stages, theory, practice, video progress |
-| `entrance-test` | Placement test + personalized path |
-| `editor` | Exercise workspace, lint/requirement/visual/behavior eval |
-| `challenge` | Challenge catalog (không phải battle) |
+**Swagger UI:** http://localhost:3000/api-docs  
+**YAML Spec:** http://localhost:3000/swagger/yaml
 
-## Personalized Learning Path
+## Database Schema
 
-Luồng chính sau entrance test:
+| Schema | Description |
+|--------|-------------|
+| `User` | Email, username, password, Google ID, XP, level, badges, stats, stage progress, activity heatmap |
+| `ChatMessage` | AI chat messages with role (user/assistant), content, timestamp |
+| `ChatSession` | Chat session with daily quota tracking, message count |
+| `Session` | Auth sessions with token, device info, expiration |
+| `Token` | Refresh tokens with user association and expiration |
+| `ActivityLog` | User activity tracking with type, metadata, timestamp |
+| `Badge` | Achievement badges with name, description, icon, requirements |
+| `StageProgress` | Learning stage progress with completion status, timestamps |
+| `CanonicalMap` | Mapping between milestones, lessons, exercises, and test questions |
+| `CourseTheory` | Theory content for lessons with sections, headings, content |
+| `EntranceTest` | Placement test questions with options, correct answers |
 
-```
-Entrance Test (20 câu)
-  → PlacementService (score, gates, advancement)
-  → PathBuilderService (12 lesson: auto_passed | required | locked)
-  → sync-placement-test → UserLearningProgress + XP gamification
-```
+## Code Evaluation Pipeline
 
-**Source of truth:** `src/data/canonical_map.json` — map `m1_l1` ↔ `exercise_s1` ↔ question IDs.
+The code evaluation system uses multiple evaluators to assess user submissions:
 
-**Services:**
+**Input:** User-submitted HTML, CSS, JavaScript/JSX code
 
-- `PathBuilderService` — build `learningPath[]` + `studyPlan[]`
-- `PlacementService` — scoring, gates, `syncPlacementTest` (cấp XP auto-pass)
-- `RoadmapService` — merge personalized status vào roadmap response
+**Evaluation Flow:**
 
-**Seed data:** `src/data/entrance_test.json`, `theory.json`, `lessons.json`, `canonical_map.json`
+1. **Requirement Evaluator** (`@babel/parser`, `@babel/traverse`)
+   - Parses JavaScript/JSX code into AST
+   - Validates structural requirements (function definitions, component structure)
+   - Checks for specific patterns and syntax requirements
 
-```bash
-yarn seed   # bắt buộc sau khi đổi JSON hoặc lần đầu setup
-```
+2. **Lint Evaluators**
+   - **HTML Linter** (`htmlhint`): Validates HTML structure, disables inline styles/scripts
+   - **CSS Linter** (`stylelint`): Checks internal and external CSS for best practices
+   - Returns line/column errors with messages
 
-## API chính
+3. **Behavior Evaluator** (Jest, `@babel/preset-react`)
+   - Creates temporary test files with user code
+   - Runs Jest tests against the code
+   - Returns test results: passed/failed counts, error messages
 
-### Entrance Test
+4. **Visual Regression Evaluator** (Puppeteer, pixelmatch)
+   - Renders user code in headless browser with React + Babel
+   - Compares screenshot against expected output
+   - Returns match percentage and diff image URL (Cloudinary)
 
-| Method | Route | Mô tả |
-|--------|-------|--------|
-| GET | `/entrance-test/questions` | 20 câu hỏi (public) |
-| POST | `/entrance-test/submit` | Submit + placement result + personalized path |
-| POST | `/entrance-test/path/:userId` | Build path cho user |
+**Output:** Combined evaluation result with:
+- `isCompleted`: Boolean pass/fail
+- `match_percentage`: Visual similarity score
+- `lint_errors`: Array of linting issues
+- `requirementResult`: Array of requirement checks
+- `visual_results`: Screenshot comparison data
+- `behavior_results`: Jest test execution results
 
-Submit body:
+## Realtime Events
 
-```json
-{ "answers": { "1": "option-a", "2": "option-b" } }
-```
+**WebSocket Gateway:** `UserGateway`
 
-Response gồm: `score`, `totalQuestions`, `skipToMilestoneId`, `placementResult`, `personalizedPath`.
+**Events:**
+- `hello`: Simple ping/pong event for connection testing
+  - Payload: None
+  - Response: "world"
 
-### Learning Path
+## Deployment
 
-| Method | Route |
-|--------|-------|
-| GET | `/roadmaps/:skillId` |
-| GET | `/stages/:stageId/theory` |
-| PATCH | `/stages/:stageId/complete` |
-| PATCH | `/stages/:stageId/unlock-practice` |
-| GET | `/stages/:stageId/practices` |
-| POST | `/learning-content/sync-placement-test` |
-| GET | `/learning-content/progress/summary` |
-| POST | `/lp-exercises/:exerciseId/submit` |
+**Platform:** Render (configured via `render.yaml`)
 
-`sync-placement-test` body:
+**Render Configuration:**
+- Runtime: Node.js
+- Region: Singapore
+- Plan: Free
+- Build Command: `yarn install --frozen-lockfile && yarn build && yarn seed:prod`
+- Start Command: `yarn start:prod`
+- Health Check: `/health`
 
-```json
-{
-  "skipToMilestoneId": "m2",
-  "skillId": "frontend",
-  "learningPath": [{ "canonicalLessonId": "m1_l1", "stageId": "s1", "exerciseId": "exercise_s1", "status": "auto_passed" }],
-  "studyPlan": ["Next lesson: React Components"]
-}
-```
+**Environment Variables in render.yaml:**
+- NODE_ENV, PORT, NODE_VERSION, DB_URI, JWT_SECRET, CORS_ORIGINS, FRONTEND_URL
+- Google OAuth: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+- AI: OPENROUTER_API_KEY, OPENROUTER_BACKUP_API_KEY
+- Observability: O11Y_HEAP_THRESHOLD_BYTES
 
-### Exercises / Workspace
+## Contributing
 
-| Method | Route |
-|--------|-------|
-| GET | `/exercises/:exerciseId/:userId` |
-| POST | `/exercises/:exerciseId/:userId/submit` |
+**Branch Convention:** `feature/`, `bugfix/`, `hotfix/` prefixes
 
-## Gamification
+**Commit Convention:** Conventional commits (feat:, fix:, docs:, etc.)
 
-- Global XP: `GamificationService` → `User.xp`, activity log
-- Skill XP: `UserLearningProgress.currentXp`
-- Auto-pass placement: cấp `LESSON_COMPLETED` + `STAGE_COMPLETED` per stage (dedup)
-- XP values: `STAGE_COMPLETED=50`, `LESSON_COMPLETED=25`, `DAILY_LOGIN=10`
-
-## Deploy — Render
-
-### Cách 1: Blueprint
-
-1. Push repo lên GitHub
-2. Render Dashboard → **New Blueprint** → chọn repo → dùng `render.yaml`
-3. Điền secrets: `DB_URI`, `JWT_SECRET`, `CORS_ORIGINS`, `FRONTEND_URL`, Google OAuth
-
-### Cách 2: Web Service thủ công
-
-| Setting | Value |
-|---------|-------|
-| Build | `yarn install --frozen-lockfile && yarn build` |
-| Start | `yarn start:prod` |
-| Health | `/health` |
-
-**Sau deploy:** chạy seed một lần (Render Shell hoặc local trỏ DB production):
-
-```bash
-yarn seed
-```
-
-## CI/CD (GitHub Actions)
-
-| Workflow | Trigger | Jobs |
-|----------|---------|------|
-| `build-deploy.yml` | push/PR `main`, `develop` | lint → build → deploy Render (main only) |
-| `lint-and-test.yml` | PR `main` | lint + unit/integration tests |
-
-**Secret cần thiết:** `RENDER_DEPLOY_HOOK_URL` — lấy từ Render Dashboard → Service → Deploy Hook.
-
-## Trạng thái kiểm tra
-
-```
-yarn lint:check  ✅
-yarn build       ✅
-yarn seed        ✅ (cần MongoDB local)
-yarn test        ✅ 28/28 unit tests passed
-```
-
-## Tech stack
-
-NestJS 11 · MongoDB/Mongoose · Passport/JWT · Swagger · Prometheus metrics · Docker Compose
+**Team Members:**
+- Quoc Hung (truongquochung312@gmail.com)
+- Tran Ngoc Dang Khoa (https://github.com/Jamesklein218)
