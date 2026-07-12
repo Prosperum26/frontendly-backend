@@ -8,17 +8,23 @@ export class OpenRouterService {
   private readonly logger = new Logger(OpenRouterService.name);
   private readonly primaryOpenAI: OpenAI;
   private readonly backupOpenAI: OpenAI | null;
-  private readonly model: string;
+  private readonly model1: string;
+  private readonly model2: string;
   private readonly hasBackup: boolean;
+  private readonly hasModel2: boolean;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
     const backupApiKey = this.configService.get<string>(
       'OPENROUTER_BACKUP_API_KEY',
     );
-    const model = this.configService.get<string>(
+    this.model1 = this.configService.get<string>(
       'OPENROUTER_MODEL',
       'tencent/hy3:free',
+    );
+    this.model2 = this.configService.get<string>(
+      'OPENROUTER_MODEL_2',
+      'google/gemma-2-9b-it:free',
     );
 
     if (!apiKey) {
@@ -30,6 +36,14 @@ export class OpenRouterService {
     } else {
       this.logger.warn(
         'OPENROUTER_BACKUP_API_KEY not configured - no backup available',
+      );
+    }
+
+    if (this.model2) {
+      this.logger.log(`Backup model configured: ${this.model2}`);
+    } else {
+      this.logger.warn(
+        'OPENROUTER_MODEL_2 not configured - no backup model available',
       );
     }
 
@@ -53,8 +67,8 @@ export class OpenRouterService {
         })
       : null;
 
-    this.model = model;
     this.hasBackup = !!backupApiKey;
+    this.hasModel2 = !!this.model2;
   }
 
   buildSystemPrompt(
@@ -96,35 +110,72 @@ Help the user by:
     messages: Array<{ role: string; content: string }>,
     systemPrompt: string,
   ): Promise<string> {
-    try {
-      return await this.chatWithClient(
-        this.primaryOpenAI,
-        'primary',
-        messages,
-        systemPrompt,
-      );
-    } catch (primaryError: any) {
-      this.logger.error('Primary OpenRouter API failed:', primaryError);
+    // Fallback order: model1(primary) -> model1(backup) -> model2(primary) -> model2(backup)
+    const attempts: Array<{
+      client: OpenAI;
+      clientType: 'primary' | 'backup';
+      model: string;
+    }> = [];
 
-      if (this.hasBackup) {
-        this.logger.warn('Attempting to use backup OpenRouter API...');
-        try {
-          return await this.chatWithClient(
-            this.backupOpenAI!,
-            'backup',
-            messages,
-            systemPrompt,
-          );
-        } catch (backupError: any) {
-          this.logger.error('Backup OpenRouter API also failed:', backupError);
-          throw new Error('Both primary and backup OpenRouter APIs failed');
-        }
-      } else {
-        throw new Error(
-          'Primary OpenRouter API failed and no backup available',
+    // Model 1 with primary API
+    attempts.push({
+      client: this.primaryOpenAI,
+      clientType: 'primary',
+      model: this.model1,
+    });
+
+    // Model 1 with backup API (if available)
+    if (this.hasBackup) {
+      attempts.push({
+        client: this.backupOpenAI!,
+        clientType: 'backup',
+        model: this.model1,
+      });
+    }
+
+    // Model 2 with primary API (if available)
+    if (this.hasModel2) {
+      attempts.push({
+        client: this.primaryOpenAI,
+        clientType: 'primary',
+        model: this.model2,
+      });
+    }
+
+    // Model 2 with backup API (if both available)
+    if (this.hasBackup && this.hasModel2) {
+      attempts.push({
+        client: this.backupOpenAI!,
+        clientType: 'backup',
+        model: this.model2,
+      });
+    }
+
+    const errors: Array<{ attempt: string; error: any }> = [];
+
+    for (const attempt of attempts) {
+      try {
+        this.logger.log(
+          `Attempting ${attempt.clientType} API with model: ${attempt.model}`,
         );
+        return await this.chatWithClient(
+          attempt.client,
+          attempt.clientType,
+          messages,
+          systemPrompt,
+          attempt.model,
+        );
+      } catch (error: any) {
+        const attemptDesc = `${attempt.clientType} API with model ${attempt.model}`;
+        this.logger.error(`${attemptDesc} failed:`, error);
+        errors.push({ attempt: attemptDesc, error });
       }
     }
+
+    this.logger.error('All AI API attempts failed:', errors);
+    throw new Error(
+      `All AI API attempts failed. Tried: ${errors.map(e => e.attempt).join(', ')}`,
+    );
   }
 
   private async chatWithClient(
@@ -132,10 +183,11 @@ Help the user by:
     clientType: 'primary' | 'backup',
     messages: Array<{ role: string; content: string }>,
     systemPrompt: string,
+    model: string,
   ): Promise<string> {
     try {
       const response = await client.chat.completions.create({
-        model: this.model,
+        model,
         messages: [
           { role: <const>'system', content: systemPrompt },
           ...messages.map(m => ({
@@ -152,13 +204,16 @@ Help the user by:
         throw new Error('No content in AI response');
       }
 
-      if (clientType === 'backup') {
-        this.logger.log('Successfully used backup OpenRouter API');
-      }
+      this.logger.log(
+        `Successfully used ${clientType} API with model: ${model}`,
+      );
 
       return content;
     } catch (error: any) {
-      this.logger.error(`Error calling ${clientType} OpenRouter API:`, error);
+      this.logger.error(
+        `Error calling ${clientType} OpenRouter API with model ${model}:`,
+        error,
+      );
 
       if (error.response) {
         this.logger.error(
