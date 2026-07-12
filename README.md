@@ -175,7 +175,3 @@ The code evaluation system uses multiple evaluators to assess user submissions:
 **Branch Convention:** `feature/`, `bugfix/`, `hotfix/` prefixes
 
 **Commit Convention:** Conventional commits (feat:, fix:, docs:, etc.)
-
-**Team Members:**
-- Quoc Hung (truongquochung312@gmail.com)
-- Tran Ngoc Dang Khoa (https://github.com/Jamesklein218)
