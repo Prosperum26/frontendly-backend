@@ -35,7 +35,15 @@ export class AuthService {
     private gamificationService: GamificationService,
   ) {}
 
-  async register(body: RegisterDto): Promise<{ message: string }> {
+  async register(
+    body: RegisterDto,
+    res: Response,
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    user: any;
+  }> {
     try {
       const { email, password, name } = body;
       const exist = await this.userModel.findOne({ email });
@@ -56,15 +64,40 @@ export class AuthService {
         counter++;
       }
 
-      await this.userModel.create({
+      const user = await this.userModel.create({
         name,
         email,
         username,
         password: hashedPassword,
       });
 
-      this.logger.log(`New user registered: ${email}`);
-      return { message: 'Registration successful' };
+      // Auto-login after registration
+      const tokenDoc = await this.tokenService.create(<Types.ObjectId>user._id);
+      const accessToken = await this.tokenService.signAccessToken(tokenDoc);
+      const { refreshToken, expiresAt } = await this.tokenService.createSession(
+        <Types.ObjectId>user._id,
+        this.getDeviceInfo(res),
+        7, // 7 days default
+      );
+
+      this.setRefreshCookie(res, refreshToken, expiresAt);
+      this.setAccessCookie(res, accessToken);
+
+      // Remove password and add id
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
+      const formattedUser = {
+        ...userWithoutPassword,
+        id: (<Types.ObjectId>user._id).toString(),
+      };
+
+      this.logger.log(`New user registered and auto-logged in: ${email}`);
+      return {
+        message: 'Registration successful',
+        accessToken,
+        refreshToken,
+        user: formattedUser,
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error(

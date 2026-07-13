@@ -37,6 +37,9 @@ export class AuthController {
       type: 'object',
       properties: {
         message: { type: 'string' },
+        accessToken: { type: 'string' },
+        refreshToken: { type: 'string' },
+        user: { type: 'object' },
       },
     },
   })
@@ -44,8 +47,16 @@ export class AuthController {
     status: 400,
     description: 'Bad request - email already exists',
   })
-  async register(@Body() body: RegisterDto): Promise<{ message: string }> {
-    const result = await this.authService.register(body);
+  async register(
+    @Body() body: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    user: any;
+  }> {
+    const result = await this.authService.register(body, res);
     return result;
   }
 
