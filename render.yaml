@@ -44,5 +44,7 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+      - key: CLOUDINARY_URL
+        sync: false
       - key: O11Y_HEAP_THRESHOLD_BYTES
         value: 536870912

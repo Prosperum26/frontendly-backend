@@ -1,6 +1,7 @@
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
+import * as express from 'express';
 import helmet from 'helmet';
 
 import { CommonConfig, commonConfigObj } from './common/config';
@@ -19,6 +20,10 @@ export function configApp(app: INestApplication): INestApplication {
       },
     }),
   );
+
+  // Increase body size limit for file uploads
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
   app.use(
     helmet({
       contentSecurityPolicy: {
