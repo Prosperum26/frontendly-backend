@@ -203,15 +203,17 @@ export class UserService {
         const xpForNextLevel = getXpForLevel(user.level + 1);
         const xpInLevel = user.xp - getXpForLevel(user.level);
         const xpNeeded = xpForNextLevel - getXpForLevel(user.level);
+        const userRank = await this.getUserRank(userId);
+
         return {
           level: user.level,
-          xp: xpInLevel,
+          xp: user.xp, // Return total XP instead of XP in current level
           xpToNextLevel: xpNeeded,
           progressPercent:
             xpNeeded > 0 ? Math.round((xpInLevel / xpNeeded) * 100) : 100,
           streak: user.stats?.streakDays || 0,
           maxStreak: user.stats?.maxStreakDays || 0,
-          rank: '-',
+          rank: userRank > 0 ? `#${userRank}` : '-',
         };
       }
     } catch (err) {
