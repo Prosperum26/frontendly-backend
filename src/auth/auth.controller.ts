@@ -82,6 +82,7 @@ export class AuthController {
   }
 
   @ConfigureAuth({ skipAuth: true })
+  @UseGuards(RateLimitGuard)
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request password reset email' })
   @ApiResponse({
@@ -102,6 +103,7 @@ export class AuthController {
   }
 
   @ConfigureAuth({ skipAuth: true })
+  @UseGuards(RateLimitGuard)
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password with token' })
   @ApiResponse({
