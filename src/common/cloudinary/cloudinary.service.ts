@@ -1,25 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Express } from 'express';
 
 @Injectable()
 export class CloudinaryService {
+  private readonly logger = new Logger(CloudinaryService.name);
+
   constructor() {
-    // Parse from CLOUDINARY_URL if available, otherwise use individual env vars
-    const cloudinaryUrl = process.env.CLOUDINARY_URL;
-    if (cloudinaryUrl) {
-      cloudinary.config({
-        cloud_name: cloudinaryUrl.split('@')[1],
-        api_key: cloudinaryUrl.split('://')[1].split(':')[0],
-        api_secret: cloudinaryUrl.split(':')[2].split('@')[0],
-      });
-    } else {
-      cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
-      });
-    }
+    this.configureCloudinary();
   }
 
   async uploadImage(
@@ -66,5 +54,57 @@ export class CloudinaryService {
         `Cloudinary Service Error: ${error.message || 'Unknown upload error'}`,
       );
     }
+  }
+
+  private configureCloudinary(): void {
+    const cloudinaryUrl = process.env.CLOUDINARY_URL;
+
+    if (cloudinaryUrl) {
+      try {
+        // Use Cloudinary's built-in URL parsing
+        cloudinary.config({ cloudinary_url: cloudinaryUrl });
+
+        // Log successful configuration (without exposing secrets)
+        const cloudName = cloudinary.config().cloud_name;
+        this.logger.log(
+          `Cloudinary configured successfully with cloud_name: ${cloudName}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to configure Cloudinary from CLOUDINARY_URL: ${error.message}`,
+        );
+        this.logger.warn('Falling back to individual environment variables');
+        this.configureFromEnvVars();
+      }
+    } else {
+      this.logger.log(
+        'CLOUDINARY_URL not found, using individual environment variables',
+      );
+      this.configureFromEnvVars();
+    }
+
+    // Validate configuration
+    const config = cloudinary.config();
+    if (!config.cloud_name || !config.api_key || !config.api_secret) {
+      this.logger.error(
+        'Cloudinary configuration is incomplete. Please check your environment variables.',
+      );
+      this.logger.error(
+        `Missing: ${!config.cloud_name ? 'cloud_name ' : ''}${!config.api_key ? 'api_key ' : ''}${!config.api_secret ? 'api_secret' : ''}`,
+      );
+    }
+  }
+
+  private configureFromEnvVars(): void {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const config = cloudinary.config();
+    this.logger.log(
+      `Cloudinary configured from env vars with cloud_name: ${config.cloud_name}`,
+    );
   }
 }
