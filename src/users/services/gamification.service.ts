@@ -53,6 +53,9 @@ export class GamificationService {
     }
 
     const xpEarned = XP_VALUES[activityType];
+    console.log(`--- [DEBUG XP] ---`);
+    console.log(`User: ${userId}`);
+    console.log(`Old XP: ${user.xp}, XP Earned: ${xpEarned}`);
 
     // Check for duplicate activity (if activityId is provided)
     if (activityId) {

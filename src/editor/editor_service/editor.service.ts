@@ -349,10 +349,10 @@ export default function App() {
         let jsxFile = '';
 
         files.forEach((file: any) => {
-          if (file.language === 'html') htmlFile = file.content;
-          if (file.language === 'css') cssFile = file.content;
-          if (file.language === 'js') jsFile = file.content;
-          if (file.language === 'jsx') jsxFile = file.content;
+          if (file.language === 'html') htmlFile += file.content;
+          if (file.language === 'css') cssFile += file.content;
+          if (file.language === 'js') jsFile += file.content;
+          if (file.language === 'jsx') jsxFile += file.content;
         });
 
         return { html: htmlFile, css: cssFile, js: jsFile, jsx: jsxFile };
