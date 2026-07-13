@@ -331,7 +331,6 @@ export class VisualRegressionService {
       );
       await page.setContent(baseHtml, { waitUntil: 'load' });
 
-      // 2. Chích React và Babel (An toàn hơn dùng script type="text/babel")
       // Handle multi-file JSX: if files array exists, use the JSX file content
       let jsxToRender = jsx;
       if (files && files.length > 0) {
@@ -346,23 +345,86 @@ export class VisualRegressionService {
         }
       }
 
+      // Smart JSX detection: only use React if component export is found
       if (jsxToRender?.trim()) {
-        await Promise.all([
-          page.addScriptTag({
-            url: 'https://unpkg.com/react@18/umd/react.development.js',
-          }),
-          page.addScriptTag({
-            url: 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
-          }),
-          page.addScriptTag({
-            url: 'https://unpkg.com/@babel/standalone/babel.min.js',
-          }),
-        ]);
-
         const { cleanJsx, componentName } = this.processJsx(jsxToRender);
 
-        await page.evaluate(
-          (jsxStr: string, compName: string | null) => {
+        // Only inject React/Babel if we have a component name to mount
+        if (componentName) {
+          await Promise.all([
+            page.addScriptTag({
+              url: 'https://unpkg.com/react@18/umd/react.development.js',
+            }),
+            page.addScriptTag({
+              url: 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+            }),
+            page.addScriptTag({
+              url: 'https://unpkg.com/@babel/standalone/babel.min.js',
+            }),
+          ]);
+
+          await page.evaluate(
+            (jsxStr: string, compName: string) => {
+              const win = <any>window;
+              if (win.React) {
+                Object.keys(win.React).forEach(key => {
+                  win[key] = win.React[key];
+                });
+              }
+
+              if (win.ReactDOM) {
+                win.createRoot = win.ReactDOM.createRoot;
+                Object.keys(win.ReactDOM).forEach(key => {
+                  if (!win[key]) win[key] = win.ReactDOM[key];
+                });
+              }
+
+              win.styles = new Proxy(
+                {},
+                {
+                  get: function (prop) {
+                    return prop;
+                  },
+                },
+              );
+
+              const transpiledCode = Babel.transform(jsxStr, {
+                presets: [['react', { runtime: 'classic' }]],
+              }).code;
+              const script = document.createElement('script');
+              script.innerHTML = transpiledCode;
+              document.body.appendChild(script);
+
+              const mountScript = document.createElement('script');
+              mountScript.innerHTML = `
+              const rootEl = document.getElementById('root');
+              if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(${compName}));
+            `;
+              document.body.appendChild(mountScript);
+            },
+            cleanJsx,
+            componentName,
+          );
+
+          await page.waitForSelector('#root > *', { timeout: 5000 });
+        } else {
+          // JSX exists but no component export - treat as inline JSX
+          console.log(
+            '[Render Page] JSX without component export, treating as inline',
+          );
+          await Promise.all([
+            page.addScriptTag({
+              url: 'https://unpkg.com/react@18/umd/react.development.js',
+            }),
+            page.addScriptTag({
+              url: 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+            }),
+            page.addScriptTag({
+              url: 'https://unpkg.com/@babel/standalone/babel.min.js',
+            }),
+          ]);
+
+          await page.evaluate((jsxStr: string) => {
             const win = <any>window;
             if (win.React) {
               Object.keys(win.React).forEach(key => {
@@ -386,27 +448,34 @@ export class VisualRegressionService {
               },
             );
 
-            const transpiledCode = Babel.transform(jsxStr, {
+            // Wrap JSX in an IIFE and render it
+            const wrappedCode = `
+              (function() {
+                ${jsxStr}
+                const App = typeof App !== 'undefined' ? App : 
+                  (typeof default !== 'undefined' ? default : null);
+                if (App) {
+                  const rootEl = document.getElementById('root');
+                  if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(App));
+                }
+              })();
+            `;
+            const transpiledCode = Babel.transform(wrappedCode, {
               presets: [['react', { runtime: 'classic' }]],
             }).code;
             const script = document.createElement('script');
             script.innerHTML = transpiledCode;
             document.body.appendChild(script);
+          }, cleanJsx);
 
-            if (compName) {
-              const mountScript = document.createElement('script');
-              mountScript.innerHTML = `
-              const rootEl = document.getElementById('root');
-              if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(${compName}));
-            `;
-              document.body.appendChild(mountScript);
-            }
-          },
-          cleanJsx,
-          componentName,
-        );
-
-        await page.waitForSelector('#root > *', { timeout: 5000 });
+          await page
+            .waitForSelector('#root > *', { timeout: 5000 })
+            .catch(() => {
+              console.log(
+                '[Render Page] Inline JSX render may not have mounted content',
+              );
+            });
+        }
       } else if (js?.trim()) {
         await page.addScriptTag({ content: js });
       }
