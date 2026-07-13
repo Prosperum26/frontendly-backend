@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 // Calculate XP required per level: Fibonacci-like sequence
 export function getXpForLevel(level: number): number {
   if (level <= 1) return 0;
-  const fib = [0, 100]; // Level 1 is 0, level 2 is 100 XP, each next level adds previous
+  const fib = [0, 0, 100]; // Level 1: 0, Level 2: 100 XP
   for (let i = 3; i <= level; i++) {
     fib.push(fib[i - 1] + fib[i - 2] * 2);
   }
