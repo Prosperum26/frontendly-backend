@@ -23,20 +23,14 @@ export class EmailService {
         tls: {
           rejectUnauthorized: false,
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 5000,
-        socketTimeout: 10000,
-      });
-
-      // Verify connection on startup
-      this.transporter.verify(error => {
-        if (error) {
-          this.logger.error(
-            `Email service connection failed: ${error.message}`,
-          );
-        } else {
-          this.logger.log('Email service connection established successfully');
-        }
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        // Force IPv4 to avoid IPv6 connection issues on cloud platforms
+        family: 4,
+        // Disable connection verification on cloud platforms to avoid startup delays
+        pool: true,
+        maxConnections: 1,
       });
     } else {
       this.logger.warn(
@@ -46,8 +40,6 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
-    this.logger.log(`Attempting to send password reset email to ${to}`);
-
     if (!this.transporter) {
       this.logger.error(
         `Password reset email skipped: MAIL_HOST is not configured. MAIL_HOST=${this.configService.get<string>('MAIL_HOST')}`,
@@ -83,7 +75,6 @@ export class EmailService {
       this.logger.error(
         `Failed to send password reset email: ${error.message}`,
       );
-      this.logger.error(`Error details: ${JSON.stringify(error, null, 2)}`);
       throw new Error(`Email sending failed: ${error.message}`);
     }
   }
