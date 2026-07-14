@@ -19,9 +19,17 @@ export class CloudinaryService {
     return new Promise((resolve, reject) => {
       try {
         const upload = cloudinary.uploader.upload_stream(
-          { folder: uploadFolder },
+          {
+            folder: uploadFolder,
+            resource_type: 'auto',
+            use_filename: true,
+            unique_filename: true,
+          },
           (error, result) => {
             if (error || !result) {
+              this.logger.error(
+                `Cloudinary upload error: ${error?.message || 'Unknown error'}`,
+              );
               return reject(new Error(error?.message || 'Upload failed'));
             }
             resolve(result);
@@ -30,6 +38,7 @@ export class CloudinaryService {
 
         upload.end(file.buffer);
       } catch (err) {
+        this.logger.error(`Upload error: ${String(err)}`);
         reject(new Error(String(err)));
       }
     });
