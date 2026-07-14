@@ -12,8 +12,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
       - key: NODE_VERSION
         value: 22.12.0
       - key: DB_URI
@@ -33,11 +31,11 @@ services:
       - key: OPENROUTER_BACKUP_API_KEY
         sync: false
       - key: MAIL_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: MAIL_PORT
-        sync: false
+        value: 587
       - key: MAIL_SECURE
-        sync: false
+        value: false
       - key: MAIL_USER
         sync: false
       - key: MAIL_PASS

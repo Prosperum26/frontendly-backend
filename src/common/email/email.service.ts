@@ -15,6 +15,7 @@ export class EmailService {
         host,
         port: this.configService.get<number>('MAIL_PORT'),
         secure: this.configService.get<boolean>('MAIL_SECURE'),
+        requireTLS: true,
         auth: {
           user: this.configService.get<string>('MAIL_USER'),
           pass: this.configService.get<string>('MAIL_PASS'),
@@ -22,6 +23,20 @@ export class EmailService {
         tls: {
           rejectUnauthorized: false,
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
+      });
+
+      // Verify connection on startup
+      this.transporter.verify(error => {
+        if (error) {
+          this.logger.error(
+            `Email service connection failed: ${error.message}`,
+          );
+        } else {
+          this.logger.log('Email service connection established successfully');
+        }
       });
     } else {
       this.logger.warn(
@@ -60,13 +75,16 @@ export class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Password reset email sent successfully`);
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log(
+        `Password reset email sent successfully: ${info.messageId}`,
+      );
     } catch (error) {
       this.logger.error(
         `Failed to send password reset email: ${error.message}`,
       );
-      throw error;
+      this.logger.error(`Error details: ${JSON.stringify(error, null, 2)}`);
+      throw new Error(`Email sending failed: ${error.message}`);
     }
   }
 }
