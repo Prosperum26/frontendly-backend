@@ -299,7 +299,7 @@ export class UserService {
     const skip = (page - 1) * limit;
     const topUsers = await this.userModel
       .find({ isDeleted: { $ne: true }, isBanned: { $ne: true } })
-      .sort({ xp: -1, _id: 1 }) // _id to handle ties
+      .sort({ level: -1, xp: -1, _id: 1 }) // Sort by level first, then XP, then _id for ties
       .skip(skip)
       .limit(limit)
       .select('username name firstName lastName avatarUrl xp level')

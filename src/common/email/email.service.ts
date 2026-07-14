@@ -1,6 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import type { Options } from 'nodemailer/lib/smtp-transport';
+
+interface ExtendedOptions extends Options {
+  connectionTimeout?: number;
+  greetingTimeout?: number;
+  socketTimeout?: number;
+  family?: number;
+  pool?: boolean;
+  maxConnections?: number;
+}
 
 @Injectable()
 export class EmailService {
@@ -11,7 +21,7 @@ export class EmailService {
   constructor(private configService: ConfigService) {
     const host = this.configService.get<string>('MAIL_HOST');
     if (host) {
-      this.transporter = nodemailer.createTransport({
+      const options: ExtendedOptions = {
         host,
         port: this.configService.get<number>('MAIL_PORT'),
         secure: this.configService.get<boolean>('MAIL_SECURE'),
@@ -31,7 +41,8 @@ export class EmailService {
         // Disable connection verification on cloud platforms to avoid startup delays
         pool: true,
         maxConnections: 1,
-      });
+      };
+      this.transporter = nodemailer.createTransport(options);
     } else {
       this.logger.warn(
         'EmailService: MAIL_HOST is not configured. Emails will not be sent.',
